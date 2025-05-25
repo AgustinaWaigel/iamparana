@@ -96,9 +96,8 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function CancionPage({ params }: { params: { slug: string } | Promise<{ slug: string }> }) {
-  const resolvedParams = params instanceof Promise ? await params : params;
-  const cancion = await getCancionBySlug(resolvedParams.slug);
+export default async function CancionPage({ params }: { params: { slug: string } }) {
+  const cancion = await getCancionBySlug(params.slug);
 
   if (!cancion) return notFound();
 
