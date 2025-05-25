@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IAM </title>
+    <base href="/">
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <div class="logo-container">
+      <a href="index.html">
+        <img src="assets/header/LOGOIAMPNA.svg" alt="Logo de IAM Paraná">
+      </a>
+    </div>
+    <nav id="menu">
+      <ul class="menu-list">
+        <li class="menu-item"><a href="/" class="menu-link-inicio">Inicio</a></li>
+        <li class="menu-item"><a href="comunicacion.html" class="menu-link">Comunicación</a></li>
+        <li class="menu-item"><a href="formacion.html" class="menu-link">Formación</a></li>
+        <li class="menu-item"><a href="animacion/" class="menu-link">Animacion</a></li>
+        <li class="menu-item"><a href="espiritualidad.html" class="menu-link">Espiritualidad</a></li>
+        <li class="menu-item"><a href="logistica.html" class="menu-link">Logística</a></li>
+      </ul>
+    </nav>
+    <div class="hamburger-menu" id="hamburger-menu">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+  </div>
+</header>
+
+<script>
+  console.log("Script cargado correctamente");
+
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM cargado y script ejecutado");
+
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const menuList = document.querySelector('.menu-list');
+
+    if (hamburgerMenu && menuList) {
+      console.log("Menú hamburguesa y menú encontrados");
+      hamburgerMenu.addEventListener('click', function() {
+        console.log("Menú hamburguesa clickeado");
+        menuList.classList.toggle('show-menu');
+      });
+    } else {
+      console.log("No se encontraron los elementos hamburgerMenu o menuList");
+    }
+  });
+</script>
+
+</body>
+</html>

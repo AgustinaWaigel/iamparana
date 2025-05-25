@@ -1,0 +1,85 @@
+backend:
+  name: test-repo
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "news"
+    label: "Noticias"
+    folder: "content/noticias"
+    media_folder: "public/uploads/noticias"
+    public_folder: "/uploads/noticias"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - label: "Título"
+        name: "title"
+        widget: "string"
+      - label: "Fecha"
+        name: "date"
+        widget: "datetime"
+      - label: "Categoría"
+        name: "cat"
+        widget: "select"
+        options:
+          - { label: "ARQUIDIÓCESIS", value: "Arquidiócesis" }
+          - { label: "NACIONAL", value: "Nacional" }
+          - { label: "INTERNACIONAL", value: "Internacional" }
+      - label: "Bajada"
+        name: "bajada"
+        widget: "text"
+      - label: "Descripción corta"
+        name: "description"
+        widget: "text"
+      - label: "Imagen destacada"
+        name: "image"
+        widget: "image"
+      - label: "Contenido"
+        name: "body"
+        widget: "markdown"
+
+  - name: "carousel"
+    label: "Carrusel"
+    folder: "content/carousel"
+    media_folder: "public/uploads/carrusel"
+    public_folder: "/uploads/carrusel"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "Imagen Desktop", name: "imageDesktop", widget: "image" }
+      - { label: "Imagen Mobile", name: "imageMobile", widget: "image" }
+      - { label: "Texto alternativo", name: "alt", widget: "string" }
+      - { label: "Link (opcional)", name: "link", widget: "string", required: false }
+      - { label: "Texto botón (opcional)", name: "buttonText", widget: "string", required: false }
+
+  - name: "agenda"
+    label: "Agenda"
+    folder: "contents/agenda"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+    - { label: "Fecha inicio", name: "fecha", widget: "datetime" }
+    - { label: "Fecha fin", name: "fecha_fin", widget: "datetime", required: false }
+    - { label: "Descripción del evento", name: "evento", widget: "string" }
+
+
+  - name: "logistics"
+    label: "Logística"
+    folder: "contents/logistics"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Sección", name: "section", widget: "string" }
+      - { label: "Contenido", name: "body", widget: "markdown" }
+
+  - name: "canciones"
+    label: "Canciones"
+    folder: "content/canciones"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Letra y acordes", name: "body", widget: "markdown" }

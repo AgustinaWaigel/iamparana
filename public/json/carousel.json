@@ -1,0 +1,35 @@
+[
+  {
+    "imageDesktop": "/assets/multimedia/carousel/desktop/extraomnes.webp",
+    "imageMobile": "/assets/multimedia/carousel/movil/extraomnes.webp",
+    "alt": "Gracias Francisco"
+  },
+  {
+    "imageDesktop": "/assets/multimedia/carousel/desktop/mensajepapa.webp",
+    "imageMobile": "/assets/multimedia/carousel/movil/mensajepapa.webp",
+    "alt": "Papa Francisco",
+    "link": "https://www.vatican.va/content/francesco/es/messages/missions/documents/20250125-giornata-missionaria.html",
+    "buttonText": "Leela acá"
+  },
+  {
+    "imageDesktop": "/assets/multimedia/carousel/desktop/formacion.webp",
+    "imageMobile": "/assets/multimedia/carousel/movil/formacion.webp",
+    "alt": "Formación",
+    "link": "presentaciones.html",
+    "buttonText": "¡Ya disponible!"
+  },
+  {
+    "imageDesktop": "/assets/multimedia/carousel/desktop/logoanio.webp",
+    "imageMobile": "/assets/multimedia/carousel/movil/logoanio.webp",
+    "alt": "Logos",
+    "link": "logos.html",
+    "buttonText": "¡Descargalo acá!"
+  },
+  {
+    "imageDesktop": "/assets/multimedia/carousel/desktop/revista.webp",
+    "imageMobile": "/assets/multimedia/carousel/movil/revista.webp",
+    "alt": "Revistamisionera",
+    "link": "https://drive.google.com/file/d/1tycpeLF4ZwjIkYDTTkR3j9wYUuXZcFD9/view?usp=sharing",
+    "buttonText": "¡Leela acá!"
+  }
+]

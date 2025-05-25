@@ -1,0 +1,112 @@
+import React from "react";
+import { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Dibujos",
+  description: "Dibujos para tus encuentros",
+  openGraph: {
+    title: "Dibujos",
+    description: "Dibujos para tus encuentros",
+    url: "https://iamparana.com.ar/comunicacion/dibujos.html",
+    images: [
+      {
+        url: "https://iamparana.com.ar/logoiam.jpg",
+        alt: "Logo IAM Paraná",
+        width: 800,
+        height: 600,
+      },
+    ],
+    type: "website",
+  },
+  icons: {
+    icon: "/assets/resources/favicon.ico",
+  },
+  themeColor: "#622d0d",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Dibujos",
+  },
+};
+
+export default function DibujosPage() {
+  return (
+    <>
+      <div id="header"></div>
+
+      <main>
+        <div className="barra-contextual color-comunicacion fondo-comunicacion">
+          <p>
+            <span className="texto-encima"></span>
+            <br />
+            <strong>Dibujos</strong>
+          </p>
+        </div>
+
+        <div className="galeria-logos">
+          <div className="logo-item">
+            <img
+              src="/assets/multimedia/Cris camargo.webp"
+              alt="Cris Camargo"
+            />
+            <a
+              href="https://drive.google.com/drive/folders/1yzOjbr51Xu--V3C3Vfj2F10n_8Y8mAu-"
+              target="_blank"
+              className="boton-descarga color-comunicacion"
+              rel="noopener noreferrer"
+            >
+              🔗 Ver Cris
+            </a>
+          </div>
+
+          <div className="logo-item">
+            <img src="/assets/multimedia/fano.webp" alt="Fano" />
+            <a
+              href="https://drive.google.com/drive/folders/1u-0qXHkreinOLw63rgi4jVaqeGGZ4mA2"
+              target="_blank"
+              className="boton-descarga color-comunicacion"
+              rel="noopener noreferrer"
+            >
+              🔗 Ver Fano
+            </a>
+          </div>
+
+          <div className="logo-item">
+            <img
+              src="/assets/multimedia/para colorear.webp"
+              alt="Para colorear"
+            />
+            <a
+              href="https://drive.google.com/drive/folders/1p2etdR43EDnZqm_jkLefMc60jbANlgSG"
+              target="_blank"
+              className="boton-descarga color-comunicacion"
+              rel="noopener noreferrer"
+            >
+              🔗 Ver para colorear
+            </a>
+          </div>
+        </div>
+
+        <section className="copyright-aviso">
+          <p>
+            © IAM Paraná. Todos los derechos reservados. Las imágenes, logotipos y
+            dibujos expuestos en esta página son propiedad intelectual de sus
+            respectivos autores. Como animadores podemos utilizarlos para realizar
+            actividades en los encuentros, invitaciones o subirlos a redes
+            sociales, pero no sería bueno que los utilicemos de manera comercial,
+            o con fines de lucro. A Diosito no le gusta que robes.
+          </p>
+        </section>
+
+        <div style={{ textAlign: "center", margin: "2rem 0" }}>
+          <Link href="/comunicacion" className="boton-pagina color-comunicacion">
+            ⬅ Volver a Comunicación
+          </Link>
+        </div>
+      </main>
+
+      <div id="footer"></div>
+    </>
+  );
+}
