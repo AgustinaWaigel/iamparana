@@ -4,7 +4,7 @@ date: 2025-05-19
 cat: NACIONAL
 bajada: Hoy, 19 de mayo, celebramos un nuevo aniversario de la fundación de la
   IAM. Aquel 19 de mayo de 1843, Monseñor Charles Auguste Forbin-Janson daba
-  inicio a la Obra de la Santa Infancia.
+  inicio a la Obra de la Santa Infancia
 description: Hoy, 19 de mayo, celebramos un nuevo aniversario de la fundación de
   la Infancia y Adolescencia Misionera.
 image: /uploads/noticias/forbinjanson.png
