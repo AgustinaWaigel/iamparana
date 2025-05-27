@@ -9,7 +9,7 @@ public_folder: "/uploads"
 collections:
   - name: "news"
     label: "Noticias"
-    folder: "content/noticias"
+    folder: "contents/noticias"
     media_folder: "public/uploads/noticias"
     public_folder: "/uploads/noticias"
     create: true
@@ -43,7 +43,7 @@ collections:
 
   - name: "carousel"
     label: "Carrusel"
-    folder: "content/carousel"
+    folder: "contents/carousel"
     media_folder: "public/uploads/carrusel"
     public_folder: "/uploads/carrusel"
     create: true
@@ -79,7 +79,7 @@ collections:
 
   - name: "canciones"
     label: "Canciones"
-    folder: "content/canciones"
+    folder: "contents/canciones"
     create: true
     slug: "{{slug}}"
     fields:
