@@ -1,7 +1,7 @@
 backend:
   name: git-gateway
   branch: main
-  client_id: Ov23libcPK2BO1v2k5vg
+  client_id: 0GJ4HepGs5HDJnIJoNMfgEiyp-VuLgJ1ZbZwSWHPRns
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
