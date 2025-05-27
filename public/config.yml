@@ -5,7 +5,7 @@ backend:
   media_folder: "public/uploads"
   public_folder: "/uploads"
   media_library:
-  name: default
+    name: default
 
 collections:
   - name: "news"
