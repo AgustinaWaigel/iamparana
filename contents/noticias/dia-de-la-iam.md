@@ -7,7 +7,7 @@ bajada: Hoy, 19 de mayo, celebramos un nuevo aniversario de la fundación de la
   inicio a la Obra de la Santa Infancia.
 description: Hoy, 19 de mayo, celebramos un nuevo aniversario de la fundación de
   la Infancia y Adolescencia Misionera.
-image: https://iamparana.com.ar/assets/multimedia/noticias/noticias.png
+image: /uploads/noticias/forbinjanson.png
 ---
 La historia de la IAM comienza con su fundador, Charles de Forbin-Janson, un obispo francés que vivió durante la época napoleónica. Nacido en 1785, durante su formación como seminarista fue profundamente influenciado por los relatos de misioneros en China, impactado especialmente por los miles de niños que eran bautizados por sacerdotes en aquella lejana región. Siempre mostró una sensibilidad particular por los niños, especialmente los más pobres, y se sentía profundamente agradecido de haber recibido una formación católica desde pequeño, algo que no todos los niños tenían.
 
