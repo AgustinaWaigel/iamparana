@@ -3,6 +3,8 @@ backend:
   repo: Alxib12/iamprueba
   branch: main
   client_id: Ov23lim5d3KmXa9Mqb90
+  auth_type: implicit
+  base_url: https://auth.decapcms.org
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
