@@ -3,7 +3,7 @@ title: Yo tengo un barco
 ---
 
 Yo tengo un [Lam]barco que navega por el [Mi7]mar
-en ese barco Jesús es [Lam]capitan
+en ese barco Jesús es [Lam]capitán.
 
 
 Los [Rem]pescadores que en ese barco [Lam]van
