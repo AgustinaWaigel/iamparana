@@ -1,7 +1,7 @@
 backend:
   name: git-gateway
   repo: Alxib12/iamprueba
-  branch: main
+  branch: Main
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
