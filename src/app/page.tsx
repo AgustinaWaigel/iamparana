@@ -5,6 +5,7 @@ import Carousel from "./components/carousel";
 import Agenda from "./components/agenda";
 import Novedades from "./components/novedades";
 import { useEffect } from "react";
+import Link from 'next/link';
 
 export default function HomePage() {
   useEffect(() => {
@@ -23,11 +24,11 @@ export default function HomePage() {
           <div className="bienvenida-flex">
             <div className="botones-wrapper">
               <div className="botones-area">
-                <a href="/animacion">Animación</a>
-                <a href="/formacion">Formación</a>
-                <a href="/espiritualidad">Espiritualidad</a>
-                <a href="/logistica">Logística</a>
-                <a href="/comunicacion">Comunicación</a>
+                <Link href="/animacion">Animación</Link>
+                <Link href="/formacion">Formación</Link>
+                <Link href="/espiritualidad">Espiritualidad</Link>
+                <Link href="/logistica">Logística</Link>
+                <Link href="/comunicacion">Comunicación</Link>
               </div>
             </div>
           </div>
