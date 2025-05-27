@@ -1,9 +1,12 @@
 backend:
   name: git-gateway
-  branch: Main  
-  media_folder: "public/uploads"
-  public_folder: "/uploads"
-  media_library: default
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+media_library:
+  name: default
 
 collections:
   - name: "news"
