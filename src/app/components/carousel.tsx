@@ -23,14 +23,16 @@ export default function Carousel() {
       .catch(console.error);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => moveSlide(1), 40000);
-    return () => clearInterval(interval);
-  }, [index, items]);
-
   const moveSlide = (direction: number) => {
     setIndex((prev) => (prev + direction + items.length) % items.length);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => moveSlide(1), 40000);
+    return () => clearInterval(interval);
+  }, [index, items, moveSlide]);
+
+
 
   useEffect(() => {
     const slide = slideRef.current;
@@ -55,7 +57,7 @@ export default function Carousel() {
       slide.removeEventListener("touchstart", handleTouchStart);
       slide.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [items]);
+  }, [items, moveSlide]);
 
   if (items.length === 0) {
     return <div className="carousel-container"></div>;

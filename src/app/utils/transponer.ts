@@ -44,10 +44,10 @@ function actualizarAcordes() {
     const original = span.dataset.original ?? '';
     const { base, resto } = normalizarAcorde(original);
 
-    let indexLat = tonosLatinos.indexOf(base);
-    let indexAm = tonosAmericanos.indexOf(base);
+    const indexLat = tonosLatinos.indexOf(base);
+    const indexAm = tonosAmericanos.indexOf(base);
 
-    let index = indexLat !== -1 ? indexLat : indexAm;
+    const index = indexLat !== -1 ? indexLat : indexAm;
     if (index === -1) return;
 
     const nuevoIndex = (index + transposicionActual + 12) % 12;

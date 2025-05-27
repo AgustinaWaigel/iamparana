@@ -4,13 +4,10 @@ import './globals.css';
 import Carousel from "./components/carousel";
 import Agenda from "./components/agenda";
 import Novedades from "./components/novedades";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function HomePage() {
-  const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
-    setIsClient(true);
   }, []);
 
   return (
@@ -53,5 +50,4 @@ export default function HomePage() {
   );
 }
 
-declare function moveSlide(step: number): void;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image"
 
 interface Noticia {
   slug: string;
@@ -24,7 +25,7 @@ export default function Novedades() {
       {novedades.map((item, i) => (
         <li key={i}>
           <div className="novedad-item">
-            <img src={item.image} alt={item.title} className="novedad-img" />
+            <Image src={item.image} alt={item.title} className="novedad-img" width={500}height={500}/>
             <div className="novedad-texto">
               <h2 className="novedad-titulo">{item.title}</h2>
               <p className="novedad-descripcion">{item.description} <a href={`/noticias/${item.slug}`} className="novedad-link">

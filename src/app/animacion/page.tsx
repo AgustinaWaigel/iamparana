@@ -1,8 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Animación | IAM Paraná',
@@ -27,7 +25,6 @@ export const metadata: Metadata = {
 export default function AnimacionPage() {
   return (
     <>
-
             <h2 className="barra-contextual color-animacion-boton">Animación</h2>
 
       <main className="seccion areas">
@@ -41,10 +38,10 @@ export default function AnimacionPage() {
           <a href="/animacion/juegos" className="botonpaginas color-animacion-boton">
             Juegos
           </a>
-                    <a href="/animacion/canciones" className="botonpaginas color-animacion-boton">
+                    <Link href="/animacion/canciones/" className="botonpaginas color-animacion-boton">
             Canciones
-          </a>
-                  <hr className="divisor" />
+            </Link>
+                          <hr className="divisor" />
         </div>
       </main>
 

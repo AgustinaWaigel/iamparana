@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export default function juegosPage() {
   return (
     <>
-<h2 className='barra-contextual color-animacion-boton'>"Juegos"</h2>
+<h2 className='barra-contextual color-animacion-boton'>Juegos</h2>
 
       <main className="seccion areas" style={{ padding: '2rem' }}>
         <p className="subtitulo-descriptivo">

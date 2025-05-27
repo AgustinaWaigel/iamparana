@@ -1,5 +1,5 @@
 ---
-title: Alabaré
+title: Yo tengo un barco
 ---
 
 Yo tengo un [Lam]barco que navega por el [Mi7]mar

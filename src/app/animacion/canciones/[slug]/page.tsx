@@ -30,12 +30,13 @@ async function getCancionBySlug(slug: string): Promise<Cancion | null> {
     const fileContent = await fs.readFile(filePath, 'utf-8');
     const { data, content } = matter(fileContent);
     return { title: data.title, artist: data.artist, content };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const cancion = await getCancionBySlug(params.slug);
   if (!cancion) return {};
 
@@ -78,7 +79,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-
 function parseAcordes(content: string): string {
   const lines = content.split('\n');
   const parsedLines = lines.map((line) => {
@@ -89,14 +89,16 @@ function parseAcordes(content: string): string {
   return parsedLines.join('\n');
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const files = await fs.readdir(cancionesDir);
   return files.map((filename) => ({
     slug: filename.replace(/\.md$/, ''),
   }));
 }
 
-export default async function CancionPage({ params }: { params: { slug: string } }) {
+// Acá está el cambio clave en el tipado de props, nada de any ni PageProps raros
+export default async function CancionPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const cancion = await getCancionBySlug(params.slug);
 
   if (!cancion) return notFound();

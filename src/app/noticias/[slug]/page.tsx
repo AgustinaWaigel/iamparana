@@ -2,11 +2,12 @@ import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/lib/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import Novedades from '@/components/novedades';
+import Image from "next/image";
 
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 export async function generateStaticParams() {
@@ -14,7 +15,8 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { frontmatter } = getNoticiaBySlug(params.slug);
 
   return {
@@ -29,7 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function NoticiaPage({ params }: Props) {
+export default async function NoticiaPage(props: Props) {
+  const params = await props.params;
   const { frontmatter, content } = getNoticiaBySlug(params.slug);
   const { title, date, description, image, cat, bajada } = frontmatter;
 
@@ -45,7 +48,7 @@ export default function NoticiaPage({ params }: Props) {
         </p>
 
         <hr className="divisor" />
-        <img src={image} alt={title} className="nota-imagen" />
+        <Image src={image} alt={description} className="nota-imagen" height={400}width={640}/>
 
         <ReactMarkdown>{content}</ReactMarkdown>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface Noticia {
@@ -33,7 +34,7 @@ export default function Noticias() {
   {noticias.map((item) => (
     <article key={item.slug} className="noticia-card">
       <a href={`/noticias/${item.slug}`} className="noticia-link">
-        <img src={item.image} alt={item.title} />
+        <Image src={item.image} alt={item.title} width={253} height={253}/>
         <h2>{item.title}</h2>
         <p>{item.description}</p>
       </a>

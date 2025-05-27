@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import Image from "next/image"
 
 export const metadata: Metadata = {
   title: 'Logos',
@@ -44,9 +45,11 @@ export default function LogosPage() {
 
       <div className="galeria-logos">
         <div className="logo-item">
-          <img
+          <Image
             src="/assets/multimedia/logo año jubilar.png"
             alt="Logo Año Jubilar"
+            width={800}
+            height={800}
           />
           <a
             href="/assets/multimedia/logo año jubilar.png"
@@ -58,9 +61,11 @@ export default function LogosPage() {
         </div>
 
         <div className="logo-item">
-          <img
+          <Image
             src="/assets/multimedia/logo-iam-arq-parana.png"
             alt="Logo IAM Paraná"
+                        width={800}
+            height={800}
           />
           <a
             href="/assets/multimedia/logo-iam-arq-parana.png"
@@ -72,9 +77,11 @@ export default function LogosPage() {
         </div>
 
         <div className="logo-item">
-          <img
+          <Image
             src="/assets/multimedia/logo iam nuevo redondo.png"
             alt="Logo IAM Redondo"
+                        width={800}
+            height={800}
           />
           <a
             href="/assets/multimedia/logo iam nuevo redondo.png"
@@ -86,9 +93,11 @@ export default function LogosPage() {
         </div>
 
         <div className="logo-item">
-          <img
+          <Image
             src="/assets/multimedia/logo año diocesano.png"
             alt="Logo Año Diocesano"
+                        width={800}
+            height={800}
           />
           <a
             href="/assets/multimedia/logo año diocesano.png"

@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Dibujos",
@@ -46,9 +47,11 @@ export default function DibujosPage() {
 
         <div className="galeria-logos">
           <div className="logo-item">
-            <img
-              src="/assets/multimedia/Cris camargo.webp"
+            <Image
+              src="/assets/multimedia/Cris-camargo.webp"
               alt="Cris Camargo"
+              width={800}
+              height={800}
             />
             <a
               href="https://drive.google.com/drive/folders/1yzOjbr51Xu--V3C3Vfj2F10n_8Y8mAu-"
@@ -61,7 +64,10 @@ export default function DibujosPage() {
           </div>
 
           <div className="logo-item">
-            <img src="/assets/multimedia/fano.webp" alt="Fano" />
+            <Image src="/assets/multimedia/fano.webp" 
+            alt="Fano"
+            width={800}
+            height={800}/>
             <a
               href="https://drive.google.com/drive/folders/1u-0qXHkreinOLw63rgi4jVaqeGGZ4mA2"
               target="_blank"
@@ -73,9 +79,11 @@ export default function DibujosPage() {
           </div>
 
           <div className="logo-item">
-            <img
+            <Image
               src="/assets/multimedia/para colorear.webp"
               alt="Para colorear"
+              width={800}
+              height={800}
             />
             <a
               href="https://drive.google.com/drive/folders/1p2etdR43EDnZqm_jkLefMc60jbANlgSG"

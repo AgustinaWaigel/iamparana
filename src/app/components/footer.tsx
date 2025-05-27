@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 const Footer: React.FC = () => {
   return (
     <footer>
@@ -7,9 +9,11 @@ const Footer: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img
+          <Image
             src="/assets/socialmedia/youtube.webp"
             alt="YouTube"
+            width={32}
+            height={32}
           />
         </a>
         <a
@@ -17,9 +21,11 @@ const Footer: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img
+          <Image
             src="/assets/socialmedia/instagram.webp"
             alt="Instagram"
+            width={32}
+            height={32}
           />
         </a>
         <a
@@ -27,9 +33,11 @@ const Footer: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img
+          <Image
             src="/assets/socialmedia/facebook.webp"
             alt="Facebook"
+            width={32}
+            height={32}
           />
         </a>
       </div>
@@ -37,12 +45,12 @@ const Footer: React.FC = () => {
         Secretariado de la Infancia y Adolescencia Misionera Arquidiócesis de
         Paraná - Equipo de Comunicación
       </p>
-              <a
-          href="/institucional"
-          className="footer-institucional-link"
-        >
-          Info Institucional
-        </a>
+      <a
+        href="/institucional"
+        className="footer-institucional-link"
+      >
+        Info Institucional
+      </a>
     </footer>
   );
 };

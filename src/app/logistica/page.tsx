@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 export async function generateMetadata() {
   return {
     title: "Logística",
@@ -38,9 +40,11 @@ export default function Logistica() {
           Resumen de gastos en la formación de animadores
         </h2>
 
-        <img
+        <Image
           src="/assets/multimedia/gastosformacion.webp"
           alt="Resumen de gastos"
+          width={1080}
+          height={1350}
           style={{
             maxWidth: '90%',
             display: 'block',
