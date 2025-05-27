@@ -1,5 +1,6 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: Alxib12/iamprueba
   branch: main
   client_id: 0GJ4HepGs5HDJnIJoNMfgEiyp-VuLgJ1ZbZwSWHPRns
 
