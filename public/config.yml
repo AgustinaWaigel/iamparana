@@ -2,7 +2,7 @@ backend:
   name: github
   repo: Alxib12/iamprueba
   branch: main
-  client_id: Ov23libcPK2BO1v2k5vg
+  client_id: Ov23lim5d3KmXa9Mqb90
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
