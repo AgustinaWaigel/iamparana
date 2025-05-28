@@ -8,12 +8,14 @@ export async function GET() {
     const folder = path.join(process.cwd(), "contents", "carousel");
     const filenames = fs.readdirSync(folder);
 
-    const items = filenames.map((filename) => {
-      const filePath = path.join(folder, filename);
-      const fileContent = fs.readFileSync(filePath, "utf8");
-      const { data } = matter(fileContent);
-      return data;
-    });
+    const items = filenames
+      .map((filename) => {
+        const filePath = path.join(folder, filename);
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        const { data } = matter(fileContent);
+        return data;
+      })
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)); // Ordena por `order`
 
     return NextResponse.json(items);
   } catch (error) {

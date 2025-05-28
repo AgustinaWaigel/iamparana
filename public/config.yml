@@ -55,6 +55,7 @@ collections:
       - { label: "Texto alternativo", name: "alt", widget: "string" }
       - { label: "Link (opcional)", name: "link", widget: "string", required: false }
       - { label: "Texto botón (opcional)", name: "buttonText", widget: "string", required: false }
+      - { label: "Orden", name: "order", widget: "number" }
 
   - name: "agenda"
     label: "Agenda"
