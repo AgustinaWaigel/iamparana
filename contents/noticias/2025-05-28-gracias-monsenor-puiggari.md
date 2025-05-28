@@ -18,10 +18,7 @@ Los obispos suelen presentar su renuncia al cumplir 75 años —en el caso de Mo
 
 Monseñor Juan Alberto Puiggari asumió como arzobispo de Paraná en 2011, y en su misa de toma de posesión nos decía: *"Quiero ser para ustedes **apóstol de Jesucristo**, servidor del Evangelio y testigo de la Esperanza que no defrauda."* Durante este tiempo fue una imagen viva de apóstol entre nosotros. También, en la homilía de su primera misa como arzobispo, hizo un llamado especial a los jóvenes: *"La Iglesia cuenta con ustedes, sean protagonistas de un cambio, de la verdadera revolución del amor a la que nos convoca nuestro querido Santo Padre. **Confíen en Cristo y** entreguen sus vidas. Tengan la santa ambición de ser santos, como Él es santo. Él no los defrauda."*
 
-![Monseñor en un campamento](/uploads/noticias/6.webp "Monseñor 1")
 
 Cuando le consultaron qué haría ahora que ya no estaría desempeñándose como obispo, respondió: *"Seguiré trabajando como cura en Paraná. Hay muchas parroquias y capillas que necesitan sacerdotes. Me pondré a disposición del nuevo arzobispo para colaborar en esta etapa de transición."*
 
 En este Año de la Esperanza, agradecemos especialmente a Monseñor Juan Alberto por habernos acompañado durante todos estos años, siempre haciéndose presente con la oración, con un saludo, con un gesto cercano y muchas veces con su presencia y palabras. Hemos podido encontrar en él realmente a un pastor que ha caminado junto a nosotros y nos ha sabido guiar con su cercanía, su acompañamiento, su presencia y su disposición. ¡**Muchas gracias, Monseñor Juan Alberto Puiggari,** por tu testimonio entre nosotros! Rezamos por vos.
-
-![Monseñor con Coordis](/uploads/noticias/5.webp "Monseñor 3")
