@@ -10,7 +10,7 @@ collections:
   - name: "news"
     label: "Noticias"
     folder: "contents/noticias"
-    media_folder: "public/uploads/noticias"
+    media_folder: "../../public/uploads/noticias"
     public_folder: "/uploads/noticias"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
@@ -25,9 +25,9 @@ collections:
         name: "cat"
         widget: "select"
         options:
-          - { label: "ARQUIDIÓCESIS", value: "Arquidiócesis" }
-          - { label: "NACIONAL", value: "Nacional" }
-          - { label: "INTERNACIONAL", value: "Internacional" }
+          - { label: "ARQUIDIÓCESIS", value: "ARQUIDIÓCESIS" }
+          - { label: "NACIONAL", value: "NACIONAL" }
+          - { label: "INTERNACIONAL", value: "INTERNACIONAL" }
       - label: "Bajada"
         name: "bajada"
         widget: "text"
@@ -44,7 +44,7 @@ collections:
   - name: "carousel"
     label: "Carrusel"
     folder: "contents/carousel"
-    media_folder: "public/uploads/carrusel"
+    media_folder: "../../public/uploads/carrusel"
     public_folder: "/uploads/carrusel"
     create: true
     slug: "{{slug}}"
