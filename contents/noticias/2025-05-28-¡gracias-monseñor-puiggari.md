@@ -1,5 +1,5 @@
 ---
-title: ¡Gracias Monseñor Puiggari!
+title: Gracias Monseñor Puiggari
 date: 2025-05-28T16:03:42.924Z
 cat: ARQUIDIÓCESIS
 bajada: El día de hoy, 28 de Mayo de 2025, el Papa Leon XIV aceptó la renuncia
