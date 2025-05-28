@@ -4,7 +4,7 @@ title: "¡Habemus Papam! Su Santidad Leon XIV"
 date: "2025-05-08"
 bajada: "A las 13 hs de este 08 de mayo de 2025 ha sido elegido el nuevo sucesor de San Pedro. ¡Tenemos Papa! Ha sido escogido el Cardenal Robert Prevost de Estados Unidos"
 description: "A las 13 hs de este 08 de mayo de 2025 ha sido elegido el nuevo sucesor de San Pedro."
-image: "/uploads/noticias/habemuspapam.jpeg"
+image: "/uploads/noticias/papa-leon.webp"
 ---
 ¡Habemus Papam! Con estas palabras, el cardenal protodiacono Dominique Mamberti, ha salido al balcón que da a la plaza San Pedro, en la ciudad del Vaticano y nos ha anunciado esa gran alegría, para toda la iglesia, tenemos Papa.Tras 4 votaciones, ha sido elegido un nuevo sucesor de San Pedro para la Iglesia Católica. El cardenal estadounidense, Robert Prevost, de Estados Unidos, pero con mucho apostolado en Latinoamérica, especialmente en Perú donde se desempeñaba como misionero. 
 

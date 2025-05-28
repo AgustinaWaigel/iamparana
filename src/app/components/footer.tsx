@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer: React.FC = () => {
   return (
@@ -45,12 +46,12 @@ const Footer: React.FC = () => {
         Secretariado de la Infancia y Adolescencia Misionera Arquidiócesis de
         Paraná - Equipo de Comunicación
       </p>
-      <a
+      <Link
         href="/institucional"
         className="footer-institucional-link"
       >
         Info Institucional
-      </a>
+      </Link>
     </footer>
   );
 };
