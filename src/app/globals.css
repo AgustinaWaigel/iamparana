@@ -447,6 +447,7 @@ blockquote {
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
+  margin: 0 0 0;
 }
 .novedad-texto {
   text-align: left;
@@ -1073,12 +1074,11 @@ blockquote {
 .nota p {
   text-align: left;
 }
-.nota img {
+.nota-imagen {
   border-radius: 4px;
   margin: 0 auto 2rem;
   display: block;
   max-width: 640px;
-  margin: 2rem auto;
 }
 .titulo-categoria {
   color: #622d0d;
