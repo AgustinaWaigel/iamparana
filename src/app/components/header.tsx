@@ -5,11 +5,13 @@ import '@/globals.css';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const submenuRef = useRef<HTMLLIElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,6 +33,11 @@ const Header: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [submenuOpen]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setSubmenuOpen(false);
+  }, [pathname]);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleSubmenu = (e: React.MouseEvent) => {
