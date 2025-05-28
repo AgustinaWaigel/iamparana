@@ -3,14 +3,11 @@ backend:
   repo: Alxib12/iamprueba
   branch: Main
 
-media_folder: "public/uploads"
-public_folder: "/uploads"
-
 collections:
   - name: "news"
     label: "Noticias"
     folder: "contents/noticias"
-    media_folder: "public/uploads/noticias"
+    media_folder: "/public/uploads/noticias"
     public_folder: "/uploads/noticias"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
