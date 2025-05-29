@@ -2,7 +2,6 @@ import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/lib/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import Novedades from '@/components/novedades';
-import Image from "next/image";
 
 type Props = {
   params: Promise<{
@@ -48,7 +47,7 @@ export default async function NoticiaPage(props: Props) {
         </p>
 
         <hr className="divisor" />
-        <Image src={image} alt={description} className="nota-imagen" height={400}width={640}/>
+        <img src={image} alt={description} className="nota-imagen"/>
 
         <ReactMarkdown>{content}</ReactMarkdown>
 
