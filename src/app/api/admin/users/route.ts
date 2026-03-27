@@ -1,74 +1,67 @@
-import { NextResponse, NextRequest } from "next/server";
-import { createUser, listUsers, UserRole } from "@/db/auth-repository";
+import { NextRequest, NextResponse } from "next/server";
+import { createUser, listUsers } from "@/db/auth-repository";
 import { hashPassword } from "@/lib/auth-security";
-import { getSessionUser } from "@/api/admin/_shared/auth";
+import { requirePermission, badRequest, serverError } from "@/lib/api-utils";
 
-type CreateUserBody = {
-  email: string;
-  password: string;
-  role: UserRole;
-};
-
-function isValidRole(value: unknown): value is UserRole {
-  return ["admin", "equipo", "redactor", "coordinador", "animador"].includes(value as string);
-}
-
-function isValidCreateBody(value: unknown): value is CreateUserBody {
-  if (typeof value !== "object" || value === null) return false;
-  const body = value as Partial<CreateUserBody>;
-  return (
-    typeof body.email === "string" &&
-    typeof body.password === "string" &&
-    body.password.length >= 8 &&
-    isValidRole(body.role)
-  );
-}
-
-async function checkAdminAuth(request: NextRequest) {
-  const user = await getSessionUser(request);
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-  return user;
-}
-
-export async function GET(req: NextRequest) {
-  const admin = await checkAdminAuth(req);
-  if (!admin) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
+/**
+ * GET: Lista todos los usuarios.
+ * Solo accesible para usuarios con permiso 'users.manage' (Admin).
+ */
+export async function GET() {
+  const { errorResponse } = await requirePermission("users.manage");
+  if (errorResponse) return errorResponse;
 
   try {
     const users = await listUsers();
+    // Retornamos la lista (excluyendo hashes de password si tu repository no lo hace ya)
     return NextResponse.json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json({ error: "Error al obtener usuarios" }, { status: 500 });
+    console.error("❌ Error listUsers:", error);
+    return serverError("No se pudo obtener la lista de usuarios");
   }
 }
 
+/**
+ * POST: Crea un nuevo usuario.
+ */
 export async function POST(req: NextRequest) {
-  const admin = await checkAdminAuth(req);
-  if (!admin) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
-
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
-  }
-
-  if (!isValidCreateBody(body)) {
-    return NextResponse.json({ error: "Datos inválidos. Email, password (8+ chars), y rol requeridos" }, { status: 400 });
-  }
+  const { errorResponse } = await requirePermission("users.manage");
+  if (errorResponse) return errorResponse;
 
   try {
-    await createUser(body.email.trim().toLowerCase(), hashPassword(body.password), body.role);
+    const body = await req.json();
+    const { email, password, role } = body;
+
+    // 1. Validaciones de entrada
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return badRequest("Email inválido");
+    }
+
+    if (!password || typeof password !== "string" || password.length < 8) {
+      return badRequest("La contraseña debe tener al menos 8 caracteres");
+    }
+
+    const validRoles = ["admin", "equipo", "redactor", "coordinador", "animador"];
+    if (!role || !validRoles.includes(role)) {
+      return badRequest("Rol no válido");
+    }
+
+    // 2. Operación en Base de Datos
+    const normalizedEmail = email.trim().toLowerCase();
+    const hashedPassword = hashPassword(password);
+
+    await createUser(normalizedEmail, hashedPassword, role);
+
     return NextResponse.json({ success: true }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json({ error: "No se pudo crear el usuario" }, { status: 500 });
+
+  } catch (error: any) {
+    console.error("❌ Error createUser:", error);
+    
+    // Manejo específico para emails duplicados (si Turso lanza error de UNIQUE)
+    if (error.message?.includes("UNIQUE constraint failed")) {
+      return badRequest("El email ya está registrado");
+    }
+
+    return serverError("Error al crear el usuario");
   }
 }

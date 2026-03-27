@@ -1,36 +1,43 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers"; // Usamos el helper oficial de Next.js
 import { deleteSessionByTokenHash } from "@/db/auth-repository";
 import { AUTH_COOKIE_NAME, hashSessionToken } from "@/lib/auth-security";
 
-function getCookieValue(cookieHeader: string, name: string) {
-  const parts = cookieHeader.split(";").map((value) => value.trim());
-  const match = parts.find((part) => part.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
-}
-
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const cookieHeader = req.headers.get("cookie") ?? "";
-    const token = getCookieValue(cookieHeader, AUTH_COOKIE_NAME);
+    // 1. Obtener el token directamente usando el helper de cookies de Next.js
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
+    // 2. Si hay token, invalidamos la sesión en Turso
     if (token) {
-      await deleteSessionByTokenHash(hashSessionToken(token));
+      const tokenHash = hashSessionToken(token);
+      await deleteSessionByTokenHash(tokenHash);
     }
 
-    const response = NextResponse.json({ success: true });
+    // 3. Crear la respuesta y limpiar la cookie
+    const response = NextResponse.json({ 
+      success: true,
+      message: "Sesión cerrada correctamente" 
+    });
+
+    // 4. Borrar la cookie de forma segura
     response.cookies.set({
       name: AUTH_COOKIE_NAME,
       value: "",
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
       sameSite: "lax",
-      secure: false,
       path: "/",
-      expires: new Date(0),
+      maxAge: 0, // Expira inmediatamente
     });
 
     return response;
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    console.error("❌ Logout error:", error);
+    return NextResponse.json(
+      { error: "No se pudo cerrar la sesión correctamente" }, 
+      { status: 500 }
+    );
   }
 }

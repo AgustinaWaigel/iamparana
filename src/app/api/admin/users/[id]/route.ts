@@ -1,90 +1,80 @@
-import { NextResponse, NextRequest } from "next/server";
-import { updateUser, UserRole } from "@/db/auth-repository";
+import { NextRequest, NextResponse } from "next/server";
+import { updateUser } from "@/db/auth-repository";
 import { hashPassword } from "@/lib/auth-security";
-import { getSessionUser } from "@/api/admin/_shared/auth";
+import { requirePermission, badRequest, serverError, parseId } from "@/lib/api-utils";
 
-type UpdateUserBody = {
-  role?: UserRole;
-  isActive?: boolean;
-  password?: string;
-};
+/**
+ * PUT: Actualiza un usuario específico.
+ */
+export async function PUT(
+  req: NextRequest, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // 1. Validar permisos (Solo Admin puede gestionar usuarios)
+  const { errorResponse } = await requirePermission("users.manage");
+  if (errorResponse) return errorResponse;
 
-function isValidRole(value: unknown): value is UserRole {
-  return ["admin", "equipo", "redactor", "coordinador", "animador"].includes(value as string);
-}
-
-function isValidUpdateBody(value: unknown): value is UpdateUserBody {
-  if (typeof value !== "object" || value === null) return false;
-  const body = value as Partial<UpdateUserBody>;
-
-  const roleOk = typeof body.role === "undefined" || isValidRole(body.role);
-  const activeOk = typeof body.isActive === "undefined" || typeof body.isActive === "boolean";
-  const passOk = typeof body.password === "undefined" || (typeof body.password === "string" && body.password.length >= 8);
-
-  return roleOk && activeOk && passOk;
-}
-
-async function checkAdminAuth(request: NextRequest) {
-  const user = await getSessionUser(request);
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-  return user;
-}
-
-export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const admin = await checkAdminAuth(req);
-  if (!admin) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
-
-  const id = Number((await context.params).id);
-  if (!id || isNaN(id)) {
-    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-  }
-
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
-  }
-
-  if (!isValidUpdateBody(body)) {
-    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
-  }
-
-  const passwordHash = body.password ? hashPassword(body.password) : undefined;
+  // 2. Validar ID
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+  if (!id) return badRequest("ID de usuario inválido");
 
   try {
+    const body = await req.json();
+    const { role, isActive, password } = body;
+
+    // 3. Validaciones opcionales de campos
+    const validRoles = ["admin", "equipo", "redactor", "coordinador", "animador"];
+    if (role && !validRoles.includes(role)) {
+      return badRequest("El rol proporcionado no es válido");
+    }
+
+    if (password && (typeof password !== "string" || password.length < 8)) {
+      return badRequest("La nueva contraseña debe tener al menos 8 caracteres");
+    }
+
+    // 4. Preparar actualización
+    const passwordHash = password ? hashPassword(password) : undefined;
+
     await updateUser(id, {
-      role: body.role,
-      isActive: body.isActive,
+      role,
+      isActive,
       passwordHash,
     });
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({ success: true, message: "Usuario actualizado" });
+
   } catch (error) {
-    console.error("Error updating user:", error);
-    return NextResponse.json({ error: "No se pudo actualizar el usuario" }, { status: 500 });
+    console.error(`❌ Error updating user ${id}:`, error);
+    return serverError("No se pudo actualizar el usuario");
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const admin = await checkAdminAuth(req);
-  if (!admin) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
+/**
+ * DELETE: Desactiva un usuario (Baja lógica).
+ */
+export async function DELETE(
+  req: NextRequest, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { errorResponse } = await requirePermission("users.manage");
+  if (errorResponse) return errorResponse;
 
-  const id = Number((await context.params).id);
-  if (!id || isNaN(id)) {
-    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-  }
+  const { id: rawId } = await params;
+  const id = parseId(rawId);
+  if (!id) return badRequest("ID de usuario inválido");
 
   try {
+    // Nota: En tu implementación anterior DELETE solo desactivaba. 
+    // Si quieres borrarlo de la DB físicamente, deberías llamar a una función deleteUser(id).
     await updateUser(id, { isActive: false });
-    return NextResponse.json({ success: true });
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: "El usuario ha sido desactivado correctamente" 
+    });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    return NextResponse.json({ error: "No se pudo eliminar el usuario" }, { status: 500 });
+    console.error(`❌ Error deleting user ${id}:`, error);
+    return serverError("No se pudo eliminar/desactivar el usuario");
   }
 }

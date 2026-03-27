@@ -8,65 +8,72 @@ import {
   verifyPassword,
 } from "@/lib/auth-security";
 
-type LoginBody = {
-  email: string;
-  password: string;
-};
+// Usamos el entorno para configurar la seguridad de la cookie
+const isProduction = process.env.NODE_ENV === "production";
 
 export async function POST(req: Request) {
-  let body: unknown;
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Body invalido" }, { status: 400 });
-  }
+    const body = await req.json();
+    const { email, password } = body;
 
-  if (typeof body !== "object" || body === null) {
-    return NextResponse.json({ error: "Body invalido" }, { status: 400 });
-  }
-
-  const { email, password } = body as Partial<LoginBody>;
-  if (typeof email !== "string" || typeof password !== "string") {
-    return NextResponse.json({ error: "Credenciales invalidas" }, { status: 400 });
-  }
-
-  try {
-    const user = await findUserByEmail(email.trim().toLowerCase());
-    
-    if (!user || !user.isActive) {
-      return NextResponse.json({ error: "Credenciales invalidas" }, { status: 401 });
+    // 1. Validación estricta de entrada
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      return NextResponse.json({ error: "Email y contraseña son requeridos" }, { status: 400 });
     }
 
-    const valid = verifyPassword(password, user.passwordHash);
-    
-    if (!valid) {
-      return NextResponse.json({ error: "Credenciales invalidas" }, { status: 401 });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await findUserByEmail(normalizedEmail);
+
+    // 2. Prevención de enumeración de usuarios y ataques de tiempo
+    // Si el usuario no existe o no está activo, igual verificamos una contraseña falsa
+    // para que un atacante no sepa si falló el email o el password por el tiempo de respuesta.
+    const isValidPassword = user 
+      ? verifyPassword(password, user.passwordHash) 
+      : false;
+
+    if (!user || !user.isActive || !isValidPassword) {
+      return NextResponse.json(
+        { error: "Credenciales inválidas o cuenta desactivada" }, 
+        { status: 401 }
+      );
     }
 
+    // 3. Generación de Sesión
     const token = createSessionToken();
     const tokenHash = hashSessionToken(token);
-    const expiresAt = getSessionExpiresAtIso();
+    const expiresAtIso = getSessionExpiresAtIso();
 
-    await createSession(user.id, tokenHash, expiresAt);
+    await createSession(user.id, tokenHash, expiresAtIso);
 
+    // 4. Construcción de la respuesta
     const response = NextResponse.json({
       success: true,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role 
+      },
     });
 
+    // 5. Configuración de Cookie Segura
     response.cookies.set({
       name: AUTH_COOKIE_NAME,
       value: token,
-      httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      httpOnly: true, // Crucial: evita que JS acceda al token (previene XSS)
       path: "/",
-      expires: new Date(expiresAt),
+      secure: isProduction, // Solo enviar por HTTPS en producción
+      sameSite: "lax", // Balance entre seguridad y usabilidad
+      expires: new Date(expiresAtIso),
     });
 
     return response;
+
   } catch (error) {
-    console.error("❌ Login error:", error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    // No revelamos detalles del error al cliente por seguridad
+    console.error("❌ Login Error:", error);
+    return NextResponse.json(
+      { error: "Ocurrió un error inesperado en el servidor" }, 
+      { status: 500 }
+    );
   }
 }

@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+
+export type UserRole = 'admin' | 'equipo' | 'redactor' | 'coordinador' | 'animador';
 
 export type UserSession = {
   id: number;
   email: string;
-  role: 'admin' | 'equipo' | 'redactor' | 'coordinador' | 'animador';
+  role: UserRole;
   isActive: boolean;
 };
 
@@ -13,29 +15,47 @@ export function useSessionUser() {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function getUser() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        // Verificamos que la respuesta tenga los datos esperados
+        if (data && data.authenticated) {
+          setUser(data.user);
+        } else {
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setLoading(false);
+      } else {
+        setUser(null);
       }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-
-    getUser();
   }, []);
 
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    window.location.href = '/';
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      setUser(null);
+      // Usamos replace para que no puedan volver atrás al panel con el botón del navegador
+      window.location.replace('/');
+    }
   };
 
-  return { user, loading, logout };
+  return { 
+    user, 
+    loading, 
+    logout, 
+    isAdmin: user?.role === 'admin',
+    refreshSession: fetchUser 
+  };
 }
