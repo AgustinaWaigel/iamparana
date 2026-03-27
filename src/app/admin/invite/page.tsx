@@ -1,18 +1,8 @@
-'use client';
-
-import { useEffect } from 'react';
-
 export default function Invite() {
-  useEffect(() => {
-    import('netlify-identity-widget').then(netlifyIdentity => {
-      netlifyIdentity.init();
-    });
-  }, []);
-
   return (
     <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-      <h1>Aceptar Invitación</h1>
-      <p>Por favor, completá la creación de tu cuenta para acceder al CMS.</p>
+      <h1>Flujo de invitación desactivado</h1>
+      <p>Este proyecto ya no usa Netlify CMS ni Netlify Identity. Administrá contenido desde el nuevo panel en /admin.</p>
     </div>
   );
 }

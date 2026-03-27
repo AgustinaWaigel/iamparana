@@ -20,24 +20,23 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
   }, [busqueda, canciones]);
 
   return (
-    <div className="canciones-lista">
+    <div className="w-full max-w-2xl mx-auto">
       <input
         type="text"
-        placeholder="Buscar canciones..."
+        placeholder="🔍 Buscar canciones..."
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
-        className="busqueda-canciones"
+        className="w-full mb-6 px-4 py-3 border-2 border-brand-gold rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-brand-gold/50"
       />
 
       {cancionesFiltradas.length === 0 ? (
-        <p className="mensaje-vacio">No se encontraron canciones.</p>
+        <p className="text-center text-gray-500 text-lg p-6">No se encontraron canciones.</p>
       ) : (
-        <ul className="lista-canciones">
+        <ul className="space-y-2">
           {cancionesFiltradas.map((cancion) => (
-            <li key={cancion.slug} className="item-cancion">
-<Link href={`/animacion/canciones/${cancion.slug}`} className="link-cancion">
-
-                {cancion.title}
+            <li key={cancion.slug} className="py-2 px-4 hover:bg-brand-cream rounded transition-colors border-l-4 border-brand-gold">
+              <Link href={`/animacion/canciones/${cancion.slug}`} className="text-brand-brown font-semibold hover:text-brand-gold no-underline">
+                ♫ {cancion.title}
               </Link>
             </li>
           ))}

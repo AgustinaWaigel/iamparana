@@ -1,25 +1,64 @@
-// app/api/moderar/route.ts
+import { NextResponse } from "next/server";
+import { updateComentarioAprobado } from "@/db/comments-repository";
+import { requirePermission } from "@/api/admin/_shared/auth";
 
-import fs from 'fs';
-import path from 'path';
-import { NextResponse } from 'next/server';
+type ModerarBody = {
+  slug: string;
+  index: number;
+  aprobado: boolean;
+};
 
-const ADMIN_KEY = process.env.ADMIN_KEY;
+function errorResponse(status: number, error: string) {
+  return NextResponse.json({ error }, { status });
+}
+
+function isValidSlug(slug: unknown): slug is string {
+  return typeof slug === "string" && /^[a-z0-9-]+$/.test(slug);
+}
+
+function isValidIndex(index: unknown): index is number {
+  return typeof index === "number" && Number.isInteger(index) && index >= 0;
+}
+
+function isValidAprobado(aprobado: unknown): aprobado is boolean {
+  return typeof aprobado === "boolean";
+}
 
 export async function POST(req: Request) {
-  const auth = req.headers.get('authorization');
-  if (auth !== `Bearer ${ADMIN_KEY}`) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  const auth = await requirePermission(req, "comments.moderate");
+  if ("response" in auth) {
+    return auth.response;
   }
 
-  const { slug, index, aprobado } = await req.json();
-  const filePath = path.join(process.cwd(), 'data', 'comentarios', `${slug}.json`);
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return errorResponse(400, "Body invalido");
+  }
 
-  if (!fs.existsSync(filePath)) return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 });
+  if (typeof body !== "object" || body === null) {
+    return errorResponse(400, "Body invalido");
+  }
 
-  const comentarios = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-  comentarios[index].aprobado = aprobado;
-  fs.writeFileSync(filePath, JSON.stringify(comentarios, null, 2));
+  const { slug, index, aprobado } = body as Partial<ModerarBody>;
+
+  if (!isValidSlug(slug)) {
+    return errorResponse(400, "slug invalido");
+  }
+
+  if (!isValidIndex(index)) {
+    return errorResponse(400, "index invalido");
+  }
+
+  if (!isValidAprobado(aprobado)) {
+    return errorResponse(400, "aprobado invalido");
+  }
+
+  const result = await updateComentarioAprobado(slug, index, aprobado);
+  if (!result.ok) {
+    return errorResponse(result.status, result.error);
+  }
 
   return NextResponse.json({ success: true });
 }

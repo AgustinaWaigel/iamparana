@@ -48,11 +48,24 @@ export default function ChordTransposer() {
   }, [transposicion, usoAmericano]);
 
   return (
-    <div className="controles-acordes">
-      <button onClick={() => setTransposicion((prev) => (prev + 11) % 12)}>-Tono</button>
-      <button onClick={() => setTransposicion((prev) => (prev + 1) % 12)}>+Tono</button>
-      <button onClick={() => setUsoAmericano(!usoAmericano)}>
-        {usoAmericano ? "C » Do" : "Do » C"}
+    <div className="flex gap-2 justify-center p-4 bg-gray-100 rounded-lg flex-wrap">
+      <button 
+        onClick={() => setTransposicion((prev) => (prev + 11) % 12)}
+        className="px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors"
+      >
+        ♪ -Tono
+      </button>
+      <button 
+        onClick={() => setTransposicion((prev) => (prev + 1) % 12)}
+        className="px-4 py-2 bg-green-500 text-white rounded font-bold hover:bg-green-600 transition-colors"
+      >
+        ♪ +Tono
+      </button>
+      <button 
+        onClick={() => setUsoAmericano(!usoAmericano)}
+        className="px-4 py-2 bg-blue-500 text-white rounded font-bold hover:bg-blue-600 transition-colors"
+      >
+        {usoAmericano ? "♭ C » Do" : "♭ Do » C"}
       </button>
     </div>
   );

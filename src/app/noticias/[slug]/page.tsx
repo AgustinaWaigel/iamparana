@@ -2,6 +2,7 @@ import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/lib/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import Novedades from '@/components/novedades';
+import { notFound } from 'next/navigation';
 
 type Props = {
   params: Promise<{
@@ -10,13 +11,18 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const slugs = getAllNoticiasSlugs();
+  const slugs = await getAllNoticiasSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { frontmatter } = getNoticiaBySlug(params.slug);
+  const noticia = await getNoticiaBySlug(params.slug);
+  if (!noticia) {
+    return {};
+  }
+
+  const { frontmatter } = noticia;
 
   return {
     title: frontmatter.title,
@@ -32,7 +38,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function NoticiaPage(props: Props) {
   const params = await props.params;
-  const { frontmatter, content } = getNoticiaBySlug(params.slug);
+  const noticia = await getNoticiaBySlug(params.slug);
+  if (!noticia) {
+    notFound();
+  }
+
+  const { frontmatter, content } = noticia;
   const { title, date, description, image, cat, bajada } = frontmatter;
 
   return (

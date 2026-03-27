@@ -45,8 +45,8 @@ export default function DibujosPage() {
           </p>
         </div>
 
-        <div className="galeria-logos">
-          <div className="logo-item">
+        <div className="flex flex-wrap gap-8 justify-center py-8 px-4">
+          <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
             <Image
               src="/assets/multimedia/Cris-camargo.webp"
               alt="Cris Camargo"
@@ -56,14 +56,14 @@ export default function DibujosPage() {
             <a
               href="https://drive.google.com/drive/folders/1yzOjbr51Xu--V3C3Vfj2F10n_8Y8mAu-"
               target="_blank"
-              className="boton-descarga color-comunicacion"
+              className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
               rel="noopener noreferrer"
             >
               🔗 Ver Cris
             </a>
           </div>
 
-          <div className="logo-item">
+          <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
             <Image src="/assets/multimedia/fano.webp" 
             alt="Fano"
             width={800}
@@ -71,14 +71,14 @@ export default function DibujosPage() {
             <a
               href="https://drive.google.com/drive/folders/1u-0qXHkreinOLw63rgi4jVaqeGGZ4mA2"
               target="_blank"
-              className="boton-descarga color-comunicacion"
+              className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
               rel="noopener noreferrer"
             >
               🔗 Ver Fano
             </a>
           </div>
 
-          <div className="logo-item">
+          <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
             <Image
               src="/assets/multimedia/para colorear.webp"
               alt="Para colorear"
@@ -88,7 +88,7 @@ export default function DibujosPage() {
             <a
               href="https://drive.google.com/drive/folders/1p2etdR43EDnZqm_jkLefMc60jbANlgSG"
               target="_blank"
-              className="boton-descarga color-comunicacion"
+              className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
               rel="noopener noreferrer"
             >
               🔗 Ver para colorear
@@ -96,7 +96,7 @@ export default function DibujosPage() {
           </div>
         </div>
 
-        <section className="copyright-aviso">
+        <section className="text-center text-xs text-gray-600 px-4 py-8 max-w-4xl mx-auto italic">
           <p>
             © IAM Paraná. Todos los derechos reservados. Las imágenes, logotipos y
             dibujos expuestos en esta página son propiedad intelectual de sus
@@ -107,8 +107,8 @@ export default function DibujosPage() {
           </p>
         </section>
 
-        <div style={{ textAlign: "center", margin: "2rem 0" }}>
-          <Link href="/comunicacion" className="boton-pagina color-comunicacion">
+        <div className="text-center py-8">
+          <Link href="/comunicacion" className="inline-block px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-blue-400 text-white">
             ⬅ Volver a Comunicación
           </Link>
         </div>

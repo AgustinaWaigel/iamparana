@@ -1,20 +1,11 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
 import { NextResponse } from "next/server";
+import { listAgendaEventos } from "@/db/content-repository";
+
+export const revalidate = 60;
 
 export async function GET() {
   try {
-    const folder = path.join(process.cwd(), "contents", "agenda");
-    const filenames = fs.readdirSync(folder);
-
-    const eventos = filenames.map((filename) => {
-      const filePath = path.join(folder, filename);
-      const fileContent = fs.readFileSync(filePath, "utf8");
-      const { data } = matter(fileContent);
-      return data;
-    });
-
+    const eventos = await listAgendaEventos();
     return NextResponse.json(eventos);
   } catch (error) {
     console.error(error);

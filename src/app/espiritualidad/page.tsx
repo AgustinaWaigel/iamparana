@@ -28,19 +28,19 @@ export default function Espiritualidad() {
     <>
       <div id="header"></div>
 
-            <h2 className="barra-contextual color-espiritualidad-boton">Espiritualidad</h2>
+      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-600 text-white text-center">Espiritualidad</h2>
 
       <main className="seccion areas">
               <p className="subtitulo-descriptivo">
           En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM.
         </p>
-        <hr className="divisor" />
+        <hr className="my-4 border-gray-300" />
         <section className="seccion-oraciones">
           <h2 className="subtitulo-seccion titulo-espiritualidad">🕊️ Oraciones</h2>
-          <div className="acordeon">
-            <details>
-              <summary>Oración del Animador</summary>
-              <p>
+          <div className="flex flex-col gap-4 py-4">
+            <details className="group border-l-4 border-brand-gold pl-4 cursor-pointer">
+              <summary className="font-bold text-lg text-gray-800 hover:text-brand-brown list-none py-2 transition-colors">Oración del Animador</summary>
+              <p className="text-gray-700 mt-3 pl-2 leading-relaxed">
                 Señor Jesús, alabado seas porque has dado tu vida por la salvación
                 de todos los hombres y de todos los pueblos. Te doy gracias porque
                 me has escogido para ser tu apóstol y me has llamado a cultivar en
@@ -58,9 +58,9 @@ export default function Espiritualidad() {
               </p>
             </details>
 
-            <details>
-              <summary>Oración por los niños y adolescentes</summary>
-              <p>
+            <details className="group border-l-4 border-brand-gold pl-4 cursor-pointer">
+              <summary className="font-bold text-lg text-gray-800 hover:text-brand-brown list-none py-2 transition-colors">Oración por los niños y adolescentes</summary>
+              <p className="text-gray-700 mt-3 pl-2 leading-relaxed">
                 Señor Jesús, apenas estoy empezando la vida y Tú me llamas a una
                 misión. Bien sabes, Señor, que no tengo nada, solo deseos de
                 servirte. Dame tu sabiduría, tu amor, tu paz, y un corazón grande
@@ -75,9 +75,9 @@ export default function Espiritualidad() {
               </p>
             </details>
 
-            <details>
-              <summary>Oración a San Francisco Javier</summary>
-              <p>
+            <details className="group border-l-4 border-brand-gold pl-4 cursor-pointer">
+              <summary className="font-bold text-lg text-gray-800 hover:text-brand-brown list-none py-2 transition-colors">Oración a San Francisco Javier</summary>
+              <p className="text-gray-700 mt-3 pl-2 leading-relaxed">
                 Tú, que diste hasta el último suspiro por ser fiel a Jesús: danos
                 fortaleza en la fe. Tú, que dejaste nobleza y tierra por la causa
                 de Jesús: ayudanos a ser generosos. Tú, que viviste tan cerca del
@@ -91,9 +91,9 @@ export default function Espiritualidad() {
               </p>
             </details>
 
-            <details>
-              <summary>Oración a Santa Teresita</summary>
-              <p>
+            <details className="group border-l-4 border-brand-gold pl-4 cursor-pointer">
+              <summary className="font-bold text-lg text-gray-800 hover:text-brand-brown list-none py-2 transition-colors">Oración a Santa Teresita</summary>
+              <p className="text-gray-700 mt-3 pl-2 leading-relaxed">
                 ¡Santa Teresita del Niño Jesús, modelo de humildad, de confianza y
                 de amor! Desde lo alto de los cielos deshoja sobre nosotros esas
                 rosas que llevas en tus brazos: La rosa de la humildad, para que
@@ -109,12 +109,12 @@ export default function Espiritualidad() {
           </div>
         </section>
         
-        <hr className="divisor" />
+        <hr className="my-4 border-gray-300" />
         <section className="seccion-guiones">
           <h2 className="subtitulo-seccion titulo-espiritualidad">📜 Guiones</h2>
           <div className="listabotones">
             <a
-              className="botonpaginas color-espiritualidad-boton"
+              className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-gray-600 text-white shadow-md"
               href="https://drive.google.com/file/d/14pYMAo5rrhnTLPIzYa1PTZk1wN2QIzLa/view?usp=drive_link"
               target="_blank"
               rel="noopener noreferrer"
@@ -122,7 +122,7 @@ export default function Espiritualidad() {
               Guión 1 - Compromiso Animadores
             </a>
             <a
-              className="botonpaginas color-espiritualidad-boton"
+              className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-gray-600 text-white shadow-md"
               href="https://drive.google.com/file/d/1y9vGuTQX4IbW4ziqxQ0Z7aoK8pITlRvo/view?usp=drive_link"
               target="_blank"
               rel="noopener noreferrer"
@@ -130,7 +130,7 @@ export default function Espiritualidad() {
               Guión 2 - Entrega de la Pañoleta
             </a>
             <a
-              className="botonpaginas color-espiritualidad-boton"
+              className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-gray-600 text-white shadow-md"
               href="https://drive.google.com/file/d/1u20udvULUX_hnIs-bHkrr3Sov49pZWdx/view?usp=drive_link"
               target="_blank"
               rel="noopener noreferrer"
@@ -138,7 +138,7 @@ export default function Espiritualidad() {
               Guión 3 - Entrega del Carnet
             </a>
             <a
-              className="botonpaginas color-espiritualidad-boton"
+              className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-gray-600 text-white shadow-md"
               href="https://drive.google.com/file/d/1FjL5gUwJXq0Y3QYscq5x9Ne6HeWTFl2m/view?usp=drive_link"
               target="_blank"
               rel="noopener noreferrer"
@@ -146,7 +146,7 @@ export default function Espiritualidad() {
               Guión 4 - Entrega del Escudo
             </a>
             <a
-              className="botonpaginas color-espiritualidad-boton"
+              className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-gray-600 text-white shadow-md"
               href="https://drive.google.com/file/d/1vQcl8dJ-eVF196COHI1XZLObpvWw3x8i/view?usp=drive_link"
               target="_blank"
               rel="noopener noreferrer"
@@ -155,7 +155,7 @@ export default function Espiritualidad() {
             </a>
           </div>
         </section>
-                <hr className="divisor" />
+                <hr className="my-4 border-gray-300" />
       </main>
 
       <div id="footer"></div>

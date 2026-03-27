@@ -27,13 +27,13 @@ export const metadata: Metadata = {
 export default function juegosPage() {
   return (
     <>
-<h2 className='barra-contextual color-animacion-boton'>Juegos</h2>
+<h2 className='py-4 px-5 text-2xl font-bold bg-green-800/70 text-white'>Juegos</h2>
 
       <main className="seccion areas" style={{ padding: '2rem' }}>
         <p className="subtitulo-descriptivo">
          Acá vas a poder encontrar juegos de distintos tipos para realizar en tus encuentros, junto con libros con dinámicas y demás.
         </p>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-animacion  ">Videos de Juegos</h2>
           <div className="listabotones color ">
@@ -49,14 +49,14 @@ export default function juegosPage() {
                 href={`https://www.youtube.com/watch?v=${id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas color-animacion-boton"
+                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-green-800/70 text-white"
               >
                 {title}
               </a>
             ))}
           </div>
         </div>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-animacion">Libros con juegos y dinámicas</h2>
           <div className="listabotones">
@@ -69,13 +69,13 @@ export default function juegosPage() {
                 href={`https://drive.google.com/file/d/${id}/view?usp=sharing`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas color-animacion-boton"
+                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-green-800/70 text-white"
               >
                 {title}
               </a>
             ))}
           </div>
-          <hr className="divisor" />
+          <hr className="my-4 border-gray-300" />
         </div>
       </main>
     </>

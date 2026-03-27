@@ -1,0 +1,336 @@
+import "server-only";
+
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
+import { getTursoClient } from "@/db/turso";
+import { isTursoReadEnabled } from "@/lib/feature-flags";
+
+export interface NoticiaPreview {
+  slug: string;
+  title: string;
+  date: string;
+  description: string;
+  image: string;
+}
+
+export interface NoticiaDetail {
+  slug: string;
+  frontmatter: {
+    title: string;
+    date: string;
+    cat?: string;
+    bajada?: string;
+    description: string;
+    image: string;
+  };
+  content: string;
+}
+
+export interface CancionBasic {
+  title: string;
+  artist: string;
+  slug: string;
+}
+
+export interface CancionDetail {
+  title: string;
+  artist: string;
+  content: string;
+}
+
+export interface AgendaEvento {
+  fecha: string;
+  fecha_fin?: string;
+  evento: string;
+}
+
+export interface CarouselItem {
+  imageDesktop: string;
+  imageMobile: string;
+  alt: string;
+  link?: string;
+  buttonText?: string;
+  order?: number;
+}
+
+const contentRoot = path.join(process.cwd(), "contents");
+const noticiasDir = path.join(contentRoot, "noticias");
+const cancionesDir = path.join(contentRoot, "canciones");
+const agendaDir = path.join(contentRoot, "agenda");
+const carouselDir = path.join(contentRoot, "carousel");
+
+function asString(value: unknown, fallback = "") {
+  return typeof value === "string" ? value : fallback;
+}
+
+function asOptionalString(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
+
+function asNumber(value: unknown, fallback = 0) {
+  return typeof value === "number" ? value : fallback;
+}
+
+function isValidSlug(slug: string) {
+  return /^[a-z0-9-]+$/.test(slug);
+}
+
+function readNoticiasFromFs(): NoticiaPreview[] {
+  const filenames = fs.readdirSync(noticiasDir);
+  const noticias = filenames.map((filename) => {
+    const filePath = path.join(noticiasDir, filename);
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    const { data } = matter(fileContent);
+    return {
+      slug: filename.replace(/\.md$/, ""),
+      title: asString(data.title),
+      date: asString(data.date),
+      description: asString(data.description),
+      image: asString(data.image),
+    };
+  });
+
+  return noticias.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+function readNoticiaDetailFromFs(slug: string): NoticiaDetail | null {
+  if (!isValidSlug(slug)) {
+    return null;
+  }
+
+  const filePath = path.join(noticiasDir, `${slug}.md`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const fileContent = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(fileContent);
+
+  return {
+    slug,
+    frontmatter: {
+      title: asString(data.title),
+      date: asString(data.date),
+      cat: asOptionalString(data.cat),
+      bajada: asOptionalString(data.bajada),
+      description: asString(data.description),
+      image: asString(data.image),
+    },
+    content,
+  };
+}
+
+function readCancionesFromFs(): CancionBasic[] {
+  const files = fs.readdirSync(cancionesDir);
+  return files.map((filename) => {
+    const filePath = path.join(cancionesDir, filename);
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    const { data } = matter(fileContent);
+
+    return {
+      title: asString(data.title),
+      artist: asString(data.artist),
+      slug: filename.replace(/\.md$/, ""),
+    };
+  });
+}
+
+function readCancionDetailFromFs(slug: string): CancionDetail | null {
+  if (!isValidSlug(slug)) {
+    return null;
+  }
+
+  const filePath = path.join(cancionesDir, `${slug}.md`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  const fileContent = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(fileContent);
+
+  return {
+    title: asString(data.title),
+    artist: asString(data.artist),
+    content,
+  };
+}
+
+function readAgendaFromFs(): AgendaEvento[] {
+  const filenames = fs.readdirSync(agendaDir);
+  return filenames.map((filename) => {
+    const filePath = path.join(agendaDir, filename);
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    const { data } = matter(fileContent);
+
+    return {
+      fecha: asString(data.fecha),
+      fecha_fin: asOptionalString(data.fecha_fin),
+      evento: asString(data.evento),
+    };
+  });
+}
+
+function readCarouselFromFs(): CarouselItem[] {
+  const filenames = fs.readdirSync(carouselDir);
+  return filenames
+    .map((filename) => {
+      const filePath = path.join(carouselDir, filename);
+      const fileContent = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(fileContent);
+      return {
+        imageDesktop: asString(data.imageDesktop),
+        imageMobile: asString(data.imageMobile),
+        alt: asString(data.alt),
+        link: asOptionalString(data.link),
+        buttonText: asOptionalString(data.buttonText),
+        order: asNumber(data.order, 0),
+      };
+    })
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+export async function listNoticiasPreview(): Promise<NoticiaPreview[]> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client) {
+    try {
+      const result = await client.execute(
+        "SELECT slug, title, date, description, image FROM noticias ORDER BY date DESC"
+      );
+
+      return result.rows.map((row) => ({
+        slug: asString(row.slug),
+        title: asString(row.title),
+        date: asString(row.date),
+        description: asString(row.description),
+        image: asString(row.image),
+      }));
+    } catch (error) {
+      console.error("Turso read noticias failed, fallback to FS", error);
+    }
+  }
+
+  return readNoticiasFromFs();
+}
+
+export async function listNoticiaSlugs(): Promise<string[]> {
+  const noticias = await listNoticiasPreview();
+  return noticias.map((item) => item.slug);
+}
+
+export async function getNoticiaDetailBySlug(slug: string): Promise<NoticiaDetail | null> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client && isValidSlug(slug)) {
+    try {
+      const result = await client.execute({
+        sql: "SELECT slug, title, date, cat, bajada, description, image, content FROM noticias WHERE slug = ? LIMIT 1",
+        args: [slug],
+      });
+
+      if (result.rows.length > 0) {
+        const row = result.rows[0];
+        return {
+          slug: asString(row.slug),
+          frontmatter: {
+            title: asString(row.title),
+            date: asString(row.date),
+            cat: asOptionalString(row.cat),
+            bajada: asOptionalString(row.bajada),
+            description: asString(row.description),
+            image: asString(row.image),
+          },
+          content: asString(row.content),
+        };
+      }
+    } catch (error) {
+      console.error("Turso read noticia detail failed, fallback to FS", error);
+    }
+  }
+
+  return readNoticiaDetailFromFs(slug);
+}
+
+export async function listCancionesBasic(): Promise<CancionBasic[]> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client) {
+    try {
+      const result = await client.execute("SELECT slug, title, artist FROM canciones ORDER BY title ASC");
+      return result.rows.map((row) => ({
+        slug: asString(row.slug),
+        title: asString(row.title),
+        artist: asString(row.artist),
+      }));
+    } catch (error) {
+      console.error("Turso read canciones failed, fallback to FS", error);
+    }
+  }
+
+  return readCancionesFromFs();
+}
+
+export async function getCancionDetailBySlug(slug: string): Promise<CancionDetail | null> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client && isValidSlug(slug)) {
+    try {
+      const result = await client.execute({
+        sql: "SELECT title, artist, content FROM canciones WHERE slug = ? LIMIT 1",
+        args: [slug],
+      });
+
+      if (result.rows.length > 0) {
+        const row = result.rows[0];
+        return {
+          title: asString(row.title),
+          artist: asString(row.artist),
+          content: asString(row.content),
+        };
+      }
+    } catch (error) {
+      console.error("Turso read cancion detail failed, fallback to FS", error);
+    }
+  }
+
+  return readCancionDetailFromFs(slug);
+}
+
+export async function listAgendaEventos(): Promise<AgendaEvento[]> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client) {
+    try {
+      const result = await client.execute("SELECT fecha, fecha_fin, evento FROM agenda ORDER BY fecha ASC");
+      return result.rows.map((row) => ({
+        fecha: asString(row.fecha),
+        fecha_fin: asOptionalString(row.fecha_fin),
+        evento: asString(row.evento),
+      }));
+    } catch (error) {
+      console.error("Turso read agenda failed, fallback to FS", error);
+    }
+  }
+
+  return readAgendaFromFs();
+}
+
+export async function listCarouselItems(): Promise<CarouselItem[]> {
+  const client = getTursoClient();
+  if (isTursoReadEnabled && client) {
+    try {
+      const result = await client.execute(
+        "SELECT imageDesktop, imageMobile, alt, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
+      );
+
+      return result.rows.map((row) => ({
+        imageDesktop: asString(row.imageDesktop),
+        imageMobile: asString(row.imageMobile),
+        alt: asString(row.alt),
+        link: asOptionalString(row.link),
+        buttonText: asOptionalString(row.buttonText),
+        order: asNumber(row.order),
+      }));
+    } catch (error) {
+      console.error("Turso read carousel failed, fallback to FS", error);
+    }
+  }
+
+  return readCarouselFromFs();
+}

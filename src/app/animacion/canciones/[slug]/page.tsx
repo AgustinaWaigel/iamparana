@@ -1,18 +1,8 @@
-import path from 'path';
-import fs from 'fs/promises';
-import matter from 'gray-matter';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { marked, Renderer } from 'marked';
 import ChordTransposer from '@/components/chordtransposer';
-
-const cancionesDir = path.join(process.cwd(), 'contents/canciones');
-
-interface Cancion {
-  title: string;
-  artist: string;
-  content: string;
-}
+import { getAllCanciones, getCancionBySlug } from '@/lib/canciones';
 
 const renderer = new Renderer();
 renderer.code = function ({ text, lang, escaped }: { text: string; lang?: string; escaped?: boolean }): string {
@@ -23,17 +13,6 @@ renderer.code = function ({ text, lang, escaped }: { text: string; lang?: string
   return `<pre><code class="language-${lang}">${safeCode}</code></pre>`;
 };
 marked.setOptions({ renderer });
-
-async function getCancionBySlug(slug: string): Promise<Cancion | null> {
-  try {
-    const filePath = path.join(cancionesDir, `${slug}.md`);
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    const { data, content } = matter(fileContent);
-    return { title: data.title, artist: data.artist, content };
-  } catch {
-    return null;
-  }
-}
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
@@ -90,10 +69,8 @@ function parseAcordes(content: string): string {
 }
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const files = await fs.readdir(cancionesDir);
-  return files.map((filename) => ({
-    slug: filename.replace(/\.md$/, ''),
-  }));
+  const canciones = await getAllCanciones();
+  return canciones.map((cancion) => ({ slug: cancion.slug }));
 }
 
 // Acá está el cambio clave en el tipado de props, nada de any ni PageProps raros

@@ -25,26 +25,33 @@ export const metadata: Metadata = {
 export default function AnimacionPage() {
   return (
     <>
-            <h2 className="barra-contextual color-animacion-boton">Animación</h2>
+      <div id="header"></div>
+      <h2 className="mt-20 py-8 px-5 bg-gradient-to-r from-green-800 to-green-700 text-white text-3xl font-bold text-center">Animación</h2>
 
-      <main className="seccion areas">
-        <p className="subtitulo-descriptivo">
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <p className="text-lg text-gray-700 mb-6">
           Cantar, bailar, jugar. Parte de nuestro día a día en la IAM es esto, por eso venimos a ayudarte con recursos
           para tus encuentros, y con el día a día. Acá vas a poder encontrar las canciones que cantamos siempre en la IAM
           y también muchos juegos y dinámicas que te van a servir. ¡A jugar y a bailar!
         </p>
-        <hr className="divisor" />
-        <div className="listabotones">
-          <a href="/animacion/juegos" className="botonpaginas color-animacion-boton">
+        <hr className="my-4 border-gray-300" />
+        <div className="flex flex-wrap gap-5 justify-center">
+          <Link 
+            href="/animacion/juegos" 
+            className="px-10 py-3 bg-green-800 text-white rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline shadow-md"
+          >
             Juegos
-          </a>
-                    <Link href="/animacion/canciones/" className="botonpaginas color-animacion-boton">
+          </Link>
+          <Link 
+            href="/animacion/canciones/" 
+            className="px-10 py-3 bg-green-800 text-white rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline shadow-md"
+          >
             Canciones
-            </Link>
-                          <hr className="divisor" />
+          </Link>
         </div>
+        <hr className="my-4 border-gray-300" />
       </main>
-
+      <div id="footer"></div>
     </>
   );
 }

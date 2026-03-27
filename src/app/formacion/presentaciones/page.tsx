@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default function PresentacionesPage() {
   return (
     <>
-<h2 className='barra-contextual color-formacion-boton'>Presentaciones</h2>
+<h2 className='py-4 px-5 text-2xl font-bold bg-yellow-300 text-black'>Presentaciones</h2>
 
       <main className="seccion areas" style={{ padding: '2rem' }}>
         <p className="subtitulo-descriptivo">
@@ -34,7 +34,7 @@ export default function PresentacionesPage() {
           que estuvimos viendo. Es muy importante estar siempre al tanto. <br />
           <strong>¡Misioneros... A estudiar!</strong>
         </p>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-formacion ">Taller de Iniciación</h2>
           <div className="listabotones ">
@@ -52,14 +52,14 @@ export default function PresentacionesPage() {
                 href={`https://drive.google.com/file/d/${id}/view?usp=sharing`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas color-formacion-boton"
+                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-yellow-300 text-black"
               >
                 {title}
               </a>
             ))}
           </div>
         </div>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-formacion">Taller de Profundización</h2>
           <div className="listabotones">
@@ -77,14 +77,14 @@ export default function PresentacionesPage() {
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas color-formacion-boton"
+                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-yellow-300 text-black"
               >
                 {title}
               </a>
             ))}
           </div>
         </div>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-formacion">Talleres Compartidos</h2>
           <div className="listabotones">
@@ -100,13 +100,13 @@ export default function PresentacionesPage() {
                 href={`https://drive.google.com/file/d/${id}/view?usp=sharing`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas color-formacion-boton"
+                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-yellow-300 text-black"
               >
                 {title}
               </a>
             ))}
           </div>
-          <hr className="divisor" />
+          <hr className="my-4 border-gray-300" />
         </div>
       </main>
     </>

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CancionesPage() {
-  const canciones = getAllCanciones();
+  const canciones = await getAllCanciones();
 
   return (
     <div className="seccion-areas">

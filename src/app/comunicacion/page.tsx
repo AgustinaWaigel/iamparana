@@ -35,7 +35,7 @@ export default function Comunicacion() {
     <>
       <div id="header"></div>
 
-            <h2 className="barra-contextual color-comunicacion-boton">Comunicación</h2>
+      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 text-white text-center">Comunicación</h2>
       <main className="seccion areas">
         <p className="subtitulo-descriptivo">
           Aca vas a poder encontrar
@@ -44,15 +44,15 @@ export default function Comunicacion() {
         </p>
 
         <div className="listabotones">
-          <Link href="/comunicacion/logos" className="botonpaginas color-comunicacion-boton">
+          <Link href="/comunicacion/logos" className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-blue-400 text-white shadow-md">
             Logos
           </Link>
-          <Link href="/comunicacion/dibujos" className="botonpaginas color-comunicacion-boton">
+          <Link href="/comunicacion/dibujos" className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-blue-400 text-white shadow-md">
             Dibujos
           </Link>
         </div>
-        <hr className="divisor" />
-        <section className="copyright-aviso">
+        <hr className="my-4 border-gray-300" />
+        <section className="text-center text-xs text-gray-600 px-4 py-8 max-w-4xl mx-auto italic">
           <p>
             © IAM Paraná. Todos los derechos reservados. Las imágenes, logotipos y
             dibujos expuestos en esta página son propiedad intelectual de sus

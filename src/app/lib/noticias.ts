@@ -1,21 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+import { getNoticiaDetailBySlug, listNoticiaSlugs } from "@/db/content-repository";
 
-const noticiasDir = path.join(process.cwd(), 'contents', 'noticias');
-
-export function getAllNoticiasSlugs() {
-  return fs.readdirSync(noticiasDir).map((file) => file.replace(/\.md$/, ''));
+export async function getAllNoticiasSlugs() {
+  return listNoticiaSlugs();
 }
 
-export function getNoticiaBySlug(slug: string) {
-  const filePath = path.join(noticiasDir, `${slug}.md`);
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const { data, content } = matter(fileContent);
-
-  return {
-    slug,
-    frontmatter: data,
-    content,
-  };
+export async function getNoticiaBySlug(slug: string) {
+  return getNoticiaDetailBySlug(slug);
 }

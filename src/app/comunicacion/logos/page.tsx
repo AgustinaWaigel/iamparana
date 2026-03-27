@@ -43,8 +43,8 @@ export default function LogosPage() {
       </div>
 
 
-      <div className="galeria-logos">
-        <div className="logo-item">
+      <div className="flex flex-wrap gap-8 justify-center py-8 px-4">
+        <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
           <Image
             src="/assets/multimedia/logo año jubilar.png"
             alt="Logo Año Jubilar"
@@ -54,13 +54,13 @@ export default function LogosPage() {
           <a
             href="/assets/multimedia/logo año jubilar.png"
             download
-            className="boton-descarga"
+            className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
           >
             ⬇️ Descargar
           </a>
         </div>
 
-        <div className="logo-item">
+        <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
           <Image
             src="/assets/multimedia/logo-iam-arq-parana.png"
             alt="Logo IAM Paraná"
@@ -70,13 +70,13 @@ export default function LogosPage() {
           <a
             href="/assets/multimedia/logo-iam-arq-parana.png"
             download
-            className="boton-descarga"
+            className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
           >
             ⬇️ Descargar
           </a>
         </div>
 
-        <div className="logo-item">
+        <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
           <Image
             src="/assets/multimedia/logo iam nuevo redondo.png"
             alt="Logo IAM Redondo"
@@ -86,13 +86,13 @@ export default function LogosPage() {
           <a
             href="/assets/multimedia/logo iam nuevo redondo.png"
             download
-            className="boton-descarga"
+            className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
           >
             ⬇️ Descargar
           </a>
         </div>
 
-        <div className="logo-item">
+        <div className="bg-white rounded-2xl shadow-md p-4 w-60 flex flex-col justify-between hover:scale-105 transition-transform duration-300">
           <Image
             src="/assets/multimedia/logo año diocesano.png"
             alt="Logo Año Diocesano"
@@ -102,14 +102,14 @@ export default function LogosPage() {
           <a
             href="/assets/multimedia/logo año diocesano.png"
             download
-            className="boton-descarga"
+            className="mt-4 inline-flex items-center justify-center gap-2 bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-md hover:bg-yellow-400 hover:-translate-y-0.5 hover:shadow-lg transition-all no-underline"
           >
             ⬇️ Descargar
           </a>
         </div>
       </div>
 
-      <section className="copyright-aviso">
+      <section className="text-center text-xs text-gray-600 px-4 py-8 max-w-4xl mx-auto italic">
         <p>
           © IAM Paraná. Todos los derechos reservados. Las imágenes, logotipos y
           dibujos expuestos en esta página son propiedad intelectual de sus

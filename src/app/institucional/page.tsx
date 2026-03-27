@@ -27,12 +27,14 @@ export const metadata: Metadata = {
 export default function juegosPage() {
   return (
     <>
+      <div id="header"></div>
+      <h2 className='mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-black to-gray-800 text-white text-center'>Institucional</h2>
       <main className="seccion areas" style={{ padding: '2rem' }}>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <p className="subtitulo-descriptivo">
          Esta es la sección donde vas a poder encontrar protocolos y demás material que es muy importante en nuestra tarea como animadores.
         </p>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-institucional">Protocolos</h2>
           <div className="listabotones">
@@ -45,15 +47,16 @@ export default function juegosPage() {
                 href={`https://drive.google.com/file/d/${id}/view`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="botonpaginas2 color-institucional"
+                className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-black text-white shadow-md"
               >
                 {title}
               </a>
             ))}
           </div>
         </div>
-<hr className="divisor" />
+<hr className="my-4 border-gray-300" />
       </main>
+      <div id="footer"></div>
     </>
   );
 }

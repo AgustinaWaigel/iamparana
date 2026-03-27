@@ -25,7 +25,7 @@ export default function Logistica() {
   return (
     <>
       <div id="header"></div>
-            <h2 className="barra-contextual color-logistica-boton">Logística</h2>
+      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-red-600 to-red-500 text-white text-center">Logística</h2>
 
       <main className="seccion areas">
         <p className="subtitulo-descriptivo">
@@ -51,6 +51,7 @@ export default function Logistica() {
         />
                 <hr className="divisor" />
       </main>
+      <div id="footer"></div>
     </>
   );
 }
