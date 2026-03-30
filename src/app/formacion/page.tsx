@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { FormacionClient } from '@/components/formacion-client';
 
 export const metadata: Metadata = {
   title: 'Formación',
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default function FormacionPage() {
-  return (
+  const content = (
     <>
       <div id="header"></div>
       <h2 className="mt-16 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-400 text-black text-center">Formación</h2>
@@ -125,7 +126,7 @@ export default function FormacionPage() {
         {/* Inspirational Quote */}
         <section className="border-l-8 border-yellow-300 bg-gradient-to-r from-yellow-50 to-transparent p-8 rounded-lg">
           <p className="text-3xl font-bold text-brand-brown italic">
-            "Mi caminito es el camino de una infancia espiritual, el camino de la confianza y de la entrega absoluta."
+            &ldquo;Mi caminito es el camino de una infancia espiritual, el camino de la confianza y de la entrega absoluta.&rdquo;
           </p>
           <p className="text-xl text-gray-700 mt-4 font-semibold">– Santa Teresita</p>
         </section>
@@ -133,4 +134,6 @@ export default function FormacionPage() {
       <div id="footer"></div>
     </>
   );
+
+  return <FormacionClient>{content}</FormacionClient>;
 }

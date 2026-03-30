@@ -23,8 +23,8 @@ function isValidCarouselPayload(value: unknown): value is CarouselInput {
 }
 
 export async function GET(req: Request) {
-  const auth = await requirePermission(req, "content.read");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.read");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   try {
     const items = await listCarouselAdmin();
@@ -36,8 +36,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePermission(req, "content.write");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.write");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   let body: unknown;
   try {

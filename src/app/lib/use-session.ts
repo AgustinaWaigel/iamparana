@@ -20,9 +20,9 @@ export function useSessionUser() {
       const res = await fetch('/api/auth/me', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        // Verificamos que la respuesta tenga los datos esperados
-        if (data && data.authenticated) {
-          setUser(data.user);
+        // La respuesta es directamente el objeto de usuario
+        if (data && typeof data === 'object' && 'id' in data) {
+          setUser(data as UserSession);
         } else {
           setUser(null);
         }

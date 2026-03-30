@@ -18,3 +18,4 @@ export default async function Agenda() {
   const eventosFuturos = data.filter((e) => new Date(e.fecha) > limite);
 
   return <AgendaClient eventosVisibles={eventosVisibles} eventosFuturos={eventosFuturos} />;
+}

@@ -207,3 +207,107 @@ export async function deleteCarouselAdmin(id: number) {
     args: [id],
   });
 }
+
+// DOCUMENTOS
+
+export type DocumentInput = {
+  section: string;
+  title: string;
+  description?: string;
+  googleDriveId: string;
+  googleDriveUrl?: string;
+  fileSize?: number;
+  fileType?: string;
+  uploadedByUserId: number;
+};
+
+export async function saveDocument(data: DocumentInput) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "INSERT INTO documents (section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    args: [
+      data.section,
+      data.title,
+      data.description ?? null,
+      data.googleDriveId,
+      data.googleDriveUrl ?? null,
+      data.fileSize ?? null,
+      data.fileType ?? null,
+      data.uploadedByUserId,
+    ],
+  });
+}
+
+export async function getDocumentsBySection(section: string) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE section = ? ORDER BY created_at DESC",
+    args: [section],
+  });
+  return result.rows;
+}
+
+export async function getDocument(id: number) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE id = ? LIMIT 1",
+    args: [id],
+  });
+  return result.rows[0] ?? null;
+}
+
+export async function updateDocument(id: number, data: Partial<DocumentInput>) {
+  const client = clientOrThrow();
+  
+  // Construir dinámicamente el SET clause
+  const setClauses: string[] = [];
+  const values: any[] = [];
+  
+  if (data.title !== undefined) {
+    setClauses.push("title = ?");
+    values.push(data.title);
+  }
+  if (data.description !== undefined) {
+    setClauses.push("description = ?");
+    values.push(data.description);
+  }
+  if (data.googleDriveUrl !== undefined) {
+    setClauses.push("google_drive_url = ?");
+    values.push(data.googleDriveUrl);
+  }
+  
+  setClauses.push("updated_at = CURRENT_TIMESTAMP");
+  values.push(id);
+  
+  await client.execute({
+    sql: `UPDATE documents SET ${setClauses.join(", ")} WHERE id = ?`,
+    args: values,
+  });
+}
+
+export async function deleteDocument(id: number) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "DELETE FROM documents WHERE id = ?",
+    args: [id],
+  });
+}
+
+// GOOGLE DRIVE CONFIG
+
+export async function getGoogleDriveConfig(section: string) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, section, folder_id, folder_name FROM google_drive_config WHERE section = ? LIMIT 1",
+    args: [section],
+  });
+  return result.rows[0] ?? null;
+}
+
+export async function updateGoogleDriveConfig(section: string, folderId: string, folderName?: string) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "UPDATE google_drive_config SET folder_id = ?, folder_name = ?, updated_at = CURRENT_TIMESTAMP WHERE section = ?",
+    args: [folderId, folderName ?? section, section],
+  });
+}

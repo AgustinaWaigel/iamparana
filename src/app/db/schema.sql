@@ -95,3 +95,51 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
 
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_token ON auth_sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at);
+
+-- Tabla para almacenar referencias a documentos/archivos en Google Drive
+CREATE TABLE IF NOT EXISTS documents (
+  id INTEGER PRIMARY KEY,
+  section TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  google_drive_id TEXT NOT NULL UNIQUE,
+  google_drive_url TEXT,
+  file_size INTEGER,
+  file_type TEXT,
+  uploaded_by_user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (uploaded_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_documents_section ON documents(section);
+CREATE INDEX IF NOT EXISTS idx_documents_created_at ON documents(created_at DESC);
+
+-- Tabla para almacenar configuración de Google Drive por sección
+CREATE TABLE IF NOT EXISTS google_drive_config (
+  id INTEGER PRIMARY KEY,
+  section TEXT UNIQUE NOT NULL,
+  folder_id TEXT NOT NULL,
+  folder_name TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO google_drive_config (section, folder_id, folder_name) VALUES
+  ('noticias', '', 'Noticias'),
+  ('formacion', '', 'Formación'),
+  ('comunicacion', '', 'Comunicación'),
+  ('espiritualidad', '', 'Espiritualidad'),
+  ('institucional', '', 'Institucional'),
+  ('logistica', '', 'Logística');
+
+-- Tabla para almacenar URLs de imagenes de Google Drive (para noticias, carousel, etc)
+CREATE TABLE IF NOT EXISTS media_urls (
+  id INTEGER PRIMARY KEY,
+  document_id INTEGER,
+  original_filename TEXT NOT NULL,
+  mime_type TEXT,
+  google_drive_url TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);

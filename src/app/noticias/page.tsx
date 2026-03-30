@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { fetchAPI } from "@/lib/api-client";
+import { NoticiasClient } from "@/components/noticias-client";
 
 interface Noticia {
   slug: string;
@@ -13,7 +14,7 @@ interface Noticia {
 export default async function Noticias() {
   const noticias = await fetchAPI<Noticia>("/api/noticias");
 
-  return (
+  const content = (
     <>
       <div id="header"></div>
       <main className="mt-20">
@@ -41,4 +42,6 @@ export default async function Noticias() {
       <div id="footer"></div>
     </>
   );
+
+  return <NoticiasClient>{content}</NoticiasClient>;
 }

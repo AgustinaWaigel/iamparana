@@ -22,8 +22,8 @@ function isValidUpdatePayload(value: unknown): value is UpdateNoticiaInput {
 }
 
 export async function GET(req: Request, context: { params: Promise<{ slug: string }> }) {
-  const auth = await requirePermission(req, "content.read");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.read");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const { slug } = await context.params;
   if (!isValidSlug(slug)) {
@@ -43,8 +43,8 @@ export async function GET(req: Request, context: { params: Promise<{ slug: strin
 }
 
 export async function PUT(req: Request, context: { params: Promise<{ slug: string }> }) {
-  const auth = await requirePermission(req, "content.write");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.write");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const { slug } = await context.params;
   if (!isValidSlug(slug)) {
@@ -72,8 +72,8 @@ export async function PUT(req: Request, context: { params: Promise<{ slug: strin
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ slug: string }> }) {
-  const auth = await requirePermission(req, "content.delete");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.delete");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const { slug } = await context.params;
   if (!isValidSlug(slug)) {

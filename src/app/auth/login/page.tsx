@@ -16,7 +16,8 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/me');
       const data = await res.json();
-      if (data?.authenticated) {
+      // Verificar que el endpoint devolvió un usuario válido (estructura plana)
+      if (data && typeof data === 'object' && 'id' in data) {
         router.replace('/admin');
       }
     } catch (err) {

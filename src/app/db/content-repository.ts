@@ -334,3 +334,42 @@ export async function listCarouselItems(): Promise<CarouselItem[]> {
 
   return readCarouselFromFs();
 }
+
+export async function saveContent(
+  seccion: string,
+  titulo: string,
+  contenido: string
+): Promise<void> {
+  const client = getTursoClient();
+  if (!client) {
+    throw new Error("Database client not available");
+  }
+
+  try {
+    // Crear tabla si no existe
+    await client.execute(
+      `CREATE TABLE IF NOT EXISTS custom_content (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seccion TEXT NOT NULL,
+        titulo TEXT,
+        contenido TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`
+    );
+
+    // Insertar o actualizar contenido
+    await client.execute(
+      `INSERT INTO custom_content (seccion, titulo, contenido, updated_at)
+       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(seccion) DO UPDATE SET 
+       titulo = excluded.titulo,
+       contenido = excluded.contenido,
+       updated_at = CURRENT_TIMESTAMP`,
+      [seccion, titulo, contenido]
+    );
+  } catch (error) {
+    console.error("Error saving content to Turso:", error);
+    throw error;
+  }
+}

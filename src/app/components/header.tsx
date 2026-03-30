@@ -67,11 +67,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 z-[100] w-full bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 py-2 text-white shadow-lg md:px-8">
+    <header className="fixed top-0 z-[100] w-full h-20 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 py-2 text-white shadow-lg md:px-8">
       <div className="mx-auto flex w-full items-center justify-stretch md:justify-between">
         <div className="flex items-center">
           <Link href="/">
-            <Image src="/assets/header/LOGOIAMPNA.svg" alt="Logo" width={150} height={50} />
+            <Image src="/assets/header/LOGOIAMPNA.svg" alt="Logo" width={140} height={45} priority />
           </Link>
         </div>
 

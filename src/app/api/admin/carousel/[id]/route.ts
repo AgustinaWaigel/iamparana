@@ -24,8 +24,8 @@ function isValidCarouselPayload(value: unknown): value is CarouselInput {
 }
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requirePermission(req, "content.read");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.read");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const params = await context.params;
   const id = parseId(params.id);
@@ -46,8 +46,8 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requirePermission(req, "content.write");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.write");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const params = await context.params;
   const id = parseId(params.id);
@@ -76,8 +76,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requirePermission(req, "content.delete");
-  if ("response" in auth) return auth.response;
+  const auth = await requirePermission("content.delete");
+  if ("errorResponse" in auth) return auth.errorResponse;
 
   const params = await context.params;
   const id = parseId(params.id);

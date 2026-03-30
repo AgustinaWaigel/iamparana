@@ -13,21 +13,20 @@ export async function GET(req: Request) {
     const cookieHeader = req.headers.get("cookie") ?? "";
     const token = getCookieValue(cookieHeader, AUTH_COOKIE_NAME);
     if (!token) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json(null, { status: 401 });
     }
 
     const sessionUser = await getSessionUserByTokenHash(hashSessionToken(token));
     if (!sessionUser || !sessionUser.isActive) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json(null, { status: 401 });
     }
 
     return NextResponse.json({
-      authenticated: true,
-      user: {
-        id: sessionUser.id,
-        email: sessionUser.email,
-        role: sessionUser.role,
-      },
+      id: sessionUser.id,
+      email: sessionUser.email,
+      nombre: sessionUser.nombre || sessionUser.email,
+      role: sessionUser.role,
+      isActive: sessionUser.isActive,
     });
   } catch (error) {
     console.error(error);

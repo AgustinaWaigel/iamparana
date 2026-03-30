@@ -25,9 +25,9 @@ function isValidAprobado(aprobado: unknown): aprobado is boolean {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePermission(req, "comments.moderate");
-  if ("response" in auth) {
-    return auth.response;
+  const auth = await requirePermission("comments.moderate");
+  if ("errorResponse" in auth) {
+    return auth.errorResponse;
   }
 
   let body: unknown;
