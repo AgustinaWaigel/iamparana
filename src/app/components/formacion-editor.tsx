@@ -14,7 +14,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
-    tipo: 'presentacion', // presentacion, temario, carta, otro
+    tipo: 'formacion', // presentacion, temario, carta, otro
   });
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
@@ -74,7 +74,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
       setFormData({
         titulo: '',
         descripcion: '',
-        tipo: 'presentacion',
+        tipo: 'formacion',
       });
       setFile(null);
       setIsOpen(false);
@@ -100,7 +100,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="sticky top-0 bg-yellow-400 text-black p-6 flex justify-between items-center">
@@ -171,7 +171,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 >
-                  <option value="presentacion">Presentación</option>
+                  <option value="formacion">Presentación</option>
                   <option value="temario">Temario</option>
                   <option value="carta">Carta</option>
                   <option value="otro">Otro</option>
