@@ -3,8 +3,8 @@ import {
   CancionInput,
   createCancionAdmin,
   listCancionesAdmin,
-} from "@/db/admin-repository";
-import { badRequest, requirePermission, isValidSlug, serverError } from "@/api/admin/_shared/auth";
+} from "@/app/db/admin-repository";
+import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidCancionPayload(value: unknown): value is CancionInput {
   if (typeof value !== "object" || value === null) return false;

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requirePermission, serverError, badRequest } from '@/api/admin/_shared/auth';
-import { saveContent } from '@/db/content-repository';
+import { requirePermission, serverError, badRequest } from '@/app/api/admin/_shared/auth';
+import { saveContent } from '@/app/db/content-repository';
 
 export async function POST(req: Request) {
   const auth = await requirePermission('content.write');

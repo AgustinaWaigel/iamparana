@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { countUsers, createUser, UserRole } from "@/db/auth-repository";
-import { hashPassword } from "@/lib/auth-security";
+import { countUsers, createUser, UserRole } from "@/app/db/auth-repository";
+import { hashPassword } from "@/app/lib/auth-security";
 
 const ADMIN_KEY = process.env.ADMIN_KEY;
 

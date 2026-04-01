@@ -3,8 +3,8 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getTursoClient } from "@/db/turso";
-import { isTursoReadEnabled } from "@/lib/feature-flags";
+import { getTursoClient } from "@/app/db/turso";
+import { isTursoReadEnabled } from "@/app/lib/feature-flags";
 
 export interface NoticiaPreview {
   slug: string;

@@ -2,7 +2,7 @@
 
 import { useCallback, ReactNode } from 'react';
 import { ContenidoEditor } from './contenido-editor';
-import { useSession } from '@/hooks/use-session';
+import { useSession } from '@/app/hooks/use-session';
 
 interface InstitucionalClientProps {
   children: ReactNode;

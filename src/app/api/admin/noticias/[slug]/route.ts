@@ -4,8 +4,8 @@ import {
   getNoticiaAdmin,
   NoticiaInput,
   updateNoticiaAdmin,
-} from "@/db/admin-repository";
-import { badRequest, requirePermission, isValidSlug, serverError } from "@/api/admin/_shared/auth";
+} from "@/app/db/admin-repository";
+import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 type UpdateNoticiaInput = Omit<NoticiaInput, "slug">;
 

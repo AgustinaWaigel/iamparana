@@ -2,10 +2,10 @@ import "server-only";
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-import { getSessionUserByTokenHash } from '@/db/auth-repository';
-import { AUTH_COOKIE_NAME, hashSessionToken } from '@/lib/auth-security';
+import Header from '@/app/components/header';
+import Footer from '@/app/components/footer';
+import { getSessionUserByTokenHash } from '@/app/db/auth-repository';
+import { AUTH_COOKIE_NAME, hashSessionToken } from '@/app/lib/auth-security';
 
 // Este componente protege las rutas /admin/* y valida que el usuario sea admin
 export default async function AdminLayout({

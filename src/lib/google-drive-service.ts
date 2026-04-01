@@ -1,8 +1,7 @@
-'use server';
-
 import { google } from 'googleapis';
 import { Readable } from 'stream';
 
+// 1. Configuración de Variables de Entorno (OAuth2)
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
@@ -18,10 +17,10 @@ interface UploadResult {
   error?: string;
 }
 
-// Obtener cliente autenticado
+// 2. Obtener cliente autenticado mediante OAuth2
 function getDriveClient() {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
-    throw new Error('Google Drive credentials not configured');
+    throw new Error('Credenciales de Google Drive (OAuth2) no configuradas en .env');
   }
 
   const oauth2Client = new google.auth.OAuth2(
@@ -36,12 +35,11 @@ function getDriveClient() {
   return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
-// Crear o obtener carpeta
+// 3. Crear o obtener carpeta (Busca en tu unidad personal)
 export async function getOrCreateFolder(folderName: string, parentFolderId?: string): Promise<string> {
   const drive = getDriveClient();
 
   try {
-    // Buscar carpeta existente
     const response = await drive.files.list({
       q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false${
         parentFolderId ? ` and '${parentFolderId}' in parents` : ''
@@ -55,7 +53,6 @@ export async function getOrCreateFolder(folderName: string, parentFolderId?: str
       return response.data.files[0].id!;
     }
 
-    // Crear nueva carpeta si no existe
     const createResponse = await drive.files.create({
       requestBody: {
         name: folderName,
@@ -66,17 +63,17 @@ export async function getOrCreateFolder(folderName: string, parentFolderId?: str
     });
 
     if (!createResponse.data.id) {
-      throw new Error('Failed to create folder');
+      throw new Error('Error al crear la carpeta en Drive');
     }
 
     return createResponse.data.id;
   } catch (error) {
-    console.error('Error creating/getting folder:', error);
+    console.error('Error en getOrCreateFolder:', error);
     throw error;
   }
 }
 
-// Subir archivo a Google Drive
+// 4. Subir archivo a Google Drive
 export async function uploadFileToDrive(
   file: Buffer | File,
   fileName: string,
@@ -84,42 +81,42 @@ export async function uploadFileToDrive(
   mimeType: string
 ): Promise<UploadResult> {
   try {
-    // Validar tamaño
-    const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
+    // Convertir a Buffer de forma segura para Next.js
+    let fileBuffer: Buffer;
+    if (file instanceof File) {
+      const arrayBuffer = await file.arrayBuffer();
+      fileBuffer = Buffer.from(arrayBuffer);
+    } else {
+      fileBuffer = file;
+    }
+
     if (fileBuffer.length > MAX_FILE_SIZE) {
       return {
         success: false,
-        error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`,
+        error: `El archivo excede el límite de ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
       };
     }
 
     const drive = getDriveClient();
 
-    const fileMetadata = {
-      name: fileName,
-      mimeType: mimeType,
-      parents: [parentFolderId],
-    };
-
-    const media = {
-      mimeType: mimeType,
-      body: Readable.from(fileBuffer),
-    };
-
     const response = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
+      requestBody: {
+        name: fileName,
+        mimeType: mimeType,
+        parents: [parentFolderId],
+      },
+      media: {
+        mimeType: mimeType,
+        body: Readable.from([fileBuffer]),
+      },
       fields: 'id, name, size, mimeType, webViewLink, webContentLink',
     });
 
     if (!response.data.id) {
-      return {
-        success: false,
-        error: 'Failed to upload file',
-      };
+      return { success: false, error: 'No se recibió ID del archivo' };
     }
 
-    // Hacer el archivo público
+    // Intentar compartir el archivo
     await makeFilePublic(response.data.id);
 
     return {
@@ -131,18 +128,17 @@ export async function uploadFileToDrive(
       mimeType: response.data.mimeType || mimeType,
     };
   } catch (error) {
-    console.error('Error uploading file to Drive:', error);
+    console.error('Error en uploadFileToDrive:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error uploading file',
+      error: error instanceof Error ? error.message : 'Error desconocido al subir archivo',
     };
   }
 }
 
-// Hacer archivo público
+// 5. Funciones auxiliares (Público, URL, Eliminar)
 async function makeFilePublic(fileId: string): Promise<void> {
   const drive = getDriveClient();
-
   try {
     await drive.permissions.create({
       fileId: fileId,
@@ -152,44 +148,34 @@ async function makeFilePublic(fileId: string): Promise<void> {
       },
     });
   } catch (error) {
-    console.log('Warning: Could not make file public:', error);
-    // No lanzar error, continuar de todas formas
+    console.log('Aviso: No se pudo marcar como público (puede ser restricción de cuenta):', error);
   }
 }
 
-// Obtener URL pública del archivo
 export async function getPublicFileUrl(fileId: string): Promise<string | null> {
   const drive = getDriveClient();
-
   try {
     const response = await drive.files.get({
       fileId: fileId,
       fields: 'webViewLink, webContentLink, mimeType',
     });
-
-    // Para imágenes, usar webContentLink para obtener el contenido directo
     if (response.data.mimeType?.startsWith('image/')) {
       return response.data.webContentLink ? `${response.data.webContentLink}&export=download` : null;
     }
-
     return response.data.webViewLink || null;
   } catch (error) {
-    console.error('Error getting file URL:', error);
+    console.error('Error al obtener URL:', error);
     return null;
   }
 }
 
-// Eliminar archivo de Google Drive
 export async function deleteFileFromDrive(fileId: string): Promise<boolean> {
   const drive = getDriveClient();
-
   try {
-    await drive.files.delete({
-      fileId: fileId,
-    });
+    await drive.files.delete({ fileId });
     return true;
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error('Error al eliminar archivo:', error);
     return false;
   }
 }

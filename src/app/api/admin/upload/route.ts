@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requirePermission, serverError } from '@/api/admin/_shared/auth';
-import { uploadFileToDrive, getOrCreateFolder } from '@/../lib/google-drive-service';
+import { requirePermission, serverError } from '@/app/api/admin/_shared/auth';
+import { uploadFileToDrive, getOrCreateFolder } from '@/lib/google-drive-service';
 
 const UPLOAD_FOLDERS = {
   noticia: 'IAM Paraná - Noticias',
@@ -11,20 +11,44 @@ const UPLOAD_FOLDERS = {
 } as const;
 
 export async function POST(req: Request) {
-  const auth = await requirePermission('content.write');
-  if ('errorResponse' in auth) return auth.errorResponse;
-
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const type = (formData.get('type') as string) || 'imagen';
+    const auth = await requirePermission('content.write');
+    if ('errorResponse' in auth) return auth.errorResponse;
 
-    if (!file) {
+    // Obtener FormData - manejo robusto
+    let formData: FormData;
+    
+    try {
+      formData = await req.formData();
+    } catch (parseError) {
+      console.error('FormData parse error:', parseError);
       return NextResponse.json(
-        { error: 'No file provided' },
+        { error: 'Error al procesar el archivo. Asegúrate de que sea un archivo válido.' },
         { status: 400 }
       );
     }
+
+    const file = formData.get('file');
+    const type = (formData.get('type') as string) || 'imagen';
+
+    // Validar que se recibió un archivo
+    if (!file || !(file instanceof File)) {
+      console.error('No file received or invalid file object');
+      return NextResponse.json(
+        { error: 'Se requiere un archivo válido' },
+        { status: 400 }
+      );
+    }
+
+    // Validar que el archivo no esté vacío
+    if (file.size === 0) {
+      return NextResponse.json(
+        { error: 'El archivo está vacío' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Subiendo archivo: ${file.name}, tipo: ${type}, tamaño: ${file.size}`);
 
     // Validar tipo de carpeta
     const folderName = UPLOAD_FOLDERS[type as keyof typeof UPLOAD_FOLDERS] || UPLOAD_FOLDERS.imagen;
@@ -42,7 +66,7 @@ export async function POST(req: Request) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error || 'Upload failed' },
+        { error: result.error || 'Error al subir archivo' },
         { status: 500 }
       );
     }
@@ -56,6 +80,10 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return serverError();
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    return NextResponse.json(
+      { error: `Error al subir: ${message}` },
+      { status: 500 }
+    );
   }
 }

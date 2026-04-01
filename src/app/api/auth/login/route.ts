@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { createSession, findUserByEmail } from "@/db/auth-repository";
+import { createSession, findUserByEmail } from "@/app/db/auth-repository";
 import {
   AUTH_COOKIE_NAME,
   createSessionToken,
   getSessionExpiresAtIso,
   hashSessionToken,
   verifyPassword,
-} from "@/lib/auth-security";
+} from "@/app/lib/auth-security";
 
 // Usamos el entorno para configurar la seguridad de la cookie
 const isProduction = process.env.NODE_ENV === "production";

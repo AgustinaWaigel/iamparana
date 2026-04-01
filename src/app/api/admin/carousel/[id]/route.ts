@@ -4,8 +4,8 @@ import {
   deleteCarouselAdmin,
   getCarouselAdmin,
   updateCarouselAdmin,
-} from "@/db/admin-repository";
-import { badRequest, requirePermission, isValidSlug, parseId, serverError } from "@/api/admin/_shared/auth";
+} from "@/app/db/admin-repository";
+import { badRequest, requirePermission, isValidSlug, parseId, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidCarouselPayload(value: unknown): value is CarouselInput {
   if (typeof value !== "object" || value === null) return false;

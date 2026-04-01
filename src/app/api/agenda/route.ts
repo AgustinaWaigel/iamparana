@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listAgendaEventos } from "@/db/content-repository";
+import { listAgendaEventos } from "@/app/db/content-repository";
 
 export const revalidate = 60;
 

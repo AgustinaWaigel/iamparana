@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { AgendaInput, createAgendaAdmin, listAgendaAdmin } from "@/db/admin-repository";
-import { badRequest, requirePermission, serverError } from "@/api/admin/_shared/auth";
+import { AgendaInput, createAgendaAdmin, listAgendaAdmin } from "@/app/db/admin-repository";
+import { badRequest, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidAgendaPayload(value: unknown): value is AgendaInput {
   if (typeof value !== "object" || value === null) return false;

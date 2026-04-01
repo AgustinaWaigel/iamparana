@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers"; // Usamos el helper oficial de Next.js
-import { deleteSessionByTokenHash } from "@/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/lib/auth-security";
+import { deleteSessionByTokenHash } from "@/app/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
 
 export async function POST() {
   try {

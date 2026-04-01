@@ -1,13 +1,11 @@
 export function getBaseUrl() {
+  // Vercel environment
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
   
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3001';
-  }
-  
-  return 'http://localhost:3001'; // fallback
+  // Siempre usar localhost:3000 (valido tanto en cliente como en servidor)
+  return 'http://localhost:3000';
 }
 
 export async function fetchAPI<T>(endpoint: string): Promise<T[]> {

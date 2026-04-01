@@ -40,6 +40,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
         method: 'POST',
         credentials: 'include',
         body: formDataImage,
+        // NO establecer Content-Type manualmente - dejar que FormData lo maneje
       });
 
       if (!uploadRes.ok) {

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSessionUser } from '@/lib/use-session';
+import { useSessionUser } from '@/app/lib/use-session';
 import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2 } from 'lucide-react';
 
 interface User {

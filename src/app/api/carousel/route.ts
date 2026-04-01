@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listCarouselItems } from "@/db/content-repository";
+import { listCarouselItems } from "@/app/db/content-repository";
 
 export const revalidate = 60;
 

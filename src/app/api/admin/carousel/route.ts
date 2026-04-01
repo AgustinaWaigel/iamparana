@@ -3,8 +3,8 @@ import {
   CarouselInput,
   createCarouselAdmin,
   listCarouselAdmin,
-} from "@/db/admin-repository";
-import { badRequest, requirePermission, isValidSlug, serverError } from "@/api/admin/_shared/auth";
+} from "@/app/db/admin-repository";
+import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidCarouselPayload(value: unknown): value is CarouselInput {
   if (typeof value !== "object" || value === null) return false;

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getTursoClient } from "@/db/turso";
+import { getTursoClient } from "@/app/db/turso";
 
 export type UserRole = "admin" | "equipo" | "redactor" | "coordinador" | "animador";
 

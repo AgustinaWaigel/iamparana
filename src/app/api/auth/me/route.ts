@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSessionUserByTokenHash } from "@/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/lib/auth-security";
+import { getSessionUserByTokenHash } from "@/app/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
 
 function getCookieValue(cookieHeader: string, name: string) {
   const parts = cookieHeader.split(";").map((value) => value.trim());
@@ -24,7 +24,6 @@ export async function GET(req: Request) {
     return NextResponse.json({
       id: sessionUser.id,
       email: sessionUser.email,
-      nombre: sessionUser.nombre || sessionUser.email,
       role: sessionUser.role,
       isActive: sessionUser.isActive,
     });

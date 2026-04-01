@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, listUsers } from "@/db/auth-repository";
-import { hashPassword } from "@/lib/auth-security";
-import { requirePermission, badRequest, serverError } from "@/lib/api-utils";
+import { createUser, listUsers } from "@/app/db/auth-repository";
+import { hashPassword } from "@/app/lib/auth-security";
+import { requirePermission, badRequest, serverError } from "@/app/lib/api-utils";
 
 /**
  * GET: Lista todos los usuarios.

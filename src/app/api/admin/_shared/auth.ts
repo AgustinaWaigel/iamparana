@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers"; // Usamos el helper oficial
-import { getSessionUserByTokenHash, UserRole } from "@/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/lib/auth-security";
+import { getSessionUserByTokenHash, UserRole } from "@/app/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
+import { ensureSchemaInitialized } from "@/app/db/turso";
 
 // 1. Tipado de Permisos
 export type Permission =
@@ -65,6 +66,9 @@ export async function getSessionUser() {
 
 // 6. Protector de Rutas API
 export async function requirePermission(permission: Permission) {
+  // Inicializar schema cuando se requiere autenticación
+  await ensureSchemaInitialized();
+  
   const user = await getSessionUser();
   
   if (!user) {

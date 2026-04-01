@@ -2,7 +2,7 @@
 
 import { useCallback, ReactNode } from 'react';
 import { NoticiasEditor } from './noticias-editor';
-import { useSession } from '@/hooks/use-session';
+import { useSession } from '@/app/hooks/use-session';
 
 interface NoticiasClientProps {
   children: ReactNode;

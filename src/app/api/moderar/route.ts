@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { updateComentarioAprobado } from "@/db/comments-repository";
-import { requirePermission } from "@/api/admin/_shared/auth";
+import { updateComentarioAprobado } from "@/app/db/comments-repository";
+import { requirePermission } from "@/app/api/admin/_shared/auth";
 
 type ModerarBody = {
   slug: string;

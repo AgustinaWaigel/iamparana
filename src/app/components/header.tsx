@@ -5,7 +5,7 @@ import { ChevronDown, LogOut, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useSessionUser } from '@/lib/use-session';
+import { useSession } from '@/app/hooks/use-session';
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -14,7 +14,7 @@ const Header: React.FC = () => {
   const submenuRef = useRef<HTMLLIElement>(null);
   const userMenuRef = useRef<HTMLLIElement>(null);
   const pathname = usePathname();
-  const { user, loading, logout } = useSessionUser();
+  const { user, isLoading, isAdmin } = useSession();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -122,7 +122,7 @@ const Header: React.FC = () => {
               <Link href="/noticias" className="block px-2 py-2 font-bold transition hover:scale-105 hover:text-neutral-200">Noticias</Link>
             </li>
             
-            {!loading && (
+            {!isLoading && (
               <>
                 {user ? (
                   <li 
@@ -168,7 +168,6 @@ const Header: React.FC = () => {
                       )}
                       <li>
                         <button
-                          onClick={logout}
                           className="flex items-center gap-2 w-full px-3 py-2 text-red-400 rounded hover:bg-gray-700 transition text-left"
                         >
                           <LogOut size={16} />
