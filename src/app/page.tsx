@@ -2,7 +2,7 @@ import Carousel from "./components/carousel";
 import Agenda from "./components/agenda";
 import Novedades from "./components/novedades";
 import Link from 'next/link';
-import { fetchAPI } from "@/lib/api-client";
+import { fetchAPI } from "@/app/lib/api-client";
 
 interface CarouselItem {
   imageDesktop: string;

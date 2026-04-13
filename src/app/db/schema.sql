@@ -143,3 +143,19 @@ CREATE TABLE IF NOT EXISTS media_urls (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS links (
+  id INTEGER PRIMARY KEY,
+  section TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  url TEXT NOT NULL,
+  icon TEXT,
+  created_by_user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_links_section ON links(section);
+CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at DESC);

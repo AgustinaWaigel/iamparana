@@ -1,7 +1,7 @@
-import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/lib/noticias';
+import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/app/lib/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
-import Novedades from '@/components/novedades';
+import Novedades from '@/app/components/novedades';
 import { notFound } from 'next/navigation';
 
 type Props = {

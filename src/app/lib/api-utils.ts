@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getSessionUserByTokenHash, UserRole } from "@/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/lib/auth-security";
+import { getSessionUserByTokenHash, UserRole } from "@/app/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
 
 // 1. Tipado de Permisos
 export type Permission =

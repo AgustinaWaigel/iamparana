@@ -311,3 +311,84 @@ export async function updateGoogleDriveConfig(section: string, folderId: string,
     args: [folderId, folderName ?? section, section],
   });
 }
+
+// LINKS
+
+interface LinkInput {
+  section: string;
+  title: string;
+  description?: string;
+  url: string;
+  icon?: string;
+  created_by_user_id: number;
+}
+
+export async function saveLink(link: LinkInput) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: `INSERT INTO links (section, title, description, url, icon, created_by_user_id)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [link.section, link.title, link.description || null, link.url, link.icon || null, link.created_by_user_id],
+  });
+  return result.lastInsertRowid;
+}
+
+export async function getLinksBySection(section: string) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, section, title, description, url, icon, created_by_user_id, created_at FROM links WHERE section = ? ORDER BY created_at DESC",
+    args: [section],
+  });
+  return result.rows;
+}
+
+export async function getLink(id: number) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, section, title, description, url, icon, created_by_user_id, created_at FROM links WHERE id = ? LIMIT 1",
+    args: [id],
+  });
+  return result.rows[0] ?? null;
+}
+
+export async function updateLink(id: number, link: Partial<LinkInput>) {
+  const client = clientOrThrow();
+  
+  const setClauses: string[] = [];
+  const values: any[] = [];
+  
+  if (link.title !== undefined) {
+    setClauses.push('title = ?');
+    values.push(link.title);
+  }
+  if (link.description !== undefined) {
+    setClauses.push('description = ?');
+    values.push(link.description);
+  }
+  if (link.url !== undefined) {
+    setClauses.push('url = ?');
+    values.push(link.url);
+  }
+  if (link.icon !== undefined) {
+    setClauses.push('icon = ?');
+    values.push(link.icon);
+  }
+  
+  setClauses.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(id);
+  
+  if (setClauses.length === 1) return; // No actualizar si no hay cambios
+  
+  await client.execute({
+    sql: `UPDATE links SET ${setClauses.join(", ")} WHERE id = ?`,
+    args: values,
+  });
+}
+
+export async function deleteLink(id: number) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "DELETE FROM links WHERE id = ?",
+    args: [id],
+  });
+}

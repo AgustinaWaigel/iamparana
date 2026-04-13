@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateUser } from "@/db/auth-repository";
-import { hashPassword } from "@/lib/auth-security";
-import { requirePermission, badRequest, serverError, parseId } from "@/lib/api-utils";
+import { updateUser } from "@/app/db/auth-repository";
+import { hashPassword } from "@/app/lib/auth-security";
+import { requirePermission, badRequest, serverError, parseId } from "@/app/api/admin/_shared/auth";
 
 /**
  * PUT: Actualiza un usuario específico.

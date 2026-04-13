@@ -40,6 +40,7 @@ export interface CancionDetail {
 }
 
 export interface AgendaEvento {
+  id?: number;
   fecha: string;
   fecha_fin?: string;
   evento: string;
@@ -77,21 +78,29 @@ function isValidSlug(slug: string) {
 }
 
 function readNoticiasFromFs(): NoticiaPreview[] {
-  const filenames = fs.readdirSync(noticiasDir);
-  const noticias = filenames.map((filename) => {
-    const filePath = path.join(noticiasDir, filename);
-    const fileContent = fs.readFileSync(filePath, "utf8");
-    const { data } = matter(fileContent);
-    return {
-      slug: filename.replace(/\.md$/, ""),
-      title: asString(data.title),
-      date: asString(data.date),
-      description: asString(data.description),
-      image: asString(data.image),
-    };
-  });
+  try {
+    if (!fs.existsSync(noticiasDir)) {
+      return [];
+    }
+    const filenames = fs.readdirSync(noticiasDir);
+    const noticias = filenames.map((filename) => {
+      const filePath = path.join(noticiasDir, filename);
+      const fileContent = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(fileContent);
+      return {
+        slug: filename.replace(/\.md$/, ""),
+        title: asString(data.title),
+        date: asString(data.date),
+        description: asString(data.description),
+        image: asString(data.image),
+      };
+    });
 
-  return noticias.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return noticias.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  } catch (error) {
+    console.error("Error reading noticias from filesystem:", error);
+    return [];
+  }
 }
 
 function readNoticiaDetailFromFs(slug: string): NoticiaDetail | null {
@@ -122,18 +131,26 @@ function readNoticiaDetailFromFs(slug: string): NoticiaDetail | null {
 }
 
 function readCancionesFromFs(): CancionBasic[] {
-  const files = fs.readdirSync(cancionesDir);
-  return files.map((filename) => {
-    const filePath = path.join(cancionesDir, filename);
-    const fileContent = fs.readFileSync(filePath, "utf8");
-    const { data } = matter(fileContent);
+  try {
+    if (!fs.existsSync(cancionesDir)) {
+      return [];
+    }
+    const files = fs.readdirSync(cancionesDir);
+    return files.map((filename) => {
+      const filePath = path.join(cancionesDir, filename);
+      const fileContent = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(fileContent);
 
-    return {
-      title: asString(data.title),
-      artist: asString(data.artist),
-      slug: filename.replace(/\.md$/, ""),
-    };
-  });
+      return {
+        title: asString(data.title),
+        artist: asString(data.artist),
+        slug: filename.replace(/\.md$/, ""),
+      };
+    });
+  } catch (error) {
+    console.error("Error reading canciones from filesystem:", error);
+    return [];
+  }
 }
 
 function readCancionDetailFromFs(slug: string): CancionDetail | null {
@@ -157,37 +174,53 @@ function readCancionDetailFromFs(slug: string): CancionDetail | null {
 }
 
 function readAgendaFromFs(): AgendaEvento[] {
-  const filenames = fs.readdirSync(agendaDir);
-  return filenames.map((filename) => {
-    const filePath = path.join(agendaDir, filename);
-    const fileContent = fs.readFileSync(filePath, "utf8");
-    const { data } = matter(fileContent);
+  try {
+    if (!fs.existsSync(agendaDir)) {
+      return [];
+    }
+    const filenames = fs.readdirSync(agendaDir);
+    return filenames.map((filename) => {
+      const filePath = path.join(agendaDir, filename);
+      const fileContent = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(fileContent);
 
-    return {
-      fecha: asString(data.fecha),
-      fecha_fin: asOptionalString(data.fecha_fin),
-      evento: asString(data.evento),
-    };
-  });
+      return {
+        fecha: asString(data.fecha),
+        fecha_fin: asOptionalString(data.fecha_fin),
+        evento: asString(data.evento),
+      };
+    });
+  } catch (error) {
+    console.error("Error reading agenda from filesystem:", error);
+    return [];
+  }
 }
 
 function readCarouselFromFs(): CarouselItem[] {
-  const filenames = fs.readdirSync(carouselDir);
-  return filenames
-    .map((filename) => {
-      const filePath = path.join(carouselDir, filename);
-      const fileContent = fs.readFileSync(filePath, "utf8");
-      const { data } = matter(fileContent);
-      return {
-        imageDesktop: asString(data.imageDesktop),
-        imageMobile: asString(data.imageMobile),
-        alt: asString(data.alt),
-        link: asOptionalString(data.link),
-        buttonText: asOptionalString(data.buttonText),
-        order: asNumber(data.order, 0),
-      };
-    })
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  try {
+    if (!fs.existsSync(carouselDir)) {
+      return [];
+    }
+    const filenames = fs.readdirSync(carouselDir);
+    return filenames
+      .map((filename) => {
+        const filePath = path.join(carouselDir, filename);
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        const { data } = matter(fileContent);
+        return {
+          imageDesktop: asString(data.imageDesktop),
+          imageMobile: asString(data.imageMobile),
+          alt: asString(data.alt),
+          link: asOptionalString(data.link),
+          buttonText: asOptionalString(data.buttonText),
+          order: asNumber(data.order, 0),
+        };
+      })
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  } catch (error) {
+    console.error("Error reading carousel from filesystem:", error);
+    return [];
+  }
 }
 
 export async function listNoticiasPreview(): Promise<NoticiaPreview[]> {
@@ -297,8 +330,9 @@ export async function listAgendaEventos(): Promise<AgendaEvento[]> {
   const client = getTursoClient();
   if (isTursoReadEnabled && client) {
     try {
-      const result = await client.execute("SELECT fecha, fecha_fin, evento FROM agenda ORDER BY fecha ASC");
+      const result = await client.execute("SELECT id, fecha, fecha_fin, evento FROM agenda ORDER BY fecha ASC");
       return result.rows.map((row) => ({
+        id: asNumber(row.id),
         fecha: asString(row.fecha),
         fecha_fin: asOptionalString(row.fecha_fin),
         evento: asString(row.evento),
@@ -309,6 +343,58 @@ export async function listAgendaEventos(): Promise<AgendaEvento[]> {
   }
 
   return readAgendaFromFs();
+}
+
+export async function createAgendaEvento(evento: string, fecha: string, fecha_fin?: string): Promise<number> {
+  const client = getTursoClient();
+  if (!client) {
+    throw new Error("Database client not available");
+  }
+
+  try {
+    const result = await client.execute({
+      sql: "INSERT INTO agenda (evento, fecha, fecha_fin, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+      args: [evento, fecha, fecha_fin || null],
+    });
+    return Number(result.lastInsertRowid);
+  } catch (error) {
+    console.error("Error creating agenda evento:", error);
+    throw error;
+  }
+}
+
+export async function updateAgendaEvento(id: number, evento: string, fecha: string, fecha_fin?: string): Promise<void> {
+  const client = getTursoClient();
+  if (!client) {
+    throw new Error("Database client not available");
+  }
+
+  try {
+    await client.execute({
+      sql: "UPDATE agenda SET evento = ?, fecha = ?, fecha_fin = ? WHERE id = ?",
+      args: [evento, fecha, fecha_fin || null, id],
+    });
+  } catch (error) {
+    console.error("Error updating agenda evento:", error);
+    throw error;
+  }
+}
+
+export async function deleteAgendaEvento(id: number): Promise<void> {
+  const client = getTursoClient();
+  if (!client) {
+    throw new Error("Database client not available");
+  }
+
+  try {
+    await client.execute({
+      sql: "DELETE FROM agenda WHERE id = ?",
+      args: [id],
+    });
+  } catch (error) {
+    console.error("Error deleting agenda evento:", error);
+    throw error;
+  }
 }
 
 export async function listCarouselItems(): Promise<CarouselItem[]> {

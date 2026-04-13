@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./clientlayout"; 
 import AnalyticsProvider from './components/analyticsprovider';
+import { ServiceWorkerRegistration } from './components/service-worker-registration';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +21,17 @@ export const metadata: Metadata = {
     template: "%s | IAM Paraná",
   },
   description: "Infancia y Adolescencia Misionera en Paraná.",
+  manifest: "/manifest.json",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "IAM Paraná",
+  },
   openGraph: {
     title: "IAM Paraná",
     description: "Infancia y Adolescencia Misionera en Paraná.",
@@ -50,7 +62,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientLayout>{children}</ClientLayout>
-                <AnalyticsProvider />
+        <AnalyticsProvider />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import { getNoticiaDetailBySlug, listNoticiaSlugs } from "@/db/content-repository";
+import { getNoticiaDetailBySlug, listNoticiaSlugs } from "@/app/db/content-repository";
 
 export async function getAllNoticiasSlugs() {
   return listNoticiaSlugs();

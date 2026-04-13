@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { marked, Renderer } from 'marked';
-import ChordTransposer from '@/components/chordtransposer';
-import { getAllCanciones, getCancionBySlug } from '@/lib/canciones';
+import ChordTransposer from '@/app/components/chordtransposer';
+import { getAllCanciones, getCancionBySlug } from '@/app/lib/canciones';
 
 const renderer = new Renderer();
 renderer.code = function ({ text, lang, escaped }: { text: string; lang?: string; escaped?: boolean }): string {
