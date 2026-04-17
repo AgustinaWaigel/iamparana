@@ -1,5 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
+import { getAllJuegos } from '@/app/lib/juegos';
+import { JuegosClientContent } from '@/app/components/juegos-client-content';
 
 export const metadata: Metadata = {
   title: 'Juegos',
@@ -24,7 +26,9 @@ export const metadata: Metadata = {
 
 };
 
-export default function juegosPage() {
+export default async function juegosPage() {
+  const juegos = await getAllJuegos();
+
   return (
     <>
 <h2 className='py-4 px-5 text-2xl font-bold bg-green-800/70 text-white'>Juegos</h2>
@@ -34,29 +38,7 @@ export default function juegosPage() {
          Acá vas a poder encontrar juegos de distintos tipos para realizar en tus encuentros, junto con libros con dinámicas y demás.
         </p>
 <hr className="my-4 border-gray-300" />
-        <div className="seccion">
-          <h2 className="subtitulo-seccion titulo-animacion  ">Videos de Juegos</h2>
-          <div className="listabotones color ">
-            {[
-              ['Juegos cooperativos', 'm_NqiguBr-c'],
-              ['Juegos cooperativos 2', 'YvM9UQzJbJw'],
-              ['Juegos en ronda', 'sQUI04ClZ0M'],
-              ['Juegos en ronda 2', 'yJY19gO9JOo'],
-              ['Juegos competitivos', '6FEI4rLyhxU'],
-            ].map(([title, id]) => (
-              <a
-                key={id}
-                href={`https://www.youtube.com/watch?v=${id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-green-800/70 text-white"
-              >
-                {title}
-              </a>
-            ))}
-          </div>
-        </div>
-<hr className="my-4 border-gray-300" />
+        <JuegosClientContent juegos={juegos} />
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-animacion">Libros con juegos y dinámicas</h2>
           <div className="listabotones">

@@ -734,6 +734,76 @@ blockquote {
 .nota p {
   text-align: left;
 }
+.nota-contenido {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.nota-markdown {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.nota-contenido img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 8px;
+}
+.nota-contenido h1,
+.nota-contenido h2,
+.nota-contenido h3,
+.nota-contenido h4 {
+  color: #3a2a1c;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.nota-contenido p {
+  margin-bottom: 1rem;
+}
+.nota-markdown p {
+  margin-bottom: 1rem;
+}
+.nota-markdown h1,
+.nota-markdown h2,
+.nota-markdown h3,
+.nota-markdown h4 {
+  color: #3a2a1c;
+  line-height: 1.25;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.nota-markdown h1 {
+  font-size: 1.9rem;
+}
+.nota-markdown h2 {
+  font-size: 1.6rem;
+}
+.nota-markdown h3 {
+  font-size: 1.35rem;
+}
+.nota-markdown h4 {
+  font-size: 1.15rem;
+}
+.nota-markdown ul,
+.nota-markdown ol {
+  padding-left: 1.3rem;
+  margin-bottom: 1rem;
+}
+.nota-markdown li {
+  margin-bottom: 0.4rem;
+}
+.nota-markdown blockquote {
+  border-left: 4px solid #d6b680;
+  margin: 1rem 0;
+  padding: 0.4rem 1rem;
+  color: #5a5a5a;
+  background: #faf7f1;
+}
+.nota-markdown a {
+  color: #0056b3;
+  text-decoration: underline;
+}
 .nota-imagen {
   border-radius: 4px;
   margin: 0 auto 2rem;

@@ -1,14 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, X, Loader2, Edit2, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, X, Loader2, Edit2, Trash2, Type, Image as ImageIcon } from 'lucide-react';
+import { NoticiaGaleria } from './noticia-galeria';
+
+// Tipo para los bloques de contenido dinámico
+interface BloqueContenido {
+  id: string;
+  type: 'text' | 'image';
+  value: string; // Texto o URL de la imagen
+  file?: File;    // Para subidas nuevas
+}
 
 interface Noticia {
   slug: string;
   title: string;
   description: string;
   image: string;
-  content: string;
+  content: string; // Guardaremos el JSON de los bloques aquí
   date: string;
 }
 
@@ -34,10 +43,11 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     date: new Date().toISOString().split('T')[0],
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [bloques, setBloques] = useState<BloqueContenido[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const textareasRef = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
-  // Cargar noticias existentes cuando se abre el modal
   useEffect(() => {
     if (isAdmin && isOpen && !showList && noticiasExistentes.length === 0) {
       cargarNoticiasExistentes();
@@ -49,9 +59,7 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
   const cargarNoticiasExistentes = async () => {
     setCargandoNoticias(true);
     try {
-      const response = await fetch('/api/admin/noticias', {
-        credentials: 'include',
-      });
+      const response = await fetch('/api/admin/noticias', { credentials: 'include' });
       if (!response.ok) throw new Error('Error al cargar noticias');
       const noticias = await response.json();
       setNoticiasExistentes(noticias);
@@ -62,9 +70,65 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     }
   };
 
+  // --- Manejo de Bloques ---
+  const agregarBloque = (tipo: 'text' | 'image') => {
+    const nuevo: BloqueContenido = {
+      id: Math.random().toString(36).substr(2, 9),
+      type: tipo,
+      value: ''
+    };
+    setBloques([...bloques, nuevo]);
+  };
+
+  const actualizarBloque = (id: string, valor: string, file?: File) => {
+    setBloques(bloques.map(b => b.id === id ? { ...b, value: valor, file } : b));
+  };
+
+  const eliminarBloque = (id: string) => {
+    setBloques(bloques.filter(b => b.id !== id));
+  };
+
+  const aplicarFormato = (blockId: string, format: 'bold' | 'italic' | 'underline') => {
+    const textarea = textareasRef.current[blockId];
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const selectedText = value.slice(selectionStart, selectionEnd) || 'texto';
+
+    const wrappedText =
+      format === 'bold'
+        ? `**${selectedText}**`
+        : format === 'italic'
+          ? `*${selectedText}*`
+          : `<u>${selectedText}</u>`;
+
+    const nextValue =
+      value.slice(0, selectionStart) + wrappedText + value.slice(selectionEnd);
+
+    actualizarBloque(blockId, nextValue);
+
+    requestAnimationFrame(() => {
+      const ref = textareasRef.current[blockId];
+      if (!ref) return;
+      ref.focus();
+      const cursorPosition = selectionStart + wrappedText.length;
+      ref.setSelectionRange(cursorPosition, cursorPosition);
+    });
+  };
+
   const handleEditarNoticia = (noticia: Noticia) => {
     setFormData(noticia);
     setEditingSlug(noticia.slug);
+    
+    // Intentar cargar bloques desde el JSON del contenido
+    try {
+      const contenidoParseado = JSON.parse(noticia.content);
+      setBloques(Array.isArray(contenidoParseado) ? contenidoParseado : []);
+    } catch (e) {
+      // Si el contenido no era JSON (era texto plano viejo), convertirlo en un bloque de texto
+      setBloques([{ id: 'default', type: 'text', value: noticia.content }]);
+    }
+    
     setShowList(false);
     setImageFile(null);
   };
@@ -77,12 +141,7 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
         method: 'DELETE',
         credentials: 'include',
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Error al eliminar noticia');
-      }
-
+      if (!response.ok) throw new Error('Error al eliminar noticia');
       setSuccess('Noticia eliminada correctamente');
       setDeleteConfirm(null);
       await cargarNoticiasExistentes();
@@ -94,11 +153,6 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     }
   };
 
-  const handleImageUpload = (file: File) => {
-    setImageFile(file);
-    console.log('Imagen seleccionada:', file.name);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -106,31 +160,39 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     setIsLoading(true);
 
     try {
-      // Generar slug si está vacío (solo en creación)
-      const slug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      
-      // Subir imagen a Google Drive si existe archivo nuevo
+      // 1. Generar slug automáticamente si no estamos editando
+      const slug = editingSlug || formData.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+      // 2. Subir imagen de portada principal
       let imageUrl = formData.image;
       if (imageFile) {
-        const formDataImage = new FormData();
-        formDataImage.append('file', imageFile);
-        formDataImage.append('type', 'noticia');
-        
-        const uploadRes = await fetch('/api/admin/upload', {
-          method: 'POST',
-          credentials: 'include',
-          body: formDataImage,
-        });
-
-        if (!uploadRes.ok) throw new Error('Error al subir imagen');
-        const uploadedData = await uploadRes.json();
-        imageUrl = uploadedData.url;
+        const fdPort = new FormData();
+        fdPort.append('file', imageFile);
+        fdPort.append('type', 'noticia');
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fdPort });
+        const data = await res.json();
+        imageUrl = data.url;
       }
 
+      // 3. Procesar y subir imágenes de los bloques del cuerpo
+      const bloquesProcesados = await Promise.all(bloques.map(async (b) => {
+        if (b.type === 'image' && b.file) {
+          const fdBlock = new FormData();
+          fdBlock.append('file', b.file);
+          fdBlock.append('type', 'noticia-cuerpo');
+          const res = await fetch('/api/admin/upload', { method: 'POST', body: fdBlock });
+          const data = await res.json();
+          return { id: b.id, type: b.type, value: data.url };
+        }
+        return { id: b.id, type: b.type, value: b.value };
+      }));
+
+      // 4. Armar Payload
       const payload = {
         ...formData,
-        slug: editingSlug || slug,
+        slug,
         image: imageUrl,
+        content: JSON.stringify(bloquesProcesados),
       };
 
       const method = editingSlug ? 'PUT' : 'POST';
@@ -143,32 +205,10 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Error al guardar noticia');
-      }
+      if (!response.ok) throw new Error('Error al guardar la noticia');
 
-      setSuccess(editingSlug ? 'Noticia actualizada correctamente' : 'Noticia guardada correctamente');
-      setFormData({
-        slug: '',
-        title: '',
-        description: '',
-        image: '',
-        content: '',
-        date: new Date().toISOString().split('T')[0],
-      });
-      setImageFile(null);
-      setEditingSlug(null);
-      
-      // Recargar lista de noticias
-      await cargarNoticiasExistentes();
-      
-      // Cerrar modal después de 1.5 segundos
-      setTimeout(() => {
-        setIsOpen(false);
-        setShowList(false);
-      }, 1500);
-      
+      setSuccess('Noticia guardada con éxito');
+      setTimeout(() => cerrarModal(), 1500);
       onRefresh?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -181,7 +221,7 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     setIsOpen(false);
     setShowList(false);
     setEditingSlug(null);
-    setDeleteConfirm(null);
+    setBloques([]);
     setFormData({
       slug: '',
       title: '',
@@ -195,8 +235,9 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     setSuccess('');
   };
 
-  const abrirModal = (lista: boolean = false) => {
+  const abrirModal = (lista = false) => {
     setEditingSlug(null);
+    setBloques([]);
     setShowList(lista);
     setFormData({
       slug: '',
@@ -212,324 +253,171 @@ export function NoticiasEditor({ isAdmin, onRefresh }: NoticiasEditorProps) {
     setIsOpen(true);
   };
 
-  return (
-    <>
-      {/* Botón flotante para crear noticia */}
-      <button
-        onClick={() => abrirModal(false)}
-        className="fixed bottom-8 right-8 bg-brand-brown hover:bg-brand-brown/90 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 flex items-center gap-2"
-      >
-        <Plus size={24} />
-        <span className="hidden md:inline text-sm font-bold">Nueva Noticia</span>
-      </button>
-
-      {/* Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[101] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-8">
-            {/* Header */}
-            <div className="sticky top-0 bg-brand-brown text-white p-6 flex justify-between items-center z-10">
-              <h2 className="text-2xl font-bold">
-                {showList ? 'Noticias Existentes' : editingSlug ? 'Editar Noticia' : 'Crear Nueva Noticia'}
-              </h2>
-              <div className="flex gap-2">
-                {(showList || editingSlug) && (
-                  <button
-                    onClick={() => {
-                      setShowList(false);
-                      setEditingSlug(null);
-                      setFormData({
-                        slug: '',
-                        title: '',
-                        description: '',
-                        image: '',
-                        content: '',
-                        date: new Date().toISOString().split('T')[0],
-                      });
-                      setImageFile(null);
-                    }}
-                    className="p-1 hover:bg-white/20 rounded transition-colors text-sm font-bold px-2"
-                  >
-                    ← Atrás
-                  </button>
-                )}
-                <button
-                  onClick={cerrarModal}
-                  className="p-1 hover:bg-white/20 rounded transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-
-            {/* Contenido del modal */}
-            <div className="p-6">
-              {showList ? renderListaNoticias() : renderFormulario()}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-
   function renderListaNoticias() {
-    if (cargandoNoticias) {
-      return (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 size={32} className="animate-spin text-brand-brown" />
-        </div>
-      );
-    }
-
-    if (noticiasExistentes.length === 0) {
-      return (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No hay noticias creadas aún</p>
-          <button
-            onClick={() => setShowList(false)}
-            className="mt-4 px-4 py-2 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90"
-          >
-            Crear Primera Noticia
-          </button>
-        </div>
-      );
-    }
-
+    if (cargandoNoticias) return <div className="flex justify-center py-8"><Loader2 className="animate-spin text-brand-brown" /></div>;
+    
     return (
       <div className="space-y-3">
-        {noticiasExistentes.map((noticia) => (
-          <div
-            key={noticia.slug}
-            className="border border-gray-200 rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 transition-colors relative"
-          >
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-brand-brown truncate">{noticia.title}</h3>
-              <p className="text-sm text-gray-600 line-clamp-2">{noticia.description}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                {new Date(noticia.date).toLocaleDateString('es-AR')}
-              </p>
-            </div>
-            <div className="flex gap-2 ml-4 flex-shrink-0">
-              <button
-                onClick={() => handleEditarNoticia(noticia)}
-                className="p-2 hover:bg-blue-100 text-blue-600 rounded transition-colors"
-                title="Editar"
-              >
-                <Edit2 size={18} />
-              </button>
-              <div className="relative">
-                <button
-                  onClick={() => setDeleteConfirm(deleteConfirm === noticia.slug ? null : noticia.slug)}
-                  className="p-2 hover:bg-red-100 text-red-600 rounded transition-colors"
-                  title="Eliminar"
-                >
-                  <Trash2 size={18} />
-                </button>
-                {deleteConfirm === noticia.slug && (
-                  <div className="absolute top-full right-0 mt-2 bg-white border border-red-300 rounded-lg p-3 shadow-lg z-20 whitespace-nowrap">
-                    <p className="text-sm font-bold text-gray-700 mb-2">
-                      ¿Confirmar eliminar?
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEliminar(noticia.slug)}
-                        disabled={isLoading}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(null)}
-                        className="px-3 py-1 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                )}
+        {noticiasExistentes.length === 0 ? (
+          <p className="text-center text-gray-500">No hay noticias</p>
+        ) : (
+          noticiasExistentes.map((n) => (
+            <div key={n.slug} className="border p-4 rounded-lg flex justify-between items-center hover:bg-gray-50">
+              <div className="flex-1 truncate mr-4">
+                <h3 className="font-bold text-brand-brown truncate">{n.title}</h3>
+                <p className="text-xs text-gray-400">{new Date(n.date).toLocaleDateString('es-AR')}</p>
               </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleEditarNoticia(n)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={18} /></button>
+                <button onClick={() => setDeleteConfirm(n.slug)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 size={18} /></button>
+              </div>
+              {deleteConfirm === n.slug && (
+                <div className="absolute right-4 bg-white border p-3 rounded-lg shadow-xl z-20">
+                  <p className="text-xs font-bold mb-2">¿Eliminar definitivamente?</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEliminar(n.slug)} className="bg-red-600 text-white px-2 py-1 rounded text-xs">Sí</button>
+                    <button onClick={() => setDeleteConfirm(null)} className="bg-gray-200 px-2 py-1 rounded text-xs">No</button>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     );
   }
 
   function renderFormulario() {
     return (
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg">
-            {success}
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">{error}</div>}
+        {success && <div className="bg-green-50 text-green-700 p-4 rounded-lg border border-green-200">{success}</div>}
 
-        {/* Botón para ver noticias existentes (solo en creación) */}
         {!editingSlug && (
-          <button
-            type="button"
-            onClick={() => setShowList(true)}
-            className="w-full px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-sm font-bold"
-          >
+          <button type="button" onClick={() => setShowList(true)} className="w-full py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold">
             Ver Noticias Existentes
           </button>
         )}
 
-        {/* Título */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Título *
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown"
-            placeholder="Título de la noticia"
-          />
+          <label className="block text-sm font-bold text-gray-700 mb-1">Título *</label>
+          <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 border rounded-lg" />
         </div>
 
-        {/* Slug */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Slug {editingSlug && '(no editable en actualizaciones)'}
-          </label>
-          <input
-            type="text"
-            disabled={!!editingSlug}
-            value={formData.slug}
-            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown disabled:bg-gray-100"
-            placeholder="slug-de-noticia (vacío = auto-generado)"
-          />
+          <label className="block text-sm font-bold text-gray-700 mb-1">Resumen para tarjeta *</label>
+          <textarea required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2 border rounded-lg" rows={2} />
         </div>
 
-        {/* Descripción */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Descripción (resumen) *
-          </label>
-          <textarea
-            required
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown"
-            rows={3}
-            placeholder="Resumen de la noticia que aparecerá en la tarjeta"
-          />
+        <div className="bg-gray-50 p-4 rounded-lg border">
+          <label className="block text-sm font-bold text-gray-700 mb-2">Imagen de Portada</label>
+          <input type="file" onChange={(e) => e.target.files?.[0] && setImageFile(e.target.files[0])} className="text-sm w-full" />
         </div>
 
-        {/* Contenido */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Contenido *
-          </label>
-          <textarea
-            required
-            value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown"
-            rows={6}
-            placeholder="Contenido completo de la noticia (puede incluir HTML)"
-          />
-        </div>
+        <div className="space-y-4">
+          <label className="block text-sm font-bold text-brand-brown border-b pb-1">Contenido Dinámico</label>
+          {bloques.map((b) => (
+            <div key={b.id} className="relative p-4 border rounded-lg bg-white group shadow-sm">
+              <button type="button" onClick={() => eliminarBloque(b.id)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={14}/></button>
+              
+              {b.type === 'text' ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => aplicarFormato(b.id, 'bold')}
+                      className="px-2 py-1 text-xs font-bold rounded bg-gray-100 hover:bg-gray-200"
+                      title="Negrita"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => aplicarFormato(b.id, 'italic')}
+                      className="px-2 py-1 text-xs italic rounded bg-gray-100 hover:bg-gray-200"
+                      title="Cursiva"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => aplicarFormato(b.id, 'underline')}
+                      className="px-2 py-1 text-xs underline rounded bg-gray-100 hover:bg-gray-200"
+                      title="Subrayado"
+                    >
+                      U
+                    </button>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Seleccioná texto y aplicá formato
+                    </span>
+                  </div>
 
-        {/* Imagen */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Imagen de portada {!editingSlug && '*'}
-          </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-            {imageFile || (editingSlug && formData.image) ? (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-700">
-                  {imageFile ? imageFile.name : 'Imagen actual cargada'}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setImageFile(null)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            ) : (
-              <input
-                type="file"
-                required={!editingSlug && !formData.image && !imageFile}
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    handleImageUpload(e.target.files[0]);
-                  }
-                }}
-                className="w-full"
-              />
-            )}
+                  <textarea
+                    ref={(el) => {
+                      textareasRef.current[b.id] = el;
+                    }}
+                    placeholder="Escribe texto o Markdown..."
+                    className="w-full p-2 border-none focus:ring-0 min-h-[100px] text-sm"
+                    value={b.value}
+                    onChange={(e) => actualizarBloque(b.id, e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="text-center">
+                  {b.value && <img src={b.value} className="h-24 mx-auto mb-2 rounded" alt="preview" />}
+                  <input type="file" className="text-xs" onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if(f) actualizarBloque(b.id, URL.createObjectURL(f), f);
+                  }} />
+                </div>
+              )}
+            </div>
+          ))}
+
+          <div className="flex gap-4 justify-center py-4 border-2 border-dashed rounded-lg">
+            <button type="button" onClick={() => agregarBloque('text')} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-brand-brown hover:text-white rounded-full transition-colors text-xs font-bold">
+              <Type size={16} /> + Texto
+            </button>
+            <button type="button" onClick={() => agregarBloque('image')} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-brand-brown hover:text-white rounded-full transition-colors text-xs font-bold">
+              <ImageIcon size={16} /> + Imagen
+            </button>
           </div>
         </div>
 
-        {/* Fecha */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Fecha de publicación
-          </label>
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brown"
-          />
+          <label className="block text-sm font-bold text-gray-700 mb-1">Fecha</label>
+          <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full px-4 py-2 border rounded-lg" />
         </div>
 
-        {/* Botones */}
-        <div className="flex gap-3 pt-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (editingSlug) {
-                setEditingSlug(null);
-                setFormData({
-                  slug: '',
-                  title: '',
-                  description: '',
-                  image: '',
-                  content: '',
-                  date: new Date().toISOString().split('T')[0],
-                });
-                setImageFile(null);
-              } else {
-                cerrarModal();
-              }
-            }}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {editingSlug ? 'Cancelar Edición' : 'Cancelar'}
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-brand-brown text-white rounded-lg hover:bg-brand-brown/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                {editingSlug ? 'Actualizando...' : 'Guardando...'}
-              </>
-            ) : editingSlug ? (
-              'Actualizar Noticia'
-            ) : (
-              'Guardar Noticia'
-            )}
-          </button>
-        </div>
+        <button type="submit" disabled={isLoading} className="w-full py-3 bg-brand-brown text-white rounded-lg font-bold disabled:opacity-50">
+          {isLoading ? <Loader2 className="animate-spin mx-auto" size={24} /> : editingSlug ? 'Actualizar Noticia' : 'Publicar Noticia'}
+        </button>
       </form>
     );
   }
+
+  return (
+    <>
+      <button onClick={() => abrirModal(false)} className="fixed bottom-8 right-8 bg-brand-brown text-white p-4 rounded-full shadow-lg z-40 flex items-center gap-2">
+        <Plus size={24} /> <span className="hidden md:inline text-sm font-bold">Nueva Noticia</span>
+      </button>
+
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[101] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-8 shadow-2xl">
+            <div className="sticky top-0 bg-brand-brown text-white p-6 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold">{showList ? 'Noticias Existentes' : editingSlug ? 'Editar Noticia' : 'Crear Noticia'}</h2>
+              <div className="flex gap-2">
+                {(showList || editingSlug) && (
+                  <button onClick={() => { setShowList(false); setEditingSlug(null); setBloques([]); }} className="p-1 hover:bg-white/20 rounded font-bold px-2 text-sm">← Atrás</button>
+                )}
+                <button onClick={cerrarModal} className="p-1 hover:bg-white/20 rounded"><X size={24} /></button>
+              </div>
+            </div>
+            <div className="p-6">{showList ? renderListaNoticias() : renderFormulario()}</div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

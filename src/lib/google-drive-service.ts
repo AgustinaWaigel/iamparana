@@ -1,5 +1,8 @@
+import "server-only";
+
 import { google } from 'googleapis';
 import { Readable } from 'stream';
+import { getGoogleDriveImageUrl } from './drive-utils';
 
 // 1. Configuración de Variables de Entorno (OAuth2)
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -16,6 +19,9 @@ interface UploadResult {
   mimeType?: string;
   error?: string;
 }
+
+// Re-exportar utilidades de drive para comodidad
+export { getGoogleDriveImageUrl } from './drive-utils';
 
 // 2. Obtener cliente autenticado mediante OAuth2
 function getDriveClient() {

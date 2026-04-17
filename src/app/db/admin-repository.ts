@@ -13,6 +13,14 @@ export type NoticiaInput = {
   content: string;
 };
 
+export type NoticiaGaleriaInput = {
+  noticia_slug: string;
+  image_url: string;
+  alt_text?: string;
+  caption?: string;
+  order?: number;
+};
+
 export type CancionInput = {
   slug: string;
   title: string;
@@ -44,6 +52,40 @@ function clientOrThrow() {
   return client;
 }
 
+function normalizeSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-");
+}
+
+async function getUniqueNoticiaSlug(baseSlug: string) {
+  const client = clientOrThrow();
+  const normalizedSlug = normalizeSlug(baseSlug) || "noticia";
+
+  const result = await client.execute({
+    sql: "SELECT slug FROM noticias WHERE slug = ? OR slug LIKE ?",
+    args: [normalizedSlug, `${normalizedSlug}-%`],
+  });
+
+  const existingSlugs = new Set(result.rows.map((row) => String(row.slug)));
+
+  if (!existingSlugs.has(normalizedSlug)) {
+    return normalizedSlug;
+  }
+
+  let suffix = 2;
+  let candidate = `${normalizedSlug}-${suffix}`;
+  while (existingSlugs.has(candidate)) {
+    suffix += 1;
+    candidate = `${normalizedSlug}-${suffix}`;
+  }
+
+  return candidate;
+}
+
 export async function listNoticiasAdmin() {
   const client = clientOrThrow();
   const result = await client.execute(
@@ -63,10 +105,13 @@ export async function getNoticiaAdmin(slug: string) {
 
 export async function createNoticiaAdmin(data: NoticiaInput) {
   const client = clientOrThrow();
+  const slug = await getUniqueNoticiaSlug(data.slug);
   await client.execute({
     sql: "INSERT INTO noticias (slug, title, date, cat, bajada, description, image, content, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
-    args: [data.slug, data.title, data.date, data.cat ?? "NACIONAL", data.bajada ?? null, data.description, data.image, data.content],
+    args: [slug, data.title, data.date, data.cat ?? "NACIONAL", data.bajada ?? null, data.description, data.image, data.content],
   });
+
+  return slug;
 }
 
 export async function updateNoticiaAdmin(slug: string, data: Omit<NoticiaInput, "slug">) {
@@ -81,6 +126,41 @@ export async function deleteNoticiaAdmin(slug: string) {
   const client = clientOrThrow();
   await client.execute({
     sql: "DELETE FROM noticias WHERE slug = ?",
+    args: [slug],
+  });
+}
+
+// GALERÍA DE NOTICIAS
+
+export async function getNoticiaGaleria(noticia_slug: string) {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, noticia_slug, image_url, alt_text, caption, \"order\" FROM noticias_galeria WHERE noticia_slug = ? ORDER BY \"order\" ASC",
+    args: [noticia_slug],
+  });
+  return result.rows;
+}
+
+export async function addNoticiaGaleriaImage(data: NoticiaGaleriaInput) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "INSERT INTO noticias_galeria (noticia_slug, image_url, alt_text, caption, \"order\") VALUES (?, ?, ?, ?, ?)",
+    args: [data.noticia_slug, data.image_url, data.alt_text ?? null, data.caption ?? null, data.order ?? 999],
+  });
+}
+
+export async function deleteNoticiaGaleriaImage(id: number) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "DELETE FROM noticias_galeria WHERE id = ?",
+    args: [id],
+  });
+}
+
+export async function deleteNoticiaGaleriaBySlug(slug: string) {
+  const client = clientOrThrow();
+  await client.execute({
+    sql: "DELETE FROM noticias_galeria WHERE noticia_slug = ?",
     args: [slug],
   });
 }

@@ -67,7 +67,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 z-[100] w-full h-20 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 py-2 text-white shadow-lg md:px-8">
+    <header className="fixed top-0 z-[10] w-full h-20 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 py-2 text-white shadow-lg md:px-8">
       <div className="mx-auto flex w-full items-center justify-stretch md:justify-between">
         <div className="flex items-center">
           <Link href="/">

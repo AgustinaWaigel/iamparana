@@ -48,10 +48,16 @@ export async function POST(req: Request) {
   }
 
   try {
-    await createNoticiaAdmin(body);
-    return NextResponse.json({ success: true }, { status: 201 });
+    const slug = await createNoticiaAdmin(body);
+    return NextResponse.json({ success: true, slug }, { status: 201 });
   } catch (error) {
     console.error(error);
+    if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
+      return NextResponse.json(
+        { error: "Ya existe una noticia con ese slug" },
+        { status: 409 }
+      );
+    }
     return serverError("No se pudo crear la noticia");
   }
 }

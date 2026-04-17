@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { AnimacionClientContent } from '@/app/components/animacion-client-content';
 
 export const metadata: Metadata = {
   title: 'Animación | IAM Paraná',
@@ -29,11 +30,8 @@ export default function AnimacionPage() {
       <h2 className="mt-20 py-8 px-5 bg-gradient-to-r from-green-800 to-green-700 text-white text-3xl font-bold text-center">Animación</h2>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-lg text-gray-700 mb-6">
-          Cantar, bailar, jugar. Parte de nuestro día a día en la IAM es esto, por eso venimos a ayudarte con recursos
-          para tus encuentros, y con el día a día. Acá vas a poder encontrar las canciones que cantamos siempre en la IAM
-          y también muchos juegos y dinámicas que te van a servir. ¡A jugar y a bailar!
-        </p>
+        <AnimacionClientContent />
+        
         <hr className="my-4 border-gray-300" />
         <div className="flex flex-wrap gap-5 justify-center">
           <Link 

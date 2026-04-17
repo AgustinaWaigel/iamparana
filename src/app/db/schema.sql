@@ -14,6 +14,20 @@ CREATE TABLE IF NOT EXISTS noticias (
 
 CREATE INDEX IF NOT EXISTS idx_noticias_date ON noticias(date DESC);
 
+CREATE TABLE IF NOT EXISTS noticias_galeria (
+  id INTEGER PRIMARY KEY,
+  noticia_slug TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  alt_text TEXT,
+  caption TEXT,
+  "order" INTEGER DEFAULT 999,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (noticia_slug) REFERENCES noticias(slug) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_noticias_galeria_slug ON noticias_galeria(noticia_slug);
+CREATE INDEX IF NOT EXISTS idx_noticias_galeria_order ON noticias_galeria("order");
+
 CREATE TABLE IF NOT EXISTS canciones (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -23,6 +37,20 @@ CREATE TABLE IF NOT EXISTS canciones (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS juegos (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  youtubeId TEXT,
+  category TEXT DEFAULT 'general',
+  "order" INTEGER DEFAULT 999,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_juegos_order ON juegos("order");
 
 CREATE TABLE IF NOT EXISTS carousel (
   id INTEGER PRIMARY KEY,
@@ -58,6 +86,19 @@ CREATE TABLE IF NOT EXISTS comentarios (
 );
 
 CREATE INDEX IF NOT EXISTS idx_comentarios_slug ON comentarios(slug);
+
+CREATE TABLE IF NOT EXISTS animacion_content (
+  id INTEGER PRIMARY KEY,
+  section TEXT UNIQUE NOT NULL DEFAULT 'main',
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  content TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO animacion_content (section, title, description) VALUES
+  ('main', 'Animación', 'Cantar, bailar, jugar. Parte de nuestro día a día en la IAM es esto, por eso venimos a ayudarte con recursos para tus encuentros, y con el día a día. Acá vas a poder encontrar las canciones que cantamos siempre en la IAM y también muchos juegos y dinámicas que te van a servir. ¡A jugar y a bailar!');
 
 CREATE TABLE IF NOT EXISTS roles (
   id INTEGER PRIMARY KEY,
