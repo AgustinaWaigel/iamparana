@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { HeroSection } from "@/app/components/common/hero-section";
 
 export const metadata: Metadata = {
   title: "Comunicación",
@@ -35,14 +36,17 @@ export default function Comunicacion() {
     <>
       <div id="header"></div>
 
-      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 text-white text-center">Comunicación</h2>
-      <main className="seccion areas">
-        <p className="subtitulo-descriptivo">
-          Aca vas a poder encontrar
-          recursos gráficos para ser utilizados en tus encuentros, tanto de logos
-          e imágenes de la iam, como además de dibujos de artistas conocidos.
-        </p>
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Comunicación"
+        textureUrl="/assets/textures/areasg.webp"
+        overlayColor="rgba(59, 130, 246, 0.7), rgba(96, 165, 250, 0.75)"
+        gradientClass="from-blue-500 to-blue-400"
+        description="Aquí vas a poder encontrar recursos gráficos para ser utilizados en tus encuentros: logos, imágenes de la IAM y dibujos de artistas conocidos."
+        textColor="text-white"
+      />
 
+      <main className="seccion areas">
         <div className="listabotones">
           <Link href="/comunicacion/logos" className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-blue-400 text-white shadow-md">
             Logos

@@ -2,8 +2,8 @@ import "server-only";
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Header from '@/app/components/header';
-import Footer from '@/app/components/footer';
+import Header from '@/app/components/layout/header';
+import Footer from '@/app/components/layout/footer';
 import { getSessionUserByTokenHash } from '@/app/db/auth-repository';
 import { AUTH_COOKIE_NAME, hashSessionToken } from '@/app/lib/auth-security';
 

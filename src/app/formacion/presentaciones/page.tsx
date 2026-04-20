@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { PresentacionesClient } from '@/app/components/presentaciones-client';
+import { PresentacionesClient } from '@/app/formacion/components/presentaciones-client';
 
 export const metadata: Metadata = {
   title: 'Presentaciones',

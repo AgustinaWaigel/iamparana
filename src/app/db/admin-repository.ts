@@ -327,6 +327,26 @@ export async function getDocumentsBySection(section: string) {
   return result.rows;
 }
 
+export async function getDocumentsBySections(sections: string[]) {
+  const client = clientOrThrow();
+  const normalized = sections.map((item) => item.trim()).filter(Boolean);
+
+  if (normalized.length === 0) {
+    return [];
+  }
+
+  const placeholders = normalized.map(() => "?").join(", ");
+  const result = await client.execute({
+    sql: `SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at
+          FROM documents
+          WHERE section IN (${placeholders})
+          ORDER BY created_at DESC`,
+    args: normalized,
+  });
+
+  return result.rows;
+}
+
 export async function getDocument(id: number) {
   const client = clientOrThrow();
   const result = await client.execute({
@@ -419,6 +439,26 @@ export async function getLinksBySection(section: string) {
     sql: "SELECT id, section, title, description, url, icon, created_by_user_id, created_at FROM links WHERE section = ? ORDER BY created_at DESC",
     args: [section],
   });
+  return result.rows;
+}
+
+export async function getLinksBySections(sections: string[]) {
+  const client = clientOrThrow();
+  const normalized = sections.map((item) => item.trim()).filter(Boolean);
+
+  if (normalized.length === 0) {
+    return [];
+  }
+
+  const placeholders = normalized.map(() => "?").join(", ");
+  const result = await client.execute({
+    sql: `SELECT id, section, title, description, url, icon, created_by_user_id, created_at
+          FROM links
+          WHERE section IN (${placeholders})
+          ORDER BY created_at DESC`,
+    args: normalized,
+  });
+
   return result.rows;
 }
 

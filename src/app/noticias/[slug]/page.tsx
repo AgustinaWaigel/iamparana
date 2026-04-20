@@ -2,8 +2,8 @@ import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/app/lib/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-import Novedades from '@/app/components/novedades';
-import { NoticiaGaleriaView } from '@/app/components/noticia-galeria-view';
+import Novedades from '@/app/components/common/novedades';
+import { NoticiaGaleriaView } from '@/app/noticias/components/noticia-galeria-view';
 import { notFound } from 'next/navigation';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
 

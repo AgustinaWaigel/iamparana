@@ -7,11 +7,42 @@ import {
   deleteAgendaEvento 
 } from "@/app/db/content-repository";
 import { requirePermission, badRequest, serverError } from "@/app/lib/api-utils";
+import {
+  createCalendarAgendaEvent,
+  deleteCalendarAgendaEvent,
+  isGoogleCalendarConfigured,
+  listCalendarAgendaEvents,
+  updateCalendarAgendaEvent,
+} from "@/app/lib/google-calendar-service";
 
 export const revalidate = 60;
 
+function buildCalendarAccessErrorMessage(error: unknown, fallback: string) {
+  const message = String(error instanceof Error ? error.message : error || "").toLowerCase();
+  const looksLikePermissionIssue =
+    message.includes("forbidden") ||
+    message.includes("not found") ||
+    message.includes("insufficient") ||
+    message.includes("permission");
+
+  if (looksLikePermissionIssue) {
+    return "Google Calendar no accesible. Comparti el calendario con iamparana-drive@iamparana.iam.gserviceaccount.com";
+  }
+
+  return fallback;
+}
+
 export async function GET() {
   try {
+    if (isGoogleCalendarConfigured()) {
+      try {
+        const eventos = await listCalendarAgendaEvents();
+        return NextResponse.json(eventos);
+      } catch (calendarError) {
+        console.error("Google Calendar read failed, fallback a agenda local:", calendarError);
+      }
+    }
+
     const eventos = await listAgendaEventos();
     return NextResponse.json(eventos);
   } catch (error) {
@@ -26,7 +57,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { evento, fecha, fecha_fin } = body;
+    const { evento, fecha, fecha_fin, color, descripcion } = body;
 
     if (!evento || typeof evento !== "string") {
       return badRequest("Evento es requerido");
@@ -36,12 +67,18 @@ export async function POST(req: NextRequest) {
       return badRequest("Fecha es requerida");
     }
 
+    if (isGoogleCalendarConfigured()) {
+      const creado = await createCalendarAgendaEvent({ evento, fecha, fecha_fin, color, descripcion });
+      revalidatePath("/");
+      return NextResponse.json(creado, { status: 201 });
+    }
+
     const id = await createAgendaEvento(evento, fecha, fecha_fin);
     revalidatePath("/");
-    return NextResponse.json({ id, evento, fecha, fecha_fin }, { status: 201 });
+    return NextResponse.json({ id, evento, fecha, fecha_fin, color, descripcion }, { status: 201 });
   } catch (error) {
     console.error("Error creating evento:", error);
-    return serverError("No se pudo crear el evento");
+    return serverError(buildCalendarAccessErrorMessage(error, "No se pudo crear el evento"));
   }
 }
 
@@ -51,9 +88,9 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, evento, fecha, fecha_fin } = body;
+    const { id, evento, fecha, fecha_fin, color, descripcion } = body;
 
-    if (!id || typeof id !== "number") {
+    if (!id || (typeof id !== "number" && typeof id !== "string")) {
       return badRequest("ID es requerido");
     }
 
@@ -65,12 +102,18 @@ export async function PUT(req: NextRequest) {
       return badRequest("Fecha es requerida");
     }
 
+    if (isGoogleCalendarConfigured()) {
+      const actualizado = await updateCalendarAgendaEvent(String(id), { evento, fecha, fecha_fin, color, descripcion });
+      revalidatePath("/");
+      return NextResponse.json(actualizado);
+    }
+
     await updateAgendaEvento(id, evento, fecha, fecha_fin);
     revalidatePath("/");
-    return NextResponse.json({ id, evento, fecha, fecha_fin });
+    return NextResponse.json({ id, evento, fecha, fecha_fin, color, descripcion });
   } catch (error) {
     console.error("Error updating evento:", error);
-    return serverError("No se pudo actualizar el evento");
+    return serverError(buildCalendarAccessErrorMessage(error, "No se pudo actualizar el evento"));
   }
 }
 
@@ -82,8 +125,14 @@ export async function DELETE(req: NextRequest) {
     const body = await req.json();
     const { id } = body;
 
-    if (!id || typeof id !== "number") {
+    if (!id || (typeof id !== "number" && typeof id !== "string")) {
       return badRequest("ID es requerido");
+    }
+
+    if (isGoogleCalendarConfigured()) {
+      await deleteCalendarAgendaEvent(String(id));
+      revalidatePath("/");
+      return NextResponse.json({ success: true });
     }
 
     await deleteAgendaEvento(id);
@@ -91,6 +140,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting evento:", error);
-    return serverError("No se pudo eliminar el evento");
+    return serverError(buildCalendarAccessErrorMessage(error, "No se pudo eliminar el evento"));
   }
 }

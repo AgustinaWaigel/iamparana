@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { marked, Renderer } from 'marked';
-import ChordTransposer from '@/app/components/chordtransposer';
+import ChordTransposer from '@/app/components/common/chordtransposer';
 import { getAllCanciones, getCancionBySlug } from '@/app/lib/canciones';
 
 const renderer = new Renderer();

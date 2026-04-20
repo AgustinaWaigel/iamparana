@@ -1,8 +1,11 @@
 import React from 'react';
-import Link from 'next/link';
 import { Metadata } from 'next';
-import { FormacionClient } from '@/app/components/formacion-client';
-import { BookOpen, Mail, GraduationCap, Rocket, Users, Heart, Sparkles, Quote } from 'lucide-react';
+import { FormacionClient } from '@/app/formacion/components/formacion-client';
+import { FormacionCardsGrid } from './components/formacion-cards-grid';
+import { HeroSection } from '@/app/components/common/hero-section';
+import { getDocumentsBySections, getLinksBySection } from '@/app/db/admin-repository';
+import { listResourcePages } from '@/app/db/resource-pages-repository';
+import { Rocket, Users, Heart, Sparkles, Quote } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Formación',
@@ -26,97 +29,96 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FormacionPage() {
-  const content = (
-    <>
+type UploadedDocument = {
+  id: number;
+  title: string;
+  description: string | null;
+  google_drive_url: string | null;
+  file_type: string | null;
+};
+
+type UploadedLink = {
+  id: number;
+  title: string;
+  description: string | null;
+  url: string;
+  icon: string | null;
+};
+
+type ResourcePageCard = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string | null;
+  template: string;
+};
+
+export default async function FormacionPage() {
+  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
+    getDocumentsBySections(['formacion', 'temario', 'carta', 'otro']),
+    getLinksBySection('formacion'),
+    listResourcePages(),
+  ]);
+
+  // Turso puede devolver objetos con prototipo/metodos; los convertimos a POJO.
+  const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
+  const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;
+  const resourcePagesRows = JSON.parse(JSON.stringify(resourcePagesRaw)) as Array<Record<string, unknown>>;
+
+  const uploadedDocuments = uploadedDocumentsRows
+    .map((item) => ({
+      id: Number(item.id),
+      title: String(item.title || ''),
+      description: item.description ? String(item.description) : null,
+      google_drive_url: item.google_drive_url ? String(item.google_drive_url) : null,
+      file_type: item.file_type ? String(item.file_type) : null,
+    }))
+    .filter((item) => Boolean(item.google_drive_url));
+
+  const uploadedLinks = uploadedLinksRows.map((item) => ({
+    id: Number(item.id),
+    title: String(item.title || ''),
+    description: item.description ? String(item.description) : null,
+    url: String(item.url || ''),
+    icon: item.icon ? String(item.icon) : null,
+  }));
+
+  const resourcePages = resourcePagesRows
+    .map((item) => ({
+      id: Number(item.id),
+      slug: String(item.slug || ''),
+      title: String(item.title || ''),
+      description: item.description ? String(item.description) : null,
+      template: String(item.template || 'gold'),
+    }))
+    .filter((item) => item.template === 'gold');
+
+  const heroTextureUrl = '/assets/textures/formacion.webp';
+
+  return (
+    <FormacionClient>
       <div id="header"></div>
       
-      {/* Título Principal */}
-      <div className="mt-16 bg-gradient-to-r from-yellow-300 to-yellow-400 py-10 px-5 shadow-inner">
-        <h2 className="text-4xl md:text-5xl font-black text-brand-brown text-center uppercase tracking-tight">
-          Formación
-        </h2>
-      </div>
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Formación"
+        textureUrl={heroTextureUrl}
+        overlayColor="rgba(253, 224, 71, 0.7), rgba(250, 204, 21, 0.75)"
+        gradientClass="from-yellow-600 to-yellow-500"
+        description="Aquí podrás acceder a todos los recursos: presentaciones de talleres, el temario del año, la carta del Papa y mucho más."
+        badges={["Documentos", "Presentaciones", "Enlaces", "Material actualizado"]}
+        textColor="text-brand-brown"
+      />
 
-      <main className="px-4 py-12 md:py-16 max-w-6xl mx-auto">
-        
-        {/* Hero Section */}
-        <div className="mb-16 text-center max-w-3xl mx-auto">
-          <p className="text-xl text-gray-700 leading-relaxed font-medium">
-            Aquí podrás acceder a todos los recursos: presentaciones de talleres, el temario del año, la carta del Papa y mucho más. 
+      <main className="px-4 py-12 md:py-16 max-w-7xl mx-auto">
+        <FormacionCardsGrid uploadedDocuments={uploadedDocuments} uploadedLinks={uploadedLinks} resourcePages={resourcePages} />
+
+        <section className="mb-20 rounded-3xl border border-yellow-200 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 md:p-8">
+          <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Cada documento y enlace nuevo que subas desde el panel admin aparece en esta misma grilla de cards,
+            junto a los recursos principales de Formacion.
           </p>
-          <p className="text-lg text-brand-brown/80 font-bold mt-4 uppercase tracking-wider">
-            Misioneros... ¡A estudiar!
-          </p>
-        </div>
-
-        {/* Resource Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          
-          {/* Card 1: Temario */}
-          <a
-            href="https://drive.google.com/file/d/1FGd15NAkaXvkfaeyuwLZUgljkntrPJqs/view?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden"
-          >
-            <div className="bg-gradient-to-br from-yellow-200 to-yellow-400 h-40 flex items-center justify-center relative overflow-hidden">
-              <BookOpen size={64} className="text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10" strokeWidth={1.5} />
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <div className="p-6 flex flex-col flex-1">
-              <h3 className="text-2xl font-bold text-brand-brown mb-2">Temario 2025</h3>
-              <p className="text-gray-600 mb-6 flex-1 leading-relaxed">
-                Accede al temario completo de este año para prepararte y profundizar en los temas de animación.
-              </p>
-              <span className="block w-full text-center px-6 py-3 bg-yellow-300 text-brand-brown font-bold rounded-xl group-hover:bg-yellow-400 transition-colors">
-                Descargar →
-              </span>
-            </div>
-          </a>
-
-          {/* Card 2: Carta del Papa */}
-          <a
-            href="https://www.vatican.va/content/francesco/es/messages/missions/documents/20250125-giornata-missionaria.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden"
-          >
-            <div className="bg-gradient-to-br from-yellow-200 to-yellow-400 h-40 flex items-center justify-center relative overflow-hidden">
-              <Mail size={64} className="text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10" strokeWidth={1.5} />
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <div className="p-6 flex flex-col flex-1">
-              <h3 className="text-2xl font-bold text-brand-brown mb-2">Carta del Papa</h3>
-              <p className="text-gray-600 mb-6 flex-1 leading-relaxed">
-                Palabras inspiradoras del Santo Padre para nuestro andar como misioneros y animadores.
-              </p>
-              <span className="block w-full text-center px-6 py-3 bg-yellow-300 text-brand-brown font-bold rounded-xl group-hover:bg-yellow-400 transition-colors">
-                Leer Carta →
-              </span>
-            </div>
-          </a>
-
-          {/* Card 3: Formación de Animadores */}
-          <Link
-            href="/formacion/presentaciones"
-            className="group flex flex-col bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 overflow-hidden no-underline"
-          >
-            <div className="bg-gradient-to-br from-yellow-200 to-yellow-400 h-40 flex items-center justify-center relative overflow-hidden">
-              <GraduationCap size={64} className="text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10" strokeWidth={1.5} />
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <div className="p-6 flex flex-col flex-1">
-              <h3 className="text-2xl font-bold text-brand-brown mb-2">Presentaciones</h3>
-              <p className="text-gray-600 mb-6 flex-1 leading-relaxed">
-                Materiales de capacitación y diapositivas para potenciar tus habilidades como animador.
-              </p>
-              <span className="block w-full text-center px-6 py-3 bg-yellow-300 text-brand-brown font-bold rounded-xl group-hover:bg-yellow-400 transition-colors">
-                Ver Recursos →
-              </span>
-            </div>
-          </Link>
-        </div>
+        </section>
 
         {/* Benefits Section */}
         <section className="bg-gradient-to-br from-[#fffcf8] to-[#fff5e6] border border-yellow-200 rounded-3xl p-10 md:p-14 mb-20 shadow-sm">
@@ -171,8 +173,6 @@ export default function FormacionPage() {
         
       </main>
       <div id="footer"></div>
-    </>
+    </FormacionClient>
   );
-
-  return <FormacionClient>{content}</FormacionClient>;
 }

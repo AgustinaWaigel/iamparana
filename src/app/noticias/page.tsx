@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { fetchAPI } from "@/app/lib/api-client";
-import { NoticiasClient } from "@/app/components/noticias-client";
-import { NoticiasAdminButtons } from "@/app/components/noticias-admin-buttons";
+import { NoticiasClient } from "@/app/noticias/components/noticias-client";
+import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
+import { HeroSection } from "@/app/components/common/hero-section";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 
 interface Noticia {
@@ -19,13 +20,19 @@ export default async function Noticias() {
   const content = (
     <>
       <div id="header"></div>
-      <main className="mt-20">
-        <div className="bg-gradient-to-r from-brand-brown to-brand-brown/80 py-8 px-4 text-white text-center mb-12">
-          <h1 className="text-4xl font-bold m-0 mb-2">Noticias de la IAM</h1>
-          <p className="text-brand-cream/90 m-0">Entérate de las últimas novedades de la IAM Paraná</p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 pb-12">
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Noticias"
+        textureUrl="/assets/textures/areasg.webp"
+        overlayColor="rgba(120, 75, 40, 0.7), rgba(139, 87, 42, 0.75)"
+        gradientClass="from-brand-brown to-brand-brown/80"
+        description="Entérate de las últimas novedades de la IAM Paraná"
+        textColor="text-white"
+      />
+
+      <main className="max-w-6xl mx-auto px-4 py-12 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {noticias.map((item) => (
             <div key={item.slug} className="relative group">
               <article className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden hover:scale-105 transform duration-300">

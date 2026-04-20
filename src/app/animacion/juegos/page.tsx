@@ -1,7 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { getAllJuegos } from '@/app/lib/juegos';
-import { JuegosClientContent } from '@/app/components/juegos-client-content';
+import { JuegosClientContent } from '@/app/components/common/juegos-client-content';
 
 export const metadata: Metadata = {
   title: 'Juegos',

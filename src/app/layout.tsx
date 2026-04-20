@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./clientlayout"; 
-import AnalyticsProvider from './components/analyticsprovider';
-import { ServiceWorkerRegistration } from './components/service-worker-registration';
+import AnalyticsProvider from '@/app/components/providers/analyticsprovider';
+import { ServiceWorkerRegistration } from '@/app/components/common/service-worker-registration';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,11 +22,6 @@ export const metadata: Metadata = {
   },
   description: "Infancia y Adolescencia Misionera en Paraná.",
   manifest: "/manifest.json",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -48,6 +43,12 @@ export const metadata: Metadata = {
     type: "website",
   },
   metadataBase: new URL("https://iamparana.com.ar"),
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { AnimacionClientContent } from '@/app/components/animacion-client-content';
+import { AnimacionClientContent } from '@/app/components/common/animacion-client-content';
+import { HeroSection } from '@/app/components/common/hero-section';
 
 export const metadata: Metadata = {
   title: 'Animación | IAM Paraná',
@@ -27,7 +28,16 @@ export default function AnimacionPage() {
   return (
     <>
       <div id="header"></div>
-      <h2 className="mt-20 py-8 px-5 bg-gradient-to-r from-green-800 to-green-700 text-white text-3xl font-bold text-center">Animación</h2>
+
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Animación"
+        textureUrl="/assets/textures/cartoon.webp"
+        overlayColor="rgba(20, 118, 60, 0.7), rgba(22, 163, 74, 0.75)"
+        gradientClass="from-green-800 to-green-600"
+        description="Juegos, dinámicas, canciones y muchos más recursos para tus encuentros con los niños y adolescentes."
+        textColor="text-white"
+      />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <AnimacionClientContent />

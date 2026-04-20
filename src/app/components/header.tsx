@@ -14,7 +14,15 @@ const Header: React.FC = () => {
   const submenuRef = useRef<HTMLLIElement>(null);
   const userMenuRef = useRef<HTMLLIElement>(null);
   const pathname = usePathname();
-  const { user, isLoading, isAdmin } = useSession();
+  const { user, isLoading } = useSession();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      window.location.replace('/');
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -66,9 +74,16 @@ const Header: React.FC = () => {
     }
   };
 
+  const navItemClass = (href: string) =>
+    `block rounded-full px-3 py-2 font-bold transition ${
+      pathname === href
+        ? 'bg-white/20 text-brand-gold shadow-sm'
+        : 'text-white hover:bg-white/10 hover:text-brand-gold'
+    }`;
+
   return (
-    <header className="fixed top-0 z-[10] w-full h-20 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 py-2 text-white shadow-lg md:px-8">
-      <div className="mx-auto flex w-full items-center justify-stretch md:justify-between">
+    <header className="fixed top-0 z-[10] h-20 w-full border-b border-white/10 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 text-white shadow-lg md:px-8">
+      <div className="mx-auto flex h-full w-full items-center justify-between">
         <div className="flex items-center">
           <Link href="/">
             <Image src="/assets/header/LOGOIAMPNA.svg" alt="Logo" width={140} height={45} priority />
@@ -77,7 +92,7 @@ const Header: React.FC = () => {
 
         <button
           type="button"
-          className="flex h-9 w-9 flex-col items-center justify-center gap-1.5 rounded md:hidden"
+          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-full border border-brand-gold/50 bg-black/30 backdrop-blur-sm transition hover:bg-black/50 md:hidden"
           onClick={toggleMenu}
           aria-label="Abrir menú"
         >
@@ -88,10 +103,10 @@ const Header: React.FC = () => {
 
         <nav>
           <ul
-            className={`absolute left-0 right-0 top-[76px] z-[99] ${menuOpen ? 'flex' : 'hidden'} flex-col items-center gap-2 bg-black/90 p-4 text-lg md:static md:flex md:flex-row md:gap-4 md:bg-transparent md:p-0 md:text-base`}
+            className={`absolute left-3 right-3 top-20 z-[99] ${menuOpen ? 'flex' : 'hidden'} flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/85 p-4 text-lg shadow-xl backdrop-blur-md md:static md:flex md:flex-row md:gap-2 md:border-0 md:bg-transparent md:p-0 md:text-base md:shadow-none md:backdrop-blur-0`}
           >
             <li>
-              <Link href="/" className="block px-2 py-2 font-bold text-yellow-300 transition hover:scale-105 hover:text-neutral-200">
+              <Link href="/" className={navItemClass('/')}>
                 Inicio
               </Link>
             </li>
@@ -104,23 +119,29 @@ const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleSubmenu}
-                className="flex items-center px-2 py-2 font-bold transition hover:text-neutral-200"
+                className={`flex items-center rounded-full px-3 py-2 font-bold transition ${
+                  submenuOpen ? 'bg-white/20 text-brand-gold shadow-sm' : 'text-white hover:bg-white/10 hover:text-brand-gold'
+                }`}
               >
-                Recursos <ChevronDown size={14} className="ml-1" />
+                Recursos <ChevronDown size={14} className={`ml-1 transition ${submenuOpen ? 'rotate-180' : ''}`} />
               </button>
               <ul
-                className={`${submenuOpen ? 'flex' : 'hidden'} flex-col gap-1 rounded bg-[hsl(23,77%,22%)] p-2 md:absolute md:left-0 md:top-[130%] md:min-w-44`}
+                className={`${submenuOpen ? 'flex opacity-100 translate-y-0' : 'hidden opacity-0 -translate-y-1'} flex-col gap-1 rounded-xl border border-white/10 bg-[hsl(23,77%,22%)]/95 p-2 shadow-lg transition-all duration-200 md:absolute md:left-0 md:top-[130%] md:min-w-52`}
               >
-                <li><Link href="/formacion" className="block px-3 py-3 text-center font-normal hover:text-neutral-200">Formación</Link></li>
-                <li><Link href="/animacion" className="block px-3 py-3 text-center font-normal hover:text-neutral-200">Animación</Link></li>
-                <li><Link href="/espiritualidad" className="block px-3 py-3 text-center font-normal hover:text-neutral-200">Espiritualidad</Link></li>
-                <li><Link href="/comunicacion" className="block px-3 py-3 text-center font-normal hover:text-neutral-200">Comunicación</Link></li>
-                <li><Link href="/logistica" className="block px-3 py-3 text-center font-normal hover:text-neutral-200">Logística</Link></li>
+                <li><Link href="/formacion" className="block rounded-lg px-3 py-2 text-center font-semibold transition hover:bg-white/10 hover:text-brand-gold">Formación</Link></li>
+                <li><Link href="/animacion" className="block rounded-lg px-3 py-2 text-center font-semibold transition hover:bg-white/10 hover:text-brand-gold">Animación</Link></li>
+                <li><Link href="/espiritualidad" className="block rounded-lg px-3 py-2 text-center font-semibold transition hover:bg-white/10 hover:text-brand-gold">Espiritualidad</Link></li>
+                <li><Link href="/comunicacion" className="block rounded-lg px-3 py-2 text-center font-semibold transition hover:bg-white/10 hover:text-brand-gold">Comunicación</Link></li>
+                <li><Link href="/logistica" className="block rounded-lg px-3 py-2 text-center font-semibold transition hover:bg-white/10 hover:text-brand-gold">Logística</Link></li>
               </ul>
             </li>
             <li>
-              <Link href="/noticias" className="block px-2 py-2 font-bold transition hover:scale-105 hover:text-neutral-200">Noticias</Link>
+              <Link href="/noticias" className={navItemClass('/noticias')}>Noticias</Link>
             </li>
+            
+            {/*<li>
+              <Link href="/calendario" className="block px-2 py-2 font-bold transition hover:scale-105 hover:text-neutral-200">Calendario</Link>
+            </li>*/}
             
             {!isLoading && (
               <>
@@ -132,14 +153,14 @@ const Header: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 rounded border border-brand-gold px-3 py-2 font-bold transition hover:bg-brand-gold/20"
+                      className="flex items-center gap-2 rounded-full border border-brand-gold/70 bg-black/25 px-3 py-2 font-bold transition hover:bg-brand-gold/20"
                     >
                       <span className="text-sm">{user.email}</span>
                       <ChevronDown size={14} className={`transition ${userMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     
                     <ul
-                      className={`${userMenuOpen ? 'flex' : 'hidden'} absolute right-0 top-[120%] z-50 flex-col gap-1 rounded bg-[hsl(23,77%,22%)] p-2 min-w-56 md:left-auto`}
+                      className={`${userMenuOpen ? 'flex opacity-100 translate-y-0' : 'hidden opacity-0 -translate-y-1'} absolute right-0 top-[120%] z-50 flex-col gap-1 rounded-xl border border-white/10 bg-[hsl(23,77%,22%)]/95 p-2 min-w-56 shadow-xl transition-all duration-200 md:left-auto`}
                     >
                       <li className="px-3 py-2 text-xs text-gray-400">
                         Rol: <span className="font-bold text-brand-gold">{user.role}</span>
@@ -150,13 +171,19 @@ const Header: React.FC = () => {
                       {user.role === 'admin' && (
                         <>
                           <li>
-                            <Link href="/admin/usuarios" className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 transition">
+                            <Link href="/admin/usuarios" className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-white/10">
                               <Users size={16} />
                               Gestión de Usuarios
                             </Link>
                           </li>
                           <li>
-                            <Link href="/admin/settings" className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 transition">
+                            <Link href="/admin/recursos" className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-white/10">
+                              <Settings size={16} />
+                              Páginas de Recursos
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/admin/settings" className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-white/10">
                               <Settings size={16} />
                               Configuración
                             </Link>
@@ -168,7 +195,8 @@ const Header: React.FC = () => {
                       )}
                       <li>
                         <button
-                          className="flex items-center gap-2 w-full px-3 py-2 text-red-400 rounded hover:bg-gray-700 transition text-left"
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-red-300 transition hover:bg-red-500/10"
                         >
                           <LogOut size={16} />
                           Cerrar Sesión
@@ -178,7 +206,7 @@ const Header: React.FC = () => {
                   </li>
                 ) : (
                   <li>
-                    <Link href="/admin" className="block rounded border border-brand-gold px-3 py-2 font-bold transition hover:bg-brand-gold/20">Login</Link>
+                    <Link href="/admin" className="block rounded-full border border-brand-gold/70 bg-black/25 px-3 py-2 font-bold transition hover:bg-brand-gold/20">Login</Link>
                   </li>
                 )}
               </>

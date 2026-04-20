@@ -1,5 +1,5 @@
 import { getAllCanciones } from "@/app/lib/canciones";
-import CancionesLista from "@/app/components/cancioneslista";
+import CancionesLista from "@/app/components/common/cancioneslista";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

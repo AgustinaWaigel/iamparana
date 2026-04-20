@@ -3,7 +3,9 @@ import "server-only";
 import { createClient } from "@libsql/client";
 
 let cachedClient: ReturnType<typeof createClient> | null = null;
-let schemaInitialized = false;
+const globalForTurso = globalThis as typeof globalThis & {
+  __iamparanaSchemaInitialized?: boolean;
+};
 
 const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS noticias (
@@ -190,6 +192,42 @@ CREATE TABLE IF NOT EXISTS links (
 
 CREATE INDEX IF NOT EXISTS idx_links_section ON links(section);
 CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS resource_pages (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  texture_url TEXT,
+  created_by_user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_resource_pages_slug ON resource_pages(slug);
+
+CREATE TABLE IF NOT EXISTS resource_sections (
+  id INTEGER PRIMARY KEY,
+  page_id INTEGER NOT NULL,
+  slug TEXT NOT NULL,
+  title TEXT NOT NULL,
+  section_key TEXT UNIQUE NOT NULL,
+  position INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (page_id) REFERENCES resource_pages(id) ON DELETE CASCADE,
+  UNIQUE(page_id, slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_resource_sections_page ON resource_sections(page_id, position ASC);
+
+CREATE TABLE IF NOT EXISTS resource_page_styles (
+  page_id INTEGER PRIMARY KEY,
+  template TEXT NOT NULL DEFAULT 'gold',
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (page_id) REFERENCES resource_pages(id) ON DELETE CASCADE
+);
 `;
 
 // Ejecutar inserts de datos iniciales
@@ -211,7 +249,7 @@ INSERT OR IGNORE INTO google_drive_config (section, folder_id, folder_name) VALU
 `;
 
 async function initializeSchema() {
-  if (schemaInitialized || !cachedClient) {
+  if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
   }
 
@@ -232,7 +270,7 @@ async function initializeSchema() {
       }
     }
 
-    schemaInitialized = true;
+    globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');
   } catch (error) {
     console.error('Error inicializando schema:', error);

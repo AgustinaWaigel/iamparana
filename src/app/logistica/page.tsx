@@ -21,19 +21,24 @@ export async function generateMetadata() {
   };
 }
 
+import { HeroSection } from "@/app/components/common/hero-section";
+
 export default function Logistica() {
   return (
     <>
       <div id="header"></div>
-      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-red-600 to-red-500 text-white text-center">Logística</h2>
+
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Logística"
+        textureUrl="/assets/textures/areasg.webp"
+        overlayColor="rgba(220, 38, 38, 0.7), rgba(239, 68, 68, 0.75)"
+        gradientClass="from-red-600 to-red-500"
+        description="Es muy importante manejarse con transparencia. Aquí vas a poder encontrar los resúmenes de ingresos-egresos de los distintos eventos que hemos realizado."
+        textColor="text-white"
+      />
 
       <main className="seccion areas">
-        <p className="subtitulo-descriptivo">
-          Es muy importante manejarse con transparencia, es por eso que acá vas a
-          poder encontrar los resúmenes de ingresos-egresos de los distintos
-          eventos que hemos realizado.
-        </p>
-        <hr className="divisor" />
         <h2 className="subtitulo-descriptivo" style={{ marginTop: '2rem' }}>
           Resumen de gastos en la formación de animadores
         </h2>

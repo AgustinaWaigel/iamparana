@@ -1,6 +1,7 @@
-import Carousel from "./components/carousel";
-import Agenda from "./components/agenda";
-import Novedades from "./components/novedades";
+import Carousel from "@/app/components/common/carousel";
+import Agenda from "@/app/components/common/agenda";
+import AgendaTitle from "@/app/components/common/agenda-title";
+import Novedades from "@/app/components/common/novedades";
 import Link from 'next/link';
 import { fetchAPI } from "@/app/lib/api-client";
 
@@ -108,7 +109,7 @@ export default async function HomePage() {
           </section>
 
           <section className="w-full md:w-1/3">
-            <h2 className="text-2xl font-bold text-white bg-brand-brown p-4 mb-4 rounded-lg">Agenda</h2>
+            <AgendaTitle />
             <Agenda />
           </section>
         </div>

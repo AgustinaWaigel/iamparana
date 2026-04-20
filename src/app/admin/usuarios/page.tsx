@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSessionUser } from '@/app/lib/use-session';
-import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2, Search } from 'lucide-react';
 
 interface User {
   id: number;
@@ -20,6 +20,7 @@ export default function UsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [processingId, setProcessingId] = useState<number | null>(null);
 
   // 🛡️ Redirección de seguridad (Cliente como respaldo del Servidor)
@@ -49,8 +50,19 @@ export default function UsuariosPage() {
 
   // Filtrado optimizado con useMemo
   const filteredUsers = useMemo(() => {
-    return users.filter(u => !selectedRole || u.role === selectedRole);
-  }, [users, selectedRole]);
+    const term = searchTerm.trim().toLowerCase();
+
+    return users.filter(u => {
+      const matchesRole = !selectedRole || u.role === selectedRole;
+      const matchesSearch =
+        term.length === 0 ||
+        u.email.toLowerCase().includes(term) ||
+        u.role.toLowerCase().includes(term) ||
+        String(u.id).includes(term);
+
+      return matchesRole && matchesSearch;
+    });
+  }, [users, selectedRole, searchTerm]);
 
   const handleToggleActive = async (id: number, currentStatus: number) => {
     setProcessingId(id);
@@ -112,17 +124,29 @@ export default function UsuariosPage() {
 
       {/* Filtros y Tabla */}
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-        <div className="p-4 border-b border-stone-100 bg-stone-50/50 flex items-center justify-between">
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="text-sm border-stone-300 rounded-lg focus:ring-brand-brown"
-          >
-            <option value="">Todos los roles</option>
-            {['admin', 'equipo', 'redactor', 'coordinador', 'animador'].map(role => (
-              <option key={role} value={role} className="capitalize">{role}</option>
-            ))}
-          </select>
+        <div className="p-4 border-b border-stone-100 bg-stone-50/50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <div className="relative min-w-0 sm:min-w-80">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por email, rol o ID..."
+                className="w-full text-sm border border-stone-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-brown/20 focus:border-brand-brown"
+              />
+            </div>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="text-sm border-stone-300 rounded-lg focus:ring-brand-brown"
+            >
+              <option value="">Todos los roles</option>
+              {['admin', 'equipo', 'redactor', 'coordinador', 'animador'].map(role => (
+                <option key={role} value={role} className="capitalize">{role}</option>
+              ))}
+            </select>
+          </div>
           <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
             {filteredUsers.length} Usuarios encontrados
           </span>

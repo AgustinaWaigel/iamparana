@@ -1,5 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
+import { HeroSection } from "@/app/components/common/hero-section";
 
 export const metadata: Metadata = {
   title: "Espiritualidad",
@@ -28,13 +29,17 @@ export default function Espiritualidad() {
     <>
       <div id="header"></div>
 
-      <h2 className="mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-600 text-white text-center">Espiritualidad</h2>
+      {/* PORTADA con HeroSection */}
+      <HeroSection
+        title="Espiritualidad"
+        textureUrl="/assets/textures/espiritualidad.webp"
+        overlayColor="rgba(55, 65, 81, 0.7), rgba(75, 85, 99, 0.75)"
+        gradientClass="from-gray-700 to-gray-600"
+        description="En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM."
+        textColor="text-white"
+      />
 
       <main className="seccion areas">
-              <p className="subtitulo-descriptivo">
-          En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM.
-        </p>
-        <hr className="my-4 border-gray-300" />
         <section className="seccion-oraciones">
           <h2 className="subtitulo-seccion titulo-espiritualidad">🕊️ Oraciones</h2>
           <div className="flex flex-col gap-4 py-4">

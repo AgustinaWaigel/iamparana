@@ -16,6 +16,56 @@ interface SessionState {
   isAdmin: boolean;
 }
 
+let cachedSession: SessionState | null = null;
+let sessionPromise: Promise<SessionState> | null = null;
+const sessionListeners = new Set<(state: SessionState) => void>();
+
+async function loadSession(): Promise<SessionState> {
+  if (cachedSession) {
+    return cachedSession;
+  }
+
+  if (!sessionPromise) {
+    sessionPromise = fetch('/api/auth/me', {
+      credentials: 'include',
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          return {
+            user: null,
+            isLoading: false,
+            isAdmin: false,
+          } satisfies SessionState;
+        }
+
+        const user: User = await response.json();
+        return {
+          user,
+          isLoading: false,
+          isAdmin: user.role === 'admin',
+        } satisfies SessionState;
+      })
+      .catch((error) => {
+        console.error('Failed to fetch session:', error);
+        return {
+          user: null,
+          isLoading: false,
+          isAdmin: false,
+        } satisfies SessionState;
+      })
+      .then((state) => {
+        cachedSession = state;
+        sessionPromise = null;
+        for (const listener of sessionListeners) {
+          listener(state);
+        }
+        return state;
+      });
+  }
+
+  return sessionPromise;
+}
+
 export function useSession(): SessionState {
   const [state, setState] = useState<SessionState>({
     user: null,
@@ -24,37 +74,18 @@ export function useSession(): SessionState {
   });
 
   useEffect(() => {
-    async function fetchSession() {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-        });
+    const listener = (nextState: SessionState) => setState(nextState);
+    sessionListeners.add(listener);
 
-        if (response.ok) {
-          const user: User = await response.json();
-          setState({
-            user,
-            isLoading: false,
-            isAdmin: user.role === 'admin',
-          });
-        } else {
-          setState({
-            user: null,
-            isLoading: false,
-            isAdmin: false,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch session:', error);
-        setState({
-          user: null,
-          isLoading: false,
-          isAdmin: false,
-        });
-      }
+    if (cachedSession) {
+      setState(cachedSession);
+    } else {
+      loadSession().catch(() => undefined);
     }
 
-    fetchSession();
+    return () => {
+      sessionListeners.delete(listener);
+    };
   }, []);
 
   return state;
