@@ -1,5 +1,6 @@
+// Ruta pública que lista el resumen de noticias para la portada y el módulo de noticias.
 import { NextResponse } from "next/server";
-import { listNoticiasPreview } from "@/app/db/content-repository";
+import { listNoticiasPreview } from "@/server/db/content-repository";
 
 export const revalidate = 60;
 

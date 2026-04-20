@@ -8,7 +8,7 @@ import {
   listResourceSections,
   moveResourceSection,
   updateResourceSection,
-} from "@/app/db/resource-pages-repository";
+} from "@/server/db/resource-pages-repository";
 
 export async function GET(req: Request) {
   const auth = await requirePermission("content.read");

@@ -2,7 +2,7 @@ import "server-only";
 
 import fs from "fs";
 import path from "path";
-import { getTursoClient } from "@/app/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 import { isTursoWriteEnabled } from "@/app/lib/feature-flags";
 
 export type UpdateComentarioResult =

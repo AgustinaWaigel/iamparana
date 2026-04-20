@@ -27,14 +27,18 @@ export const metadata: Metadata = {
 export default function juegosPage() {
   return (
     <>
+      {/* Área institucional: concentra protocolos y documentos de referencia para animadores. */}
       <div id="header"></div>
+      {/* Título simple de la página para orientar al visitante. */}
       <h2 className='mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-black to-gray-800 text-white text-center'>Institucional</h2>
       <main className="seccion areas" style={{ padding: '2rem' }}>
 <hr className="my-4 border-gray-300" />
+        {/* Texto introductorio que explica qué tipo de material se publica aquí. */}
         <p className="subtitulo-descriptivo">
          Esta es la sección donde vas a poder encontrar protocolos y demás material que es muy importante en nuestra tarea como animadores.
         </p>
 <hr className="my-4 border-gray-300" />
+        {/* Lista de documentos oficiales alojados en Drive. */}
         <div className="seccion">
           <h2 className="subtitulo-seccion titulo-institucional">Protocolos</h2>
           <div className="listabotones">

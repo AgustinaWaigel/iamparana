@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers"; // Usamos el helper oficial
-import { getSessionUserByTokenHash, UserRole } from "@/app/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
-import { ensureSchemaInitialized } from "@/app/db/turso";
+import { getSessionUserByTokenHash, UserRole } from "@/server/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/server/lib/auth-security";
+import { ensureSchemaInitialized } from "@/server/db/turso";
 
 // 1. Tipado de Permisos
 export type Permission =

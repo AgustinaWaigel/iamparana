@@ -27,9 +27,10 @@ export const metadata: Metadata = {
 export default function Espiritualidad() {
   return (
     <>
+      {/* Área de espiritualidad: reúne oraciones y guiones litúrgicos o formativos. */}
       <div id="header"></div>
 
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado visual de la sección. */}
       <HeroSection
         title="Espiritualidad"
         textureUrl="/assets/textures/espiritualidad.webp"
@@ -40,6 +41,7 @@ export default function Espiritualidad() {
       />
 
       <main className="seccion areas">
+        {/* Bloque de oraciones para acompañar los encuentros y momentos de reflexión. */}
         <section className="seccion-oraciones">
           <h2 className="subtitulo-seccion titulo-espiritualidad">🕊️ Oraciones</h2>
           <div className="flex flex-col gap-4 py-4">
@@ -115,6 +117,7 @@ export default function Espiritualidad() {
         </section>
         
         <hr className="my-4 border-gray-300" />
+        {/* Bloque de guiones descargables para celebraciones y momentos de animación. */}
         <section className="seccion-guiones">
           <h2 className="subtitulo-seccion titulo-espiritualidad">📜 Guiones</h2>
           <div className="listabotones">

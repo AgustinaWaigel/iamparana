@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ensureSchemaInitialized, getTursoClient } from "@/app/db/turso";
+import { ensureSchemaInitialized, getTursoClient } from "@/server/db/turso";
 
 export interface ResourcePage {
   id: number;

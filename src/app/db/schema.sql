@@ -71,6 +71,11 @@ CREATE TABLE IF NOT EXISTS agenda (
   evento TEXT NOT NULL,
   fecha TEXT NOT NULL,
   fecha_fin TEXT,
+  color TEXT,
+  descripcion TEXT,
+  hora_inicio TEXT,
+  hora_fin TEXT,
+  todo_el_dia INTEGER NOT NULL DEFAULT 1,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 

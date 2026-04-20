@@ -1,10 +1,11 @@
+// Administración de una noticia concreta: lectura, actualización y borrado por slug.
 import { NextResponse } from "next/server";
 import {
   deleteNoticiaAdmin,
   getNoticiaAdmin,
   NoticiaInput,
   updateNoticiaAdmin,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 type UpdateNoticiaInput = Omit<NoticiaInput, "slug">;

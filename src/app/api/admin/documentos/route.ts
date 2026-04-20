@@ -1,3 +1,4 @@
+// Administración de documentos compartidos en formación e institucional.
 import { NextResponse } from "next/server";
 import { requirePermission, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import {
@@ -8,7 +9,7 @@ import {
   deleteDocument,
   getGoogleDriveConfig,
   updateGoogleDriveConfig,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { uploadFileToDrive, getOrCreateFolder, deleteFileFromDrive } from "@/lib/google-drive-service";
 
 // GET /api/admin/documentos?section=noticias

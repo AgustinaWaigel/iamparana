@@ -1,7 +1,11 @@
 import React from "react";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
+export const viewport: Viewport = {
+  themeColor: "#622d0d",
+};
 
 export const metadata: Metadata = {
   title: "Dibujos",
@@ -23,7 +27,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/assets/resources/favicon.ico",
   },
-  themeColor: "#622d0d",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

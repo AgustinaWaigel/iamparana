@@ -112,6 +112,7 @@ function TemplatePicker({
 }
 
 export default function AdminRecursosPage() {
+  // Esta pantalla administra las páginas de recursos, sus secciones y los elementos publicados en cada una.
   const { user, loading } = useSessionUser();
 
   const [pages, setPages] = useState<ResourcePage[]>([]);
@@ -170,6 +171,7 @@ export default function AdminRecursosPage() {
   );
 
   const showMessage = (value: string) => {
+    // Mensajes breves para confirmar operaciones o informar errores.
     setMessage(value);
     setTimeout(() => setMessage(""), 3000);
   };

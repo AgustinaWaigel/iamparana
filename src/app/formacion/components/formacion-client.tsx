@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FormacionEditor } from './formacion-editor';
 import { useSession } from '@/app/hooks/use-session';
 
+// Conecta la vista pública de formación con el editor flotante de administración.
 interface FormacionClientProps {
   children: ReactNode;
 }

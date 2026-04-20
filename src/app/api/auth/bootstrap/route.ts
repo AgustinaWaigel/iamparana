@@ -1,6 +1,7 @@
+// Bootstrap de autenticación: crea el primer usuario administrador si hace falta.
 import { NextResponse } from "next/server";
-import { countUsers, createUser, UserRole } from "@/app/db/auth-repository";
-import { hashPassword } from "@/app/lib/auth-security";
+import { countUsers, createUser, UserRole } from "@/server/db/auth-repository";
+import { hashPassword } from "@/server/lib/auth-security";
 
 const ADMIN_KEY = process.env.ADMIN_KEY;
 

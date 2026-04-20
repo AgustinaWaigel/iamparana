@@ -1,6 +1,7 @@
+// Ruta pública para leer enlaces agrupados por sección.
 import { NextResponse } from "next/server";
 import { badRequest, serverError } from "@/app/api/admin/_shared/auth";
-import { getLinksBySection, getLinksBySections } from "@/app/db/admin-repository";
+import { getLinksBySection, getLinksBySections } from "@/server/db/admin-repository";
 
 export async function GET(req: Request) {
   try {

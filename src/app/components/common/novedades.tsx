@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchAPI } from "@/lib/api-client";
+import { listNoticiasPreview } from "@/server/db/content-repository";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 
 interface Noticia {
@@ -15,7 +15,8 @@ interface NovedadesProps {
 }
 
 export default async function Novedades({ currentSlug, limit = 4 }: NovedadesProps) {
-  const noticias = await fetchAPI<Noticia>("/api/noticias");
+  // Muestra un pequeño bloque con las noticias más recientes en la portada o en la noticia individual.
+  const noticias = await listNoticiasPreview();
   const novedades = noticias
     .filter((item) => item.slug !== currentSlug)
     .slice(0, limit);

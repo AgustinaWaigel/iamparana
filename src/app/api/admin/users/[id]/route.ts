@@ -1,6 +1,7 @@
+// Operaciones sobre un usuario puntual: editar, activar, desactivar o eliminar.
 import { NextRequest, NextResponse } from "next/server";
-import { updateUser } from "@/app/db/auth-repository";
-import { hashPassword } from "@/app/lib/auth-security";
+import { updateUser } from "@/server/db/auth-repository";
+import { hashPassword } from "@/server/lib/auth-security";
 import { requirePermission, badRequest, serverError, parseId } from "@/app/api/admin/_shared/auth";
 
 /**

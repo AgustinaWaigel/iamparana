@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getTursoClient } from "@/app/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 
 export interface Juego {
   id: number;

@@ -15,6 +15,8 @@ export async function generateMetadata() {
     openGraph: {
       title: "Calendario - IAM Paraná",
       description: "Consultá las fechas de nuestras próximas actividades y encuentros.",
+    // Esta página es la vista pública del calendario completo.
+    // Además de mostrar los eventos, ofrece un acceso directo al Google Calendar oficial.
       url: "https://iamparana.com.ar/calendario",
       siteName: "IAM Paraná",
       locale: "es_AR",
@@ -44,7 +46,7 @@ export default function CalendarioPage() {
     {/* Columna Derecha: Título y Acción */}
     <div className="flex flex-col lg:items-end gap-6">
       <div className="lg:text-right">
-        <h1 className="text-5xl font-black tracking-tight sm:text-6xl">
+            {/* Columna izquierda: contexto y descripción para el visitante. */}
           Calendario <span className="text-brand-gold">IAM</span>
         </h1>
         <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-amber-50/40">
@@ -65,6 +67,7 @@ export default function CalendarioPage() {
         Agregar a mi Google Calendar
       </Link>
     </div>
+              {/* Botón para abrir o suscribirse al calendario oficial en Google. */}
 
   </div>
 </section>

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSession } from "@/app/hooks/use-session";
 import { createPortal } from "react-dom";
 
+// Esta vista muestra la agenda resumida en la home: pocas actividades, botón para ver más
+// y un modal para consultar, editar o eliminar eventos según permisos.
 interface Evento {
   id?: string | number;
   fecha: string;
@@ -12,6 +14,9 @@ interface Evento {
   evento: string;
   color?: string;
   descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
 
 interface AgendaClientProps {
@@ -50,6 +55,16 @@ const formatDiasRestantes = (dateStr: string) => {
   if (diff <= 0) return "Hoy";
   if (diff === 1) return "Mañana";
   return `En ${diff} días`;
+};
+
+const formatHorarioResumen = (evento: Evento) => {
+  if (evento.todo_el_dia !== false) return "Todo el día";
+  const inicio = evento.hora_inicio?.trim();
+  const fin = evento.hora_fin?.trim();
+  if (inicio && fin) return `${inicio} - ${fin}`;
+  if (inicio) return `Desde ${inicio}`;
+  if (fin) return `Hasta ${fin}`;
+  return "Horario a confirmar";
 };
 
 const EVENT_COLOR_THEME: Record<string, { chip: string; badge: string; bar: string; title: string }> = {
@@ -118,21 +133,26 @@ export default function AgendaClient({
     evento: "",
     descripcion: "",
     color: "11",
+    hora_inicio: "",
+    hora_fin: "",
+    todo_el_dia: true,
   });
 
   const refreshAgenda = async () => {
     try {
+      // Cuando la agenda cambia, volvemos a pedir los datos para actualizar la vista pública.
       const response = await fetch("/api/agenda");
       if (response.ok) {
         const eventos: Evento[] = await response.json();
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
-        const limite = new Date();
-        limite.setMonth(hoy.getMonth() + 2);
 
-        const filtrados = eventos.filter((e) => parseLocalDate(e.fecha) >= hoy);
-        setEventosVisibles(filtrados.filter((e) => parseLocalDate(e.fecha) <= limite));
-        setEventosFuturos(filtrados.filter((e) => parseLocalDate(e.fecha) > limite));
+        const filtrados = eventos
+          .filter((e) => parseLocalDate(e.fecha) >= hoy)
+          .sort((a, b) => parseLocalDate(a.fecha).getTime() - parseLocalDate(b.fecha).getTime());
+
+        setEventosVisibles(filtrados);
+        setEventosFuturos([]);
       }
     } catch (err) {
       console.error(err);
@@ -150,6 +170,7 @@ export default function AgendaClient({
   }, []);
 
   const openModal = (evento: Evento) => {
+    // El modal reutiliza el evento seleccionado para mostrar detalle y permitir edición.
     setSelectedEvento(evento);
     setEditForm({
       id: evento.id,
@@ -158,6 +179,9 @@ export default function AgendaClient({
       evento: evento.evento,
       descripcion: evento.descripcion || "",
       color: evento.color || "11",
+      hora_inicio: evento.hora_inicio || "",
+      hora_fin: evento.hora_fin || "",
+      todo_el_dia: evento.todo_el_dia !== false,
     });
     setIsEditing(false);
     setIsModalOpen(true);
@@ -170,7 +194,10 @@ export default function AgendaClient({
   };
 
   const handleSaveEdit = async () => {
-    if (!selectedEvento?.id) return;
+    if (!selectedEvento?.id) {
+      alert("Este evento no tiene ID editable. Verificá que provenga del calendario administrable.");
+      return;
+    }
     if (!editForm.evento?.trim() || !editForm.fecha?.trim()) return;
 
     setIsSaving(true);
@@ -184,12 +211,24 @@ export default function AgendaClient({
           fecha: editForm.fecha,
           fecha_fin: editForm.fecha_fin || undefined,
           color: editForm.color || undefined,
-          descripcion: editForm.descripcion?.trim() || undefined,
+          descripcion: (editForm.descripcion ?? "").trim(),
+          hora_inicio: editForm.todo_el_dia === false ? editForm.hora_inicio || undefined : undefined,
+          hora_fin: editForm.todo_el_dia === false ? editForm.hora_fin || undefined : undefined,
+          todo_el_dia: editForm.todo_el_dia !== false,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("No se pudo editar el evento");
+        let message = "No se pudo editar el evento";
+        try {
+          const payload = await response.json();
+          if (payload?.error && typeof payload.error === "string") {
+            message = payload.error;
+          }
+        } catch {
+          // Si no llega JSON, mantenemos mensaje por defecto.
+        }
+        throw new Error(message);
       }
 
       await refreshAgenda();
@@ -197,14 +236,17 @@ export default function AgendaClient({
       closeModal();
     } catch (error) {
       console.error(error);
-      alert("No se pudo guardar el cambio del evento.");
+      alert(error instanceof Error ? error.message : "No se pudo guardar el cambio del evento.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteFromModal = async () => {
-    if (!selectedEvento?.id) return;
+    if (!selectedEvento?.id) {
+      alert("Este evento no tiene ID eliminable.");
+      return;
+    }
     if (!confirm("¿Seguro que querés eliminar este evento?")) return;
 
     setIsDeleting(true);
@@ -216,7 +258,16 @@ export default function AgendaClient({
       });
 
       if (!response.ok) {
-        throw new Error("No se pudo eliminar el evento");
+        let message = "No se pudo eliminar el evento";
+        try {
+          const payload = await response.json();
+          if (payload?.error && typeof payload.error === "string") {
+            message = payload.error;
+          }
+        } catch {
+          // Si no llega JSON, mantenemos mensaje por defecto.
+        }
+        throw new Error(message);
       }
 
       await refreshAgenda();
@@ -224,7 +275,7 @@ export default function AgendaClient({
       closeModal();
     } catch (error) {
       console.error(error);
-      alert("No se pudo eliminar el evento.");
+      alert(error instanceof Error ? error.message : "No se pudo eliminar el evento.");
     } finally {
       setIsDeleting(false);
     }
@@ -285,18 +336,17 @@ export default function AgendaClient({
     );
   };
 
+  const eventosMostrados = eventosVisibles.slice(0, 5);
+  const eventosOcultos = Math.max(0, eventosVisibles.length - eventosMostrados.length);
+
   return (
     <div className="w-full rounded-2xl border border-brand-gold/20 bg-white/80 p-4 shadow-sm backdrop-blur-sm sm:p-6">
-      <div className="mb-4 border-b border-brand-gold/20 pb-3">
-        <h3 className="text-lg font-extrabold text-brand-brown sm:text-xl">Próximas actividades</h3>
-        
-      </div>
 
       <ul className="space-y-4">
-        {eventosVisibles.map((item, idx) => renderEvento(item, idx, false))}
+        {eventosMostrados.map((item, idx) => renderEvento(item, idx, false))}
       </ul>
 
-      {eventosFuturos.length > 0 && (
+      {eventosOcultos > 0 && (
         <div className="mt-8 border-t border-slate-200 pt-6">
           <div className="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
             Eventos de más adelante
@@ -306,7 +356,7 @@ export default function AgendaClient({
               href="/calendario"
               className="rounded-full bg-brand-brown px-8 py-3 text-xs font-black uppercase tracking-[0.2em] text-white shadow-md shadow-brand-brown/20 transition-all hover:bg-amber-900"
             >
-              + Ver {eventosFuturos.length} más
+              + Ver {eventosOcultos} más
             </Link>
           </div>
         </div>
@@ -326,6 +376,9 @@ export default function AgendaClient({
                   {selectedEvento.fecha_fin && selectedEvento.fecha_fin !== selectedEvento.fecha
                     ? ` — ${formatFechaCorta(parseLocalDate(selectedEvento.fecha_fin))}`
                     : ""}
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {formatHorarioResumen(selectedEvento)}
                 </p>
               </div>
               <button
@@ -393,6 +446,37 @@ export default function AgendaClient({
                     className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
                   />
                 </div>
+                <label className="flex items-center gap-2 rounded-md border border-amber-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    checked={editForm.todo_el_dia !== false}
+                    onChange={(event) =>
+                      setEditForm({
+                        ...editForm,
+                        todo_el_dia: event.target.checked,
+                        hora_inicio: event.target.checked ? "" : editForm.hora_inicio,
+                        hora_fin: event.target.checked ? "" : editForm.hora_fin,
+                      })
+                    }
+                  />
+                  <span className="text-sm font-semibold text-brand-brown">Todo el día</span>
+                </label>
+                {editForm.todo_el_dia === false && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="time"
+                      value={editForm.hora_inicio || ""}
+                      onChange={(event) => setEditForm({ ...editForm, hora_inicio: event.target.value })}
+                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                    <input
+                      type="time"
+                      value={editForm.hora_fin || ""}
+                      onChange={(event) => setEditForm({ ...editForm, hora_fin: event.target.value })}
+                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                  </div>
+                )}
                 <select
                   value={editForm.color || "11"}
                   onChange={(event) => setEditForm({ ...editForm, color: event.target.value })}

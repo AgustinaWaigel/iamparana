@@ -4,8 +4,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Header from '@/app/components/layout/header';
 import Footer from '@/app/components/layout/footer';
-import { getSessionUserByTokenHash } from '@/app/db/auth-repository';
-import { AUTH_COOKIE_NAME, hashSessionToken } from '@/app/lib/auth-security';
+import { getSessionUserByTokenHash } from '@/server/db/auth-repository';
+import { AUTH_COOKIE_NAME, hashSessionToken } from '@/server/lib/auth-security';
 
 // Este componente protege las rutas /admin/* y valida que el usuario sea admin
 export default async function AdminLayout({

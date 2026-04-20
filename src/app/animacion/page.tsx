@@ -27,9 +27,10 @@ export const metadata: Metadata = {
 export default function AnimacionPage() {
   return (
     <>
+      {/* Sección principal de Animación: concentra juegos, canciones y recursos para encuentros. */}
       <div id="header"></div>
 
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado visual del área de Animación. */}
       <HeroSection
         title="Animación"
         textureUrl="/assets/textures/cartoon.webp"
@@ -40,9 +41,11 @@ export default function AnimacionPage() {
       />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Contenido destacado y accesos rápidos a los submódulos. */}
         <AnimacionClientContent />
         
         <hr className="my-4 border-gray-300" />
+        {/* Botones de entrada a las secciones hijas de la página. */}
         <div className="flex flex-wrap gap-5 justify-center">
           <Link 
             href="/animacion/juegos" 

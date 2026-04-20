@@ -1,5 +1,6 @@
+// Ruta pública que entrega los ítems del carrusel de portada.
 import { NextResponse } from "next/server";
-import { listCarouselItems } from "@/app/db/content-repository";
+import { listCarouselItems } from "@/server/db/content-repository";
 
 export const revalidate = 60;
 

@@ -1,10 +1,11 @@
+// Administración de una canción puntual: consulta, edición y borrado por slug.
 import { NextResponse } from "next/server";
 import {
   deleteCancionAdmin,
   getCancionAdmin,
   CancionInput,
   updateCancionAdmin,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 type UpdateCancionInput = Omit<CancionInput, "slug">;

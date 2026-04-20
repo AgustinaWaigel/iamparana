@@ -1,12 +1,13 @@
+// Ruta de login: valida credenciales y crea la sesión de acceso al panel.
 import { NextResponse } from "next/server";
-import { createSession, findUserByEmail } from "@/app/db/auth-repository";
+import { createSession, findUserByEmail } from "@/server/db/auth-repository";
 import {
   AUTH_COOKIE_NAME,
   createSessionToken,
   getSessionExpiresAtIso,
   hashSessionToken,
   verifyPassword,
-} from "@/app/lib/auth-security";
+} from "@/server/lib/auth-security";
 
 // Usamos el entorno para configurar la seguridad de la cookie
 const isProduction = process.env.NODE_ENV === "production";

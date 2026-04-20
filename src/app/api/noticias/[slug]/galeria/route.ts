@@ -1,5 +1,6 @@
+// Galería de una noticia: lista y administra imágenes asociadas a ese artículo.
 import { NextResponse } from "next/server";
-import { getTursoClient } from "@/app/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 import { isTursoReadEnabled } from "@/app/lib/feature-flags";
 
 type GaleriaRow = {

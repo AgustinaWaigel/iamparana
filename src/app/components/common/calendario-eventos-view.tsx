@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "@/app/hooks/use-session";
 
+// Vista completa del calendario: muestra el mes, distribuye eventos por día y abre un modal de detalle.
 interface Evento {
   id?: string | number;
   fecha: string;
@@ -11,6 +12,9 @@ interface Evento {
   evento: string;
   color?: string;
   descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
 
 const COLOR_MAP: Record<string, string> = {
@@ -57,6 +61,16 @@ const dayLabel = (date: Date) =>
 const formatFechaCorta = (date: Date) =>
   date.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
 
+const formatHorarioResumen = (evento: Evento) => {
+  if (evento.todo_el_dia !== false) return "Todo el día";
+  const inicio = evento.hora_inicio?.trim();
+  const fin = evento.hora_fin?.trim();
+  if (inicio && fin) return `${inicio} - ${fin}`;
+  if (inicio) return `Desde ${inicio}`;
+  if (fin) return `Hasta ${fin}`;
+  return "Horario a confirmar";
+};
+
 export default function CalendarioEventosView() {
   const { isAdmin } = useSession();
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -73,10 +87,14 @@ export default function CalendarioEventosView() {
     evento: "",
     descripcion: "",
     color: "11",
+    hora_inicio: "",
+    hora_fin: "",
+    todo_el_dia: true,
   });
 
   const refreshAgenda = async () => {
     try {
+      // Releemos la agenda completa para que el calendario mensual quede sincronizado.
       const res = await fetch("/api/agenda", { cache: "no-store" });
       if (!res.ok) {
         throw new Error("No se pudo cargar la agenda");
@@ -95,6 +113,7 @@ export default function CalendarioEventosView() {
 
     const loadEventos = async () => {
       try {
+        // Carga inicial del calendario desde la API centralizada.
         const res = await fetch("/api/agenda", { cache: "no-store" });
         if (!res.ok) {
           throw new Error("No se pudo cargar la agenda");
@@ -137,6 +156,7 @@ export default function CalendarioEventosView() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const eventsByDay = useMemo(() => {
+    // Agrupamos los eventos por día para poder pintarlos dentro de cada casillero del mes.
     const map = new Map<string, Evento[]>();
 
     for (const evento of eventos) {
@@ -168,6 +188,7 @@ export default function CalendarioEventosView() {
   const selectedEvents = eventsByDay.get(selectedKey) || [];
 
   const openModal = (evento: Evento) => {
+    // El modal permite ver el detalle y, si hay permisos, editar o borrar el evento.
     setSelectedEvento(evento);
     setEditForm({
       id: evento.id,
@@ -176,6 +197,9 @@ export default function CalendarioEventosView() {
       evento: evento.evento,
       descripcion: evento.descripcion || "",
       color: evento.color || "11",
+      hora_inicio: evento.hora_inicio || "",
+      hora_fin: evento.hora_fin || "",
+      todo_el_dia: evento.todo_el_dia !== false,
     });
     setIsEditing(false);
     setIsModalOpen(true);
@@ -202,7 +226,10 @@ export default function CalendarioEventosView() {
           fecha: editForm.fecha,
           fecha_fin: editForm.fecha_fin || undefined,
           color: editForm.color || undefined,
-          descripcion: editForm.descripcion?.trim() || undefined,
+          descripcion: (editForm.descripcion ?? "").trim(),
+          hora_inicio: editForm.todo_el_dia === false ? editForm.hora_inicio || undefined : undefined,
+          hora_fin: editForm.todo_el_dia === false ? editForm.hora_fin || undefined : undefined,
+          todo_el_dia: editForm.todo_el_dia !== false,
         }),
       });
 
@@ -390,6 +417,9 @@ export default function CalendarioEventosView() {
                     ? ` — ${formatFechaCorta(parseLocalDate(selectedEvento.fecha_fin))}`
                     : ""}
                 </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {formatHorarioResumen(selectedEvento)}
+                </p>
               </div>
               <button
                 type="button"
@@ -456,6 +486,37 @@ export default function CalendarioEventosView() {
                     className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
                   />
                 </div>
+                <label className="flex items-center gap-2 rounded-md border border-amber-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    checked={editForm.todo_el_dia !== false}
+                    onChange={(event) =>
+                      setEditForm({
+                        ...editForm,
+                        todo_el_dia: event.target.checked,
+                        hora_inicio: event.target.checked ? "" : editForm.hora_inicio,
+                        hora_fin: event.target.checked ? "" : editForm.hora_fin,
+                      })
+                    }
+                  />
+                  <span className="text-sm font-semibold text-brand-brown">Todo el día</span>
+                </label>
+                {editForm.todo_el_dia === false && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="time"
+                      value={editForm.hora_inicio || ""}
+                      onChange={(event) => setEditForm({ ...editForm, hora_inicio: event.target.value })}
+                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                    <input
+                      type="time"
+                      value={editForm.hora_fin || ""}
+                      onChange={(event) => setEditForm({ ...editForm, hora_fin: event.target.value })}
+                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                  </div>
+                )}
                 <select
                   value={editForm.color || "11"}
                   onChange={(event) => setEditForm({ ...editForm, color: event.target.value })}

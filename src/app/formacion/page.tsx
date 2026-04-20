@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { FormacionClient } from '@/app/formacion/components/formacion-client';
 import { FormacionCardsGrid } from './components/formacion-cards-grid';
 import { HeroSection } from '@/app/components/common/hero-section';
-import { getDocumentsBySections, getLinksBySection } from '@/app/db/admin-repository';
-import { listResourcePages } from '@/app/db/resource-pages-repository';
+import { getDocumentsBySections, getLinksBySection } from '@/server/db/admin-repository';
+import { listResourcePages } from '@/server/db/resource-pages-repository';
 import { Rocket, Users, Heart, Sparkles, Quote } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -54,6 +54,8 @@ type ResourcePageCard = {
 };
 
 export default async function FormacionPage() {
+  // La página de formación reúne documentos, enlaces y páginas de recursos.
+  // Antes de renderizar, normaliza lo que viene de base de datos para evitar problemas de serialización.
   const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
     getDocumentsBySections(['formacion', 'temario', 'carta', 'otro']),
     getLinksBySection('formacion'),
@@ -99,7 +101,7 @@ export default async function FormacionPage() {
     <FormacionClient>
       <div id="header"></div>
       
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado principal del área de formación. */}
       <HeroSection
         title="Formación"
         textureUrl={heroTextureUrl}
@@ -111,6 +113,7 @@ export default async function FormacionPage() {
       />
 
       <main className="px-4 py-12 md:py-16 max-w-7xl mx-auto">
+        {/* Grilla principal de materiales y accesos rápidos. */}
         <FormacionCardsGrid uploadedDocuments={uploadedDocuments} uploadedLinks={uploadedLinks} resourcePages={resourcePages} />
 
         <section className="mb-20 rounded-3xl border border-yellow-200 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 md:p-8">

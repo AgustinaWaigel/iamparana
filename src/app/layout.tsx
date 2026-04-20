@@ -5,6 +5,8 @@ import ClientLayout from "./clientlayout";
 import AnalyticsProvider from '@/app/components/providers/analyticsprovider';
 import { ServiceWorkerRegistration } from '@/app/components/common/service-worker-registration';
 
+// Este layout envuelve toda la aplicación: carga fuentes globales, estilos base,
+// métricas, y el service worker para que el sitio funcione como una PWA.
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -57,6 +59,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // El HTML raíz define el idioma del sitio y monta los proveedores globales.
     <html lang="es">
       <body
       

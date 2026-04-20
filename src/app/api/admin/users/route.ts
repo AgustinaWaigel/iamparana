@@ -1,7 +1,8 @@
+// CRUD de usuarios administrativos y del equipo interno.
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, listUsers } from "@/app/db/auth-repository";
-import { hashPassword } from "@/app/lib/auth-security";
-import { requirePermission, badRequest, serverError } from "@/app/lib/api-utils";
+import { createUser, listUsers } from "@/server/db/auth-repository";
+import { hashPassword } from "@/server/lib/auth-security";
+import { requirePermission, badRequest, serverError } from "@/server/lib/api-utils";
 
 /**
  * GET: Lista todos los usuarios.

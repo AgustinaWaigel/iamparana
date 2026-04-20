@@ -1,4 +1,4 @@
-import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/app/lib/noticias';
+import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/server/content/noticias';
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -20,11 +20,13 @@ interface BloqueContenido {
 }
 
 export async function generateStaticParams() {
+  // Genera las rutas estáticas de todas las noticias publicadas.
   const slugs = await getAllNoticiasSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
+  // Cada noticia publica su metadata para SEO y compartir en redes.
   const params = await props.params;
   const noticia = await getNoticiaBySlug(params.slug);
   if (!noticia) {
@@ -46,6 +48,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function NoticiaPage(props: Props) {
+  // La página de detalle reconstruye el contenido dinámico de cada noticia por slug.
   const params = await props.params;
   const noticia = await getNoticiaBySlug(params.slug);
 
@@ -87,7 +90,7 @@ export default async function NoticiaPage(props: Props) {
 
         <hr className="w-full border-t border-gray-200 my-8" />
 
-        {/* Portada Principal con img normal */}
+        {/* Imagen principal de la noticia. */}
         <div className="w-full mb-10">
           <img
             src={getGoogleDriveImageUrl(image)}
@@ -98,7 +101,7 @@ export default async function NoticiaPage(props: Props) {
           />
         </div>
 
-        {/* CONTENIDO DINÁMICO (Bloques) */}
+        {/* Contenido principal de la noticia: bloques de texto e imágenes. */}
         <div className="space-y-6 text-gray-800 w-full break-words text-base leading-7">
           {bloques.map((bloque) => {
             if (bloque.type === 'text') {
@@ -160,6 +163,7 @@ export default async function NoticiaPage(props: Props) {
           })}
         </div>
 
+        {/* Galería asociada a la noticia. */}
         <div className="mt-12">
           <NoticiaGaleriaView slug={params.slug} />
         </div>
@@ -205,6 +209,7 @@ export default async function NoticiaPage(props: Props) {
           </ul>
         </div>
 
+        {/* Otras noticias para seguir navegando por el sitio. */}
         <section className="mt-16">
           <h2 className="text-2xl font-bold text-brand-brown mb-6">Más noticias</h2>
           <Novedades currentSlug={params.slug} />

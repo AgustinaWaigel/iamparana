@@ -1,6 +1,7 @@
+// Ruta pública para leer documentos agrupados por sección.
 import { NextResponse } from "next/server";
 import { badRequest, serverError } from "@/app/api/admin/_shared/auth";
-import { getDocumentsBySection, getDocumentsBySections } from "@/app/db/admin-repository";
+import { getDocumentsBySection, getDocumentsBySections } from "@/server/db/admin-repository";
 
 export async function GET(req: Request) {
   try {

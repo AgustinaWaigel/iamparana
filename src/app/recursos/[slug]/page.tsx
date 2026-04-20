@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ExternalLink, FileText } from "lucide-react";
-import { getResourcePageWithContent } from "@/app/db/resource-pages-repository";
+import { getResourcePageWithContent } from "@/server/db/resource-pages-repository";
 import { ResourcePageEditorFab } from "@/app/components/common/resource-page-editor-fab";
 
 interface PageProps {
@@ -27,6 +27,7 @@ const TEMPLATE_MAP: Record<string, { bannerOverlay: string; titleColor: string; 
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  // Cada página de recursos define su propia metadata según el slug solicitado.
   const { slug } = await params;
   const data = await getResourcePageWithContent(slug);
 
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ResourcePage({ params }: PageProps) {
+  // Vista dinámica para cada página de recursos creada desde el panel de formación.
   const { slug } = await params;
   const data = await getResourcePageWithContent(slug);
 
@@ -83,12 +85,14 @@ export default async function ResourcePage({ params }: PageProps) {
       </div>
 
       <section className="mx-auto mt-10 max-w-7xl px-4 space-y-8">
+        {/* Si la página todavía no tiene secciones, se muestra un estado vacío claro. */}
         {data.sections.length === 0 && (
           <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-stone-600">
             Esta pagina todavia no tiene secciones.
           </div>
         )}
 
+        {/* Cada sección agrupa documentos y enlaces relacionados con el recurso. */}
         {data.sections.map((section) => (
           <article key={section.id} className={`rounded-2xl border bg-white shadow-sm p-6 ${theme.cardBorder}`}>
             <h2 className="text-2xl font-black text-brand-brown mb-4">{section.title}</h2>

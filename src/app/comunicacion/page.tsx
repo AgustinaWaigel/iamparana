@@ -1,7 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import { HeroSection } from "@/app/components/common/hero-section";
+
+export const viewport: Viewport = {
+  themeColor: "#622d0d",
+};
 
 export const metadata: Metadata = {
   title: "Comunicación",
@@ -23,7 +27,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/assets/resources/favicon.ico",
   },
-  themeColor: "#622d0d",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -34,9 +37,10 @@ export const metadata: Metadata = {
 export default function Comunicacion() {
   return (
     <>
+      {/* Área de comunicación: concentra material gráfico reutilizable por los equipos. */}
       <div id="header"></div>
 
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado visual de la sección. */}
       <HeroSection
         title="Comunicación"
         textureUrl="/assets/textures/areasg.webp"
@@ -47,6 +51,7 @@ export default function Comunicacion() {
       />
 
       <main className="seccion areas">
+        {/* Navegación hacia los recursos gráficos disponibles. */}
         <div className="listabotones">
           <Link href="/comunicacion/logos" className="px-10 py-3 rounded-lg font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg no-underline bg-blue-400 text-white shadow-md">
             Logos
@@ -56,6 +61,7 @@ export default function Comunicacion() {
           </Link>
         </div>
         <hr className="my-4 border-gray-300" />
+        {/* Aviso legal y de uso responsable de los recursos publicados. */}
         <section className="text-center text-xs text-gray-600 px-4 py-8 max-w-4xl mx-auto italic">
           <p>
             © IAM Paraná. Todos los derechos reservados. Las imágenes, logotipos y

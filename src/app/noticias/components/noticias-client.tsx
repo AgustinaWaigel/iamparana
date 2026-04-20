@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { NoticiasEditor } from './noticias-editor';
 import { useSession } from '@/app/hooks/use-session';
 
+// Envuelve la sección pública de noticias y monta el editor flotante solo para admins.
 interface Noticia {
   slug: string;
   title: string;
@@ -26,6 +27,7 @@ export function NoticiasClient({ children, noticias = [] }: NoticiasClientProps)
   // Exponer una variable global para que el componente de botones pueda llamarla
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // El objetivo es conectar el botón de edición de cada tarjeta con el editor flotante.
       (window as any).__noticiasApp = {
         editNoticia: (noticia: Noticia) => {
           setEditingNoticia({ ...noticia });

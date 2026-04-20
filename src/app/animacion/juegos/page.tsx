@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { getAllJuegos } from '@/app/lib/juegos';
+import { getAllJuegos } from '@/server/content/juegos';
 import { JuegosClientContent } from '@/app/components/common/juegos-client-content';
 
 export const metadata: Metadata = {

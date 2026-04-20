@@ -114,5 +114,6 @@ const content = (
 );
 
 export default function PresentacionesPage() {
+  // Página específica del material de presentaciones del área de formación.
   return <PresentacionesClient>{content}</PresentacionesClient>;
 }

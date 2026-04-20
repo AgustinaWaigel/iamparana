@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FileUp, Link as LinkIcon, Loader2, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { useSessionUser } from '@/app/lib/use-session';
 
+// Botón flotante de administración para editar páginas de recursos, secciones y contenido asociado.
 type EditorSection = {
   id: number;
   title: string;
@@ -86,6 +87,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
   }
 
   const refreshSections = async () => {
+    // Recarga la estructura de la página para mantener sincronizadas secciones y contenido.
     const response = await fetch(`/api/admin/resource-sections?pageId=${page.id}`, {
       credentials: 'include',
     });

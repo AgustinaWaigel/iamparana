@@ -1,6 +1,7 @@
+// Ruta de sesión actual: permite al frontend saber quién está logueado.
 import { NextResponse } from "next/server";
-import { getSessionUserByTokenHash } from "@/app/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
+import { getSessionUserByTokenHash } from "@/server/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/server/lib/auth-security";
 
 function getCookieValue(cookieHeader: string, name: string) {
   const parts = cookieHeader.split(";").map((value) => value.trim());

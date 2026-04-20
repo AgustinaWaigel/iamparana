@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { deleteNoticiaGaleriaImage } from "@/app/db/admin-repository";
+import { deleteNoticiaGaleriaImage } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, parseId, serverError } from "@/app/api/admin/_shared/auth";
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {

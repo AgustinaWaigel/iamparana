@@ -1,9 +1,10 @@
+// Administración de noticias: crea y lista publicaciones para el panel editorial.
 import { NextResponse } from "next/server";
 import {
   createNoticiaAdmin,
   listNoticiasAdmin,
   NoticiaInput,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidNoticiaPayload(value: unknown): value is NoticiaInput {

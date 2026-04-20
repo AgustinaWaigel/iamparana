@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { marked, Renderer } from 'marked';
 import ChordTransposer from '@/app/components/common/chordtransposer';
-import { getAllCanciones, getCancionBySlug } from '@/app/lib/canciones';
+import { getAllCanciones, getCancionBySlug } from '@/server/content/canciones';
 
 const renderer = new Renderer();
 renderer.code = function ({ text, lang, escaped }: { text: string; lang?: string; escaped?: boolean }): string {

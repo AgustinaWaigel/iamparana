@@ -4,6 +4,7 @@ import { Edit2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSession } from '@/app/hooks/use-session';
 
+// Controles rápidos que aparecen sobre cada noticia para administradores.
 interface Noticia {
   slug: string;
   title: string;

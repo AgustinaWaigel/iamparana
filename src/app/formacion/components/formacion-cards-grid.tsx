@@ -63,6 +63,7 @@ interface FormacionCardsGridProps {
   resourcePages: ResourcePageCard[];
 }
 
+// Esta grilla reúne los recursos fijos y dinámicos de formación en un único catálogo visual.
 export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages }: FormacionCardsGridProps) {
   const { isAdmin } = useSession();
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,6 +82,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   useEffect(() => setResourcePagesState(resourcePages), [resourcePages]);
 
   const openEditModal = (card: CardItem) => {
+    // Los administradores pueden editar cualquier recurso que venga desde base de datos.
     if (!isAdmin || card.kind === 'static' || !card.resourceId) return;
     setEditError('');
     setEditDraft({
@@ -99,6 +101,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   };
 
   const openDeleteModal = (card: CardItem) => {
+    // La eliminación solo aplica a recursos dinámicos; los cards fijos no se borran desde aquí.
     if (!isAdmin || card.kind === 'static' || !card.resourceId) return;
     setDeleteError('');
     setDeleteDraft({
@@ -203,6 +206,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   };
 
   const cards = useMemo<CardItem[]>(() => {
+    // Primero definimos los recursos fijos de la sección y luego sumamos lo que viene del administrador.
     const staticCards: CardItem[] = [
       {
         id: 'static-temario',
@@ -275,6 +279,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   }, [documentsState, linksState, resourcePagesState]);
 
   const filteredCards = useMemo(() => {
+    // El buscador filtra por título, descripción o etiqueta para encontrar recursos rápido.
     const term = searchTerm.trim().toLowerCase();
     if (!term) return cards;
 
@@ -354,6 +359,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 mb-20">
         {filteredCards.map((card) => {
+          // Cada card mantiene el mismo patrón visual, cambiando icono y color según su tipo.
           const content = (
             <>
               <div className={`${headerBg(card.accent)} h-44 flex items-center justify-center relative overflow-hidden`}>

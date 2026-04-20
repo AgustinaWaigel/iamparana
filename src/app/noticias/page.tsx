@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { fetchAPI } from "@/app/lib/api-client";
 import { NoticiasClient } from "@/app/noticias/components/noticias-client";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
 import { HeroSection } from "@/app/components/common/hero-section";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
+import { listNoticiasPreview } from "@/server/db/content-repository";
 
 interface Noticia {
   slug: string;
@@ -15,13 +15,15 @@ interface Noticia {
 }
 
 export default async function Noticias() {
-  const noticias = await fetchAPI<Noticia>("/api/noticias");
+  // La página de noticias arma la grilla pública y superpone controles de administración
+  // cuando el usuario tiene permisos.
+  const noticias = await listNoticiasPreview();
 
   const content = (
     <>
       <div id="header"></div>
 
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado visual del área de noticias. */}
       <HeroSection
         title="Noticias"
         textureUrl="/assets/textures/areasg.webp"
@@ -32,12 +34,13 @@ export default async function Noticias() {
       />
 
       <main className="max-w-6xl mx-auto px-4 py-12 pb-12">
+        {/* Listado de noticias en tarjetas, una por cada publicación disponible. */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {noticias.map((item) => (
             <div key={item.slug} className="relative group">
               <article className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden hover:scale-105 transform duration-300">
                 <Link href={`/noticias/${item.slug}`} className="block h-full no-underline">
-                  {/* Contenedor de la imagen con posición relativa para 'fill' */}
+                  {/* Imagen principal de la noticia, usando fill para cubrir el bloque completo. */}
                   <div className="relative h-48 overflow-hidden bg-gray-200">
                     <Image
                       src={getGoogleDriveImageUrl(item.image)}
@@ -62,6 +65,7 @@ export default async function Noticias() {
                   </div>
                 </Link>
               </article>
+              {/* Botones de editar/eliminar solo visibles para administradores. */}
               <NoticiasAdminButtons noticia={item} />
             </div>
           ))}

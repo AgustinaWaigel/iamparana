@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getTursoClient } from '@/app/db/turso';
+import { getTursoClient } from '@/server/db/turso';
 import { requirePermission, serverError, badRequest } from '@/app/api/admin/_shared/auth';
 
 function clientOrThrow() {

@@ -1,9 +1,10 @@
+// Administración del cancionero: alta y listado de canciones desde el panel.
 import { NextResponse } from "next/server";
 import {
   CancionInput,
   createCancionAdmin,
   listCancionesAdmin,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidCancionPayload(value: unknown): value is CancionInput {

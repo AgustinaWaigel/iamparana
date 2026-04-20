@@ -1,4 +1,4 @@
-import { getAllCanciones } from "@/app/lib/canciones";
+import { getAllCanciones } from "@/server/content/canciones";
 import CancionesLista from "@/app/components/common/cancioneslista";
 import { Metadata } from "next";
 

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { JuegosEditor } from './juegos-editor';
-import type { Juego } from '@/app/lib/juegos';
+import type { Juego } from '@/server/content/juegos';
 
+// Este componente muestra los juegos agrupados por categoría y activa el editor para admins.
 interface JuegosClientContentProps {
   juegos: Juego[];
 }
@@ -34,6 +35,7 @@ export function JuegosClientContent({ juegos: initialJuegos }: JuegosClientConte
 
   const handleRefresh = async () => {
     try {
+      // Actualiza la lista de juegos desde el panel administrativo.
       const response = await fetch('/api/admin/juegos', { credentials: 'include' });
       const data = await response.json();
       setJuegos(data);
@@ -42,7 +44,7 @@ export function JuegosClientContent({ juegos: initialJuegos }: JuegosClientConte
     }
   };
 
-  // Agrupar por categoría
+  // Agrupa los juegos para presentarlos por tipo en la interfaz pública.
   const juegosPorCategoria = juegos.reduce((acc, juego) => {
     if (!acc[juego.category]) acc[juego.category] = [];
     acc[juego.category].push(juego);

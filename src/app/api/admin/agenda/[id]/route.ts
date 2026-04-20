@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AgendaInput, deleteAgendaAdmin, getAgendaAdmin, updateAgendaAdmin } from "@/app/db/admin-repository";
+import { AgendaInput, deleteAgendaAdmin, getAgendaAdmin, updateAgendaAdmin } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, parseId, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidAgendaPayload(value: unknown): value is AgendaInput {

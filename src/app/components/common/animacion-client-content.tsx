@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AnimacionEditor } from './animacion-editor';
 
+// Este bloque arma el contenido principal de Animación y habilita edición solo para admins.
 interface AnimacionContent {
   id: number;
   title: string;
@@ -22,6 +23,7 @@ export function AnimacionClientContent() {
 
   const fetchContent = async () => {
     try {
+      // Trae el contenido editorial que se muestra en la página pública de Animación.
       const response = await fetch('/api/admin/animacion', {
         credentials: 'include',
       });
@@ -44,6 +46,7 @@ export function AnimacionClientContent() {
 
   const checkAdmin = async () => {
     try {
+      // Consulta la sesión para decidir si se debe mostrar el editor flotante.
       const response = await fetch('/api/auth/me', { credentials: 'include' });
       if (response.status === 401) {
         setIsAdmin(false);

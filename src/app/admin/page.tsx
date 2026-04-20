@@ -16,6 +16,7 @@ const ENTITY_CONFIG: Record<Entity, { label: string; icon: any; color: string }>
 };
 
 export default function AdminPage() {
+  // Este panel es el centro de administración: permite editar colecciones completas en formato JSON.
   const [entity, setEntity] = useState<Entity>('noticias');
   const [items, setItems] = useState<Record<string, any>[]>([]);
   const [selectedKey, setSelectedKey] = useState('');
@@ -97,7 +98,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-[#F8F9FA] pt-20 pb-10 font-sans">
       <div className="max-w-[1600px] mx-auto px-6">
         
-        {/* Header con Status */}
+        {/* Cabecera con estado general y nombre del módulo. */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-black text-brand-brown tracking-tight flex items-center gap-3">
@@ -118,7 +119,7 @@ export default function AdminPage() {
 
         <div className="grid lg:grid-cols-[280px_1fr] gap-8">
           
-          {/* Sidebar de Navegación */}
+          {/* Navegación lateral entre tipos de contenido administrables. */}
           <aside className="space-y-6">
             <nav className="bg-white p-3 rounded-[2rem] shadow-sm border border-stone-200 space-y-1">
               {(Object.keys(ENTITY_CONFIG) as Entity[]).map((key) => {
@@ -171,7 +172,7 @@ export default function AdminPage() {
             </div>
           </aside>
 
-          {/* Área del Editor */}
+          {/* Área de edición JSON del registro seleccionado. */}
           <div className="space-y-4">
             <div className="flex justify-end gap-3">
               {selectedKey && (

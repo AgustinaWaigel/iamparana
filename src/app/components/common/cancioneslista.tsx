@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 
+// Lista interactiva del cancionero: filtra por texto y lleva al detalle de cada canción.
 type Cancion = {
   title: string;
   slug: string;
@@ -12,6 +13,7 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
   const [busqueda, setBusqueda] = useState('');
 
   const cancionesFiltradas = useMemo(() => {
+    // La búsqueda es simple: coincide por título y ordena alfabéticamente.
     return canciones
       .filter((c) =>
         c.title.toLowerCase().includes(busqueda.toLowerCase())

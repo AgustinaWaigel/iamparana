@@ -6,7 +6,7 @@ import {
   getResourcePageById,
   listResourcePages,
   updateResourcePage,
-} from "@/app/db/resource-pages-repository";
+} from "@/server/db/resource-pages-repository";
 
 export async function GET() {
   const auth = await requirePermission("content.read");

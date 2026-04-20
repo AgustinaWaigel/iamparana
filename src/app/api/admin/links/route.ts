@@ -6,7 +6,7 @@ import {
   getLink,
   updateLink,
   deleteLink,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 
 // GET /api/admin/links?section=formacion
 export async function GET(req: Request) {

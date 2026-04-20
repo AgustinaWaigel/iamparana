@@ -3,7 +3,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getTursoClient } from "@/app/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 import { isTursoReadEnabled } from "@/app/lib/feature-flags";
 
 export interface NoticiaPreview {
@@ -44,6 +44,11 @@ export interface AgendaEvento {
   fecha: string;
   fecha_fin?: string;
   evento: string;
+  color?: string;
+  descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
 
 export interface CarouselItem {
@@ -188,6 +193,11 @@ function readAgendaFromFs(): AgendaEvento[] {
         fecha: asString(data.fecha),
         fecha_fin: asOptionalString(data.fecha_fin),
         evento: asString(data.evento),
+        color: asOptionalString(data.color),
+        descripcion: asOptionalString(data.descripcion),
+        hora_inicio: asOptionalString(data.hora_inicio),
+        hora_fin: asOptionalString(data.hora_fin),
+        todo_el_dia: typeof data.todo_el_dia === "boolean" ? data.todo_el_dia : undefined,
       };
     });
   } catch (error) {
@@ -328,24 +338,48 @@ export async function getCancionDetailBySlug(slug: string): Promise<CancionDetai
 
 export async function listAgendaEventos(): Promise<AgendaEvento[]> {
   const client = getTursoClient();
-  if (isTursoReadEnabled && client) {
+  if (client) {
     try {
-      const result = await client.execute("SELECT id, fecha, fecha_fin, evento FROM agenda ORDER BY fecha ASC");
+      const result = await client.execute("SELECT id, fecha, fecha_fin, evento, color, descripcion, hora_inicio, hora_fin, todo_el_dia FROM agenda ORDER BY fecha ASC");
       return result.rows.map((row) => ({
         id: asNumber(row.id),
         fecha: asString(row.fecha),
         fecha_fin: asOptionalString(row.fecha_fin),
         evento: asString(row.evento),
+        color: asOptionalString(row.color),
+        descripcion: asOptionalString(row.descripcion),
+        hora_inicio: asOptionalString(row.hora_inicio),
+        hora_fin: asOptionalString(row.hora_fin),
+        todo_el_dia: typeof row.todo_el_dia === "number" ? row.todo_el_dia === 1 : undefined,
       }));
     } catch (error) {
-      console.error("Turso read agenda failed, fallback to FS", error);
+      try {
+        const legacyResult = await client.execute("SELECT id, fecha, fecha_fin, evento FROM agenda ORDER BY fecha ASC");
+        return legacyResult.rows.map((row) => ({
+          id: asNumber(row.id),
+          fecha: asString(row.fecha),
+          fecha_fin: asOptionalString(row.fecha_fin),
+          evento: asString(row.evento),
+        }));
+      } catch (legacyError) {
+        console.error("Turso read agenda failed, fallback to FS", error, legacyError);
+      }
     }
   }
 
   return readAgendaFromFs();
 }
 
-export async function createAgendaEvento(evento: string, fecha: string, fecha_fin?: string): Promise<number> {
+export async function createAgendaEvento(
+  evento: string,
+  fecha: string,
+  fecha_fin?: string,
+  color?: string,
+  descripcion?: string,
+  hora_inicio?: string,
+  hora_fin?: string,
+  todo_el_dia?: boolean
+): Promise<number> {
   const client = getTursoClient();
   if (!client) {
     throw new Error("Database client not available");
@@ -353,8 +387,17 @@ export async function createAgendaEvento(evento: string, fecha: string, fecha_fi
 
   try {
     const result = await client.execute({
-      sql: "INSERT INTO agenda (evento, fecha, fecha_fin, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-      args: [evento, fecha, fecha_fin || null],
+      sql: "INSERT INTO agenda (evento, fecha, fecha_fin, color, descripcion, hora_inicio, hora_fin, todo_el_dia, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+      args: [
+        evento,
+        fecha,
+        fecha_fin || null,
+        color || null,
+        descripcion || null,
+        hora_inicio || null,
+        hora_fin || null,
+        todo_el_dia === false ? 0 : 1,
+      ],
     });
     return Number(result.lastInsertRowid);
   } catch (error) {
@@ -363,7 +406,17 @@ export async function createAgendaEvento(evento: string, fecha: string, fecha_fi
   }
 }
 
-export async function updateAgendaEvento(id: number, evento: string, fecha: string, fecha_fin?: string): Promise<void> {
+export async function updateAgendaEvento(
+  id: number,
+  evento: string,
+  fecha: string,
+  fecha_fin?: string,
+  color?: string,
+  descripcion?: string,
+  hora_inicio?: string,
+  hora_fin?: string,
+  todo_el_dia?: boolean
+): Promise<void> {
   const client = getTursoClient();
   if (!client) {
     throw new Error("Database client not available");
@@ -371,8 +424,18 @@ export async function updateAgendaEvento(id: number, evento: string, fecha: stri
 
   try {
     await client.execute({
-      sql: "UPDATE agenda SET evento = ?, fecha = ?, fecha_fin = ? WHERE id = ?",
-      args: [evento, fecha, fecha_fin || null, id],
+      sql: "UPDATE agenda SET evento = ?, fecha = ?, fecha_fin = ?, color = ?, descripcion = ?, hora_inicio = ?, hora_fin = ?, todo_el_dia = ? WHERE id = ?",
+      args: [
+        evento,
+        fecha,
+        fecha_fin || null,
+        color || null,
+        descripcion || null,
+        hora_inicio || null,
+        hora_fin || null,
+        todo_el_dia === false ? 0 : 1,
+        id,
+      ],
     });
   } catch (error) {
     console.error("Error updating agenda evento:", error);

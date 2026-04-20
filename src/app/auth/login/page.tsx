@@ -69,14 +69,15 @@ export default function LoginPage() {
 
   return (
     <main className="pt-24 min-h-screen bg-[#fcfaf8] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decoración de fondo sutil */}
+      {/* Pantalla de acceso al panel administrativo. */}
+      {/* Decoración de fondo sutil para dar profundidad sin distraer del formulario. */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-100/40 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-stone-200/50 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-[420px] z-10">
         <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-stone-100 overflow-hidden">
           
-          {/* Header del Card */}
+          {/* Encabezado visual del login. */}
           <div className="bg-brand-brown p-8 text-center relative">
             <div className="w-16 h-16 bg-white rounded-2xl rotate-3 shadow-lg mx-auto mb-4 flex items-center justify-center border border-amber-100">
                <span className="text-2xl">🔐</span>
@@ -86,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="p-8 space-y-5">
-            {/* Input Email */}
+            {/* Campo de correo para identificar al usuario. */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-stone-400 uppercase ml-1 tracking-wider">Email</label>
               <div className="relative group">
@@ -103,7 +104,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Input Password */}
+            {/* Campo de contraseña para validar el acceso. */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-stone-400 uppercase ml-1 tracking-wider">Contraseña</label>
               <div className="relative group">
@@ -120,7 +121,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Mensajes de Estado */}
+            {/* Mensajes de estado: éxito, error o validación en curso. */}
             {status.message && (
               <div className={`flex items-center gap-2 p-3.5 rounded-xl text-sm animate-in fade-in slide-in-from-top-2 duration-300 ${
                 status.isError ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
@@ -130,7 +131,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Botón Submit */}
+            {/* Botón principal de ingreso. */}
             <button 
               type="submit"
               disabled={loading}
@@ -149,7 +150,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Footer del Card */}
+          {/* Pie con la identificación del equipo responsable del panel. */}
           <div className="p-6 bg-stone-50 border-t border-stone-100 text-center">
             <p className="text-stone-400 text-[10px] uppercase tracking-[0.2em]">
               Oficina de Comunicación • Arquidiócesis de Paraná

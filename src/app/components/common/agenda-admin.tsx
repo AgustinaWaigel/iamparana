@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/use-session";
 
+// Panel interno para administradores: permite crear, editar y borrar eventos de agenda.
 interface Evento {
   id?: string | number;
   fecha: string;
@@ -10,6 +11,9 @@ interface Evento {
   evento: string;
   color?: string;
   descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
 
 const COLOR_OPTIONS = [
@@ -41,10 +45,14 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
     fecha_fin: "",
     color: "11",
     descripcion: "",
+    hora_inicio: "",
+    hora_fin: "",
+    todo_el_dia: true,
   });
 
   // Sincronizar y ordenar eventos por fecha
   useEffect(() => {
+    // Junta eventos visibles y futuros para que el admin vea una lista completa y ordenada.
     const combinados = [...eventosVisibles, ...eventosFuturos].sort(
       (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
     );
@@ -59,6 +67,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
 
   const refreshEventos = async () => {
     try {
+      // Volvemos a consultar la API para reflejar cambios guardados sin recargar la página.
       const response = await fetch("/api/agenda");
       if (response.ok) {
         const eventos: Evento[] = await response.json();
@@ -71,7 +80,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
 
   if (isLoading || !user || user.role !== "admin") return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.fecha_fin && formData.fecha_fin < formData.fecha) {
       alert("La fecha de fin no puede ser anterior al inicio.");
@@ -81,21 +90,57 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
     setIsSubmitting(true);
     try {
       const method = editingId ? "PUT" : "POST";
+      
+      // El payload cambia entre alta y edición, pero siempre describe el mismo tipo de evento.
+      const payload = editingId 
+        ? {
+            id: editingId,
+            evento: formData.evento,
+            fecha: formData.fecha,
+            fecha_fin: formData.fecha_fin,
+            color: formData.color,
+            descripcion: formData.descripcion,
+            hora_inicio: formData.todo_el_dia === false ? formData.hora_inicio || undefined : undefined,
+            hora_fin: formData.todo_el_dia === false ? formData.hora_fin || undefined : undefined,
+            todo_el_dia: formData.todo_el_dia !== false,
+          }
+        : formData;
+
       const response = await fetch("/api/agenda", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingId ? { id: editingId, ...formData } : formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        setFormData({ fecha: "", evento: "", fecha_fin: "", color: "11", descripcion: "" });
+        setFormData({
+          fecha: "",
+          evento: "",
+          fecha_fin: "",
+          color: "11",
+          descripcion: "",
+          hora_inicio: "",
+          hora_fin: "",
+          todo_el_dia: true,
+        });
         setIsAdding(false);
         setEditingId(null);
         await refreshEventos();
         window.dispatchEvent(new Event("agendaUpdated"));
         onEventoCreated?.();
+      } else {
+        let message = "No se pudo guardar el evento";
+        try {
+          const payloadRes = await response.json();
+          if (payloadRes?.error && typeof payloadRes.error === "string") {
+            message = payloadRes.error;
+          }
+        } catch {
+          // Si la respuesta no es JSON
+        }
+        alert(message);
       }
-    } catch (error) {
+    } catch {
       alert("Error al guardar el evento");
     } finally {
       setIsSubmitting(false);
@@ -167,6 +212,37 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                     onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
                   />
                 </div>
+                <label className="flex items-center gap-2 rounded-md border border-amber-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    checked={formData.todo_el_dia !== false}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        todo_el_dia: e.target.checked,
+                        hora_inicio: e.target.checked ? "" : formData.hora_inicio,
+                        hora_fin: e.target.checked ? "" : formData.hora_fin,
+                      })
+                    }
+                  />
+                  <span className="text-sm font-semibold text-brand-brown">Todo el día</span>
+                </label>
+                {formData.todo_el_dia === false && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="time"
+                      className="p-2.5 rounded-md border border-amber-200 focus:ring-2 focus:ring-brand-gold outline-none"
+                      value={formData.hora_inicio || ""}
+                      onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
+                    />
+                    <input
+                      type="time"
+                      className="p-2.5 rounded-md border border-amber-200 focus:ring-2 focus:ring-brand-gold outline-none"
+                      value={formData.hora_fin || ""}
+                      onChange={(e) => setFormData({ ...formData, hora_fin: e.target.value })}
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-brown">
                     Color del evento
@@ -195,7 +271,16 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                     onClick={() => {
                       setIsAdding(false);
                       setEditingId(null);
-                      setFormData({ fecha: "", evento: "", fecha_fin: "", color: "11", descripcion: "" });
+                      setFormData({
+                        fecha: "",
+                        evento: "",
+                        fecha_fin: "",
+                        color: "11",
+                        descripcion: "",
+                        hora_inicio: "",
+                        hora_fin: "",
+                        todo_el_dia: true,
+                      });
                     }}
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                   >
@@ -225,7 +310,16 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => { setEditingId(ev.id!); setFormData(ev); }}
+                      onClick={() => {
+                          // Cargamos el evento dentro del formulario para editarlo en lugar de crear uno nuevo.
+                        setEditingId(ev.id!);
+                        setFormData({
+                          ...ev,
+                          hora_inicio: ev.hora_inicio || "",
+                          hora_fin: ev.hora_fin || "",
+                          todo_el_dia: ev.todo_el_dia !== false,
+                        });
+                      }}
                       className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>

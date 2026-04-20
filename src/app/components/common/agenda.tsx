@@ -1,6 +1,10 @@
 import AgendaClient from "./agenda-client";
 import AgendaAdmin from "./agenda-admin";
-import { fetchAPI } from "@/app/lib/api-client";
+import { listAgendaEventos } from "@/server/db/content-repository";
+import {
+  isGoogleCalendarConfigured,
+  listCalendarAgendaEvents,
+} from "@/server/lib/google-calendar-service";
 
 interface Evento {
   id?: string | number;
@@ -12,7 +16,7 @@ interface Evento {
 }
 
 const parseLocalDate = (dateStr: string) => {
-  // Maneja tanto "YYYY-MM-DD" como ISO strings que vienen de APIs
+  // Convierte fechas de la agenda a una fecha local para poder filtrar y ordenar.
   const datePart = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
   const [year, month, day] = datePart.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -21,49 +25,41 @@ const parseLocalDate = (dateStr: string) => {
 export default async function Agenda() {
   let data: Evento[] = [];
   try {
-    // Asumimos que fetchAPI devuelve un array de Eventos
-    data = (await fetchAPI<Evento>("/api/agenda")) || [];
+    // La agenda intenta leer primero desde Google Calendar y, si falla, usa la base local.
+    if (isGoogleCalendarConfigured()) {
+      try {
+        data = (await listCalendarAgendaEvents()) || [];
+      } catch (calendarError) {
+        console.error("Error al leer Google Calendar, se usa agenda local:", calendarError);
+        data = (await listAgendaEventos()) || [];
+      }
+    } else {
+      data = (await listAgendaEventos()) || [];
+    }
   } catch (error) {
-    console.error("Error fetching agenda:", error);
+    console.error("Error al obtener la agenda:", error);
   }
 
-  // 1. Definimos "Hoy" a las 00:00 para comparar solo fechas
+  // Se toma la fecha de hoy a medianoche para comparar solo el día y no la hora.
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
 
-  // 2. Definimos el límite de los próximos 2 meses
-  const limite = new Date();
-  limite.setMonth(hoy.getMonth() + 2);
-
-  // 3. Filtramos primero para sacar los eventos viejos (antes de hoy)
-  // y ordenamos los que quedan de más cerca a más lejos.
+  // Se muestran solo eventos de hoy en adelante, ordenados del más próximo al más lejano.
   const eventosFuturosYHoy = data
-    .filter((e) => parseLocalDate(e.fecha) >= hoy) // <--- CRUCIAL: Solo de hoy en adelante
+    .filter((e) => parseLocalDate(e.fecha) >= hoy)
     .sort((a, b) => parseLocalDate(a.fecha).getTime() - parseLocalDate(b.fecha).getTime());
 
-  // 4. Segmentamos entre lo que se ve primero y lo que queda bajo el botón "Ver más"
-  const eventosVisibles = eventosFuturosYHoy.filter((e) => {
-    const fechaEvento = parseLocalDate(e.fecha);
-    return fechaEvento <= limite;
-  });
+  // La vista pública usa la misma lista para mostrar agenda y administración.
+  const eventosVisibles = eventosFuturosYHoy;
+  const eventosFuturos: Evento[] = [];
 
-  const eventosFuturos = eventosFuturosYHoy.filter((e) => {
-    const fechaEvento = parseLocalDate(e.fecha);
-    return fechaEvento > limite;
-  });
-
-  return (
+ return (
     <section className="animate-in fade-in duration-700">
       <div className="mx-auto flex w-full max-w-4xl">
-        {/* Panel de administración */}
-        <AgendaAdmin
-          eventosVisibles={eventosVisibles}
-          eventosFuturos={eventosFuturos}
-        />
+      <AgendaAdmin eventosVisibles={eventosVisibles} eventosFuturos={eventosFuturos} />
 
-        {/* Si no hay eventos futuros, mostramos un mensaje amigable */}
         {eventosFuturosYHoy.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-gradient-to-b from-amber-50/60 to-white px-6 py-12 text-center shadow-sm">
+          <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-gradient-to-b from-amber-50/60 to-white px-6 py-12 text-center shadow-sm w-full">
             <span className="mb-3 block text-3xl">📆</span>
             <p className="text-brand-brown font-semibold italic">
               No hay actividades programadas por el momento.

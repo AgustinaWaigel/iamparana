@@ -9,6 +9,9 @@ export interface CalendarAgendaEvent {
   evento: string;
   color?: string;
   descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
 
 interface CalendarAgendaInput {
@@ -17,7 +20,12 @@ interface CalendarAgendaInput {
   fecha_fin?: string;
   color?: string;
   descripcion?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  todo_el_dia?: boolean;
 }
+
+const DEFAULT_TIMEZONE = "America/Argentina/Buenos_Aires";
 
 function normalizeColorId(color?: string) {
   if (!color) return undefined;
@@ -57,6 +65,37 @@ function getCalendarClient() {
 function toYmd(value?: string | null) {
   if (!value) return undefined;
   return value.slice(0, 10);
+}
+
+function toHm(value?: string | null) {
+  if (!value) return undefined;
+  const match = value.match(/T(\d{2}:\d{2})/);
+  return match?.[1];
+}
+
+function normalizeYmd(value?: string | null) {
+  if (!value || typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return undefined;
+  return normalized;
+}
+
+function normalizeHm(value?: string | null) {
+  if (!value || typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  if (!/^\d{2}:\d{2}$/.test(normalized)) return undefined;
+  return normalized;
+}
+
+function plusOneHour(hm: string) {
+  const [hours, minutes] = hm.split(":").map(Number);
+  const date = new Date(Date.UTC(2000, 0, 1, hours, minutes));
+  date.setUTCHours(date.getUTCHours() + 1);
+  return `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
+}
+
+function toDateTimeWithOffset(dateYmd: string, hm: string) {
+  return `${dateYmd}T${hm}:00-03:00`;
 }
 
 function plusOneDay(dateYmd: string) {
@@ -101,6 +140,9 @@ function mapGoogleEventToAgenda(item: {
     evento: (item.summary || "(Sin título)").trim(),
     color: normalizeColorId(item.colorId || undefined),
     descripcion: item.description?.trim() || undefined,
+    hora_inicio: isAllDay ? undefined : toHm(item.start?.dateTime),
+    hora_fin: isAllDay ? undefined : toHm(item.end?.dateTime),
+    todo_el_dia: isAllDay,
   };
 }
 
@@ -132,7 +174,27 @@ export async function createCalendarAgendaEvent(input: CalendarAgendaInput): Pro
   const calendar = getCalendarClient();
   const calendarId = getCalendarId();
   const colorId = normalizeColorId(input.color);
-  const description = input.descripcion?.trim() || undefined;
+  const description =
+    typeof input.descripcion === "string" ? input.descripcion.trim() || undefined : undefined;
+  const isAllDay = input.todo_el_dia !== false;
+
+  const startDateYmd = normalizeYmd(input.fecha);
+  const endDateYmdFromInput = normalizeYmd(input.fecha_fin);
+  if (!startDateYmd) {
+    throw new Error("Fecha de inicio invalida");
+  }
+
+  const startHm = normalizeHm(input.hora_inicio) || "09:00";
+  const rawEndHm = normalizeHm(input.hora_fin);
+  const endHm = rawEndHm || plusOneHour(startHm);
+  const endDateYmd = endDateYmdFromInput || startDateYmd;
+
+  const startDateTime = toDateTimeWithOffset(startDateYmd, startHm);
+  let endDateTime = toDateTimeWithOffset(endDateYmd, endHm);
+
+  if (endDateYmd === startDateYmd && endDateTime <= startDateTime) {
+    endDateTime = toDateTimeWithOffset(endDateYmd, plusOneHour(startHm));
+  }
 
   const response = await calendar.events.insert({
     calendarId,
@@ -140,8 +202,12 @@ export async function createCalendarAgendaEvent(input: CalendarAgendaInput): Pro
       summary: input.evento,
       description,
       colorId,
-      start: { date: input.fecha },
-      end: { date: plusOneDay(input.fecha_fin || input.fecha) },
+      start: isAllDay
+        ? { date: startDateYmd }
+        : { dateTime: startDateTime, timeZone: DEFAULT_TIMEZONE },
+      end: isAllDay
+        ? { date: plusOneDay(endDateYmd) }
+        : { dateTime: endDateTime, timeZone: DEFAULT_TIMEZONE },
     },
   });
 
@@ -165,17 +231,43 @@ export async function updateCalendarAgendaEvent(id: string, input: CalendarAgend
   const calendar = getCalendarClient();
   const calendarId = getCalendarId();
   const colorId = normalizeColorId(input.color);
-  const description = input.descripcion?.trim() || undefined;
+  const description =
+    typeof input.descripcion === "string"
+      ? input.descripcion.trim() || null
+      : undefined;
+  const isAllDay = input.todo_el_dia !== false;
 
-  const response = await calendar.events.patch({
+  const startDateYmd = normalizeYmd(input.fecha);
+  const endDateYmdFromInput = normalizeYmd(input.fecha_fin);
+  if (!startDateYmd) {
+    throw new Error("Fecha de inicio invalida");
+  }
+
+  const startHm = normalizeHm(input.hora_inicio) || "09:00";
+  const rawEndHm = normalizeHm(input.hora_fin);
+  const endHm = rawEndHm || plusOneHour(startHm);
+  const endDateYmd = endDateYmdFromInput || startDateYmd;
+
+  const startDateTime = toDateTimeWithOffset(startDateYmd, startHm);
+  let endDateTime = toDateTimeWithOffset(endDateYmd, endHm);
+
+  if (endDateYmd === startDateYmd && endDateTime <= startDateTime) {
+    endDateTime = toDateTimeWithOffset(endDateYmd, plusOneHour(startHm));
+  }
+
+  const response = await calendar.events.update({
     calendarId,
     eventId: id,
     requestBody: {
       summary: input.evento,
       description,
       colorId,
-      start: { date: input.fecha },
-      end: { date: plusOneDay(input.fecha_fin || input.fecha) },
+      start: isAllDay
+        ? { date: startDateYmd }
+        : { dateTime: startDateTime, timeZone: DEFAULT_TIMEZONE },
+      end: isAllDay
+        ? { date: plusOneDay(endDateYmd) }
+        : { dateTime: endDateTime, timeZone: DEFAULT_TIMEZONE },
     },
   });
 

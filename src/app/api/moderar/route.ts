@@ -1,5 +1,6 @@
+// Ruta de moderación de comentarios: valida permisos y marca aprobaciones.
 import { NextResponse } from "next/server";
-import { updateComentarioAprobado } from "@/app/db/comments-repository";
+import { updateComentarioAprobado } from "@/server/db/comments-repository";
 import { requirePermission } from "@/app/api/admin/_shared/auth";
 
 type ModerarBody = {

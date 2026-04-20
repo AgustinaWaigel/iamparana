@@ -26,9 +26,10 @@ import { HeroSection } from "@/app/components/common/hero-section";
 export default function Logistica() {
   return (
     <>
+      {/* Área de logística: publica información de gastos y transparencia de eventos. */}
       <div id="header"></div>
 
-      {/* PORTADA con HeroSection */}
+      {/* Encabezado visual de la sección de logística. */}
       <HeroSection
         title="Logística"
         textureUrl="/assets/textures/areasg.webp"
@@ -39,6 +40,7 @@ export default function Logistica() {
       />
 
       <main className="seccion areas">
+        {/* Resumen visual de los gastos o rendiciones disponibles para consulta. */}
         <h2 className="subtitulo-descriptivo" style={{ marginTop: '2rem' }}>
           Resumen de gastos en la formación de animadores
         </h2>

@@ -1,7 +1,8 @@
+// Ruta de logout: invalida la sesión actual y limpia la cookie de acceso.
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers"; // Usamos el helper oficial de Next.js
-import { deleteSessionByTokenHash } from "@/app/db/auth-repository";
-import { AUTH_COOKIE_NAME, hashSessionToken } from "@/app/lib/auth-security";
+import { deleteSessionByTokenHash } from "@/server/db/auth-repository";
+import { AUTH_COOKIE_NAME, hashSessionToken } from "@/server/lib/auth-security";
 
 export async function POST() {
   try {

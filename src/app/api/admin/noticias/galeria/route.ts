@@ -3,7 +3,7 @@ import {
   getNoticiaGaleria,
   addNoticiaGaleriaImage,
   NoticiaGaleriaInput,
-} from "@/app/db/admin-repository";
+} from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidGaleriaPayload(value: unknown): value is NoticiaGaleriaInput {

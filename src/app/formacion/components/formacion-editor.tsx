@@ -8,6 +8,7 @@ interface FormacionEditorProps {
   onRefresh?: () => void;
 }
 
+// Editor flotante para que administradores carguen documentos, enlaces o páginas de recursos.
 export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
   const documentTypeOptions = [
     { value: 'formacion', label: 'Presentacion' },
@@ -57,6 +58,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
   if (!isAdmin) return null;
 
   const done = (message: string) => {
+    // Centraliza el mensaje de éxito y refresca la vista pública.
     setSuccess(message);
     setError('');
     onRefresh?.();

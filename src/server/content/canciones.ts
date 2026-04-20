@@ -1,4 +1,4 @@
-import { getCancionDetailBySlug, listCancionesBasic } from "@/app/db/content-repository";
+import { getCancionDetailBySlug, listCancionesBasic } from "@/server/db/content-repository";
 
 /**
  * Obtiene la lista resumida de todas las canciones desde Turso.

@@ -1,3 +1,4 @@
+// Subida de archivos al storage/Drive para noticias, documentos y recursos.
 import { NextResponse } from 'next/server';
 import { requirePermission, serverError } from '@/app/api/admin/_shared/auth';
 import { uploadFileToDrive, getOrCreateFolder } from '@/lib/google-drive-service';

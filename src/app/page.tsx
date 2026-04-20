@@ -3,7 +3,7 @@ import Agenda from "@/app/components/common/agenda";
 import AgendaTitle from "@/app/components/common/agenda-title";
 import Novedades from "@/app/components/common/novedades";
 import Link from 'next/link';
-import { fetchAPI } from "@/app/lib/api-client";
+import { listCarouselItems } from "@/server/db/content-repository";
 
 interface CarouselItem {
   imageDesktop: string;
@@ -14,17 +14,20 @@ interface CarouselItem {
 }
 
 export default async function HomePage() {
-  const carouselItems = await fetchAPI<CarouselItem>("/api/carousel");
+  const carouselItems = await listCarouselItems();
 
   return (
     <>
+      {/* Pantalla principal: presenta el carrusel, accesos rápidos, noticias y agenda. */}
       <header className="site-header" />
       <main className="w-full">
+        {/* Bloque superior con el carrusel de imágenes destacado. */}
         <section className="w-full text-center bg-brand-cream p-0 animate-fadeIn">
           <section className="w-full 0 md:pt-12 md:pb-12">
             <Carousel initialItems={carouselItems} />
           </section>
 
+          {/* Botones de acceso a las áreas principales del sitio. */}
           <div className="flex flex-wrap gap-4 justify-between min-h-[200px] w-full">
             <div className="w-full text-center my-[10px] mx-auto h-auto">
               <div className="flex flex-nowrap justify-center gap-6 max-w-full mx-auto overflow-x-auto pb-2 px-2 h-auto">
@@ -102,6 +105,7 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Columna izquierda: novedades. Columna derecha: agenda resumida. */}
         <div className="flex flex-col md:flex-row gap-8 w-full max-w-6xl mx-auto px-4 pb-16 mb-8">
           <section className="w-full md:w-2/3">
             <h2 className="text-2xl font-bold text-white bg-brand-brown p-4 mb-4 rounded-lg">Noticias</h2>
