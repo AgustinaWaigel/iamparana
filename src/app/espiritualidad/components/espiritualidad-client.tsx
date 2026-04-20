@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ContenidoEditor } from '@/app/components/common/contenido-editor';
 import { useSession } from '@/app/hooks/use-session';
 
+// Conecta la página de espiritualidad con el editor de contenido reutilizable.
 interface EspiritualidadClientProps {
   children: ReactNode;
 }

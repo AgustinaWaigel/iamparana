@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Edit2, Save, X, Loader2, AlertCircle } from 'lucide-react';
 
+// Editor flotante para administrar el contenido editorial de la sección Animación.
 interface AnimacionContent {
   id: number;
   section: string;
@@ -56,6 +57,7 @@ export function AnimacionEditor({ isAdmin: propIsAdmin, onRefresh }: AnimacionEd
 
   const fetchContent = async () => {
     try {
+      // Trae el contenido actual para editarlo desde el modal.
       const response = await fetch('/api/admin/animacion', {
         credentials: 'include',
       });
@@ -69,6 +71,7 @@ export function AnimacionEditor({ isAdmin: propIsAdmin, onRefresh }: AnimacionEd
   };
 
   const handleSave = async () => {
+    // Guarda cambios de título, descripción y contenido adicional.
     setError('');
     setSuccess('');
     setIsLoading(true);

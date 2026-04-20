@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
 
+// Muestra la galería asociada a una noticia usando imágenes almacenadas en Drive.
 interface GaleriaImagen {
   id: number;
   noticia_slug: string;
@@ -23,6 +24,7 @@ export function NoticiaGaleriaView({ slug }: NoticiaGaleriaViewProps) {
   useEffect(() => {
     const cargarGaleria = async () => {
       try {
+        // La galería se carga desde la API específica de la noticia actual.
         const response = await fetch(`/api/noticias/${slug}/galeria`);
         if (response.ok) {
           const data = await response.json();

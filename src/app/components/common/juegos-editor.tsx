@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Plus, X, Loader2, Edit2, Trash2, AlertCircle } from 'lucide-react';
 
+// Editor flotante para agregar, modificar o borrar juegos del módulo Animación.
 interface Juego {
   id: number;
   slug: string;
@@ -56,6 +57,7 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
   const loadJuegos = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Carga la lista completa para editarla desde el panel.
       const response = await fetch('/api/admin/juegos', {
         credentials: 'include',
       });
