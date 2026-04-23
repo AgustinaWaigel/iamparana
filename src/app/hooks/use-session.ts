@@ -66,6 +66,12 @@ async function loadSession(): Promise<SessionState> {
   return sessionPromise;
 }
 
+export async function refreshSession(): Promise<SessionState> {
+  cachedSession = null;
+  sessionPromise = null;
+  return loadSession();
+}
+
 export function useSession(): SessionState {
   const [state, setState] = useState<SessionState>({
     user: null,

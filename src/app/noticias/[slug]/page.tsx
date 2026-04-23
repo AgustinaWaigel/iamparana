@@ -69,7 +69,7 @@ export default async function NoticiaPage(props: Props) {
   }
 
   return (
-    <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16">
+    <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-16">
       <article className="w-full bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-5 md:p-10">
 
         <span className="inline-flex rounded-full bg-brand-brown/10 px-3 py-1 text-brand-brown font-bold text-xs uppercase tracking-wider mb-3">

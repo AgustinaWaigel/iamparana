@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, password, role } = body;
+    const { email, password, role, nombre, displayName } = body;
 
     // 1. Validaciones de entrada
     if (!email || typeof email !== "string" || !email.includes("@")) {
@@ -50,8 +50,9 @@ export async function POST(req: NextRequest) {
     // 2. Operación en Base de Datos
     const normalizedEmail = email.trim().toLowerCase();
     const hashedPassword = hashPassword(password);
+    const normalizedDisplayName = String(displayName || nombre || normalizedEmail.split("@")[0]).trim();
 
-    await createUser(normalizedEmail, hashedPassword, role);
+    await createUser(normalizedEmail, hashedPassword, role, normalizedDisplayName);
 
     return NextResponse.json({ success: true }, { status: 201 });
 

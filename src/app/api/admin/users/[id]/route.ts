@@ -22,7 +22,13 @@ export async function PUT(
 
   try {
     const body = await req.json();
-    const { role, isActive, password } = body;
+    const { role, isActive, is_active, password, displayName, nombre } = body;
+    const normalizedIsActive =
+      typeof isActive === "boolean"
+        ? isActive
+        : typeof is_active === "number"
+          ? is_active === 1
+          : undefined;
 
     // 3. Validaciones opcionales de campos
     const validRoles = ["admin", "equipo", "redactor", "coordinador", "animador"];
@@ -39,8 +45,9 @@ export async function PUT(
 
     await updateUser(id, {
       role,
-      isActive,
+      isActive: normalizedIsActive,
       passwordHash,
+      displayName: typeof displayName === "string" ? displayName : typeof nombre === "string" ? nombre : undefined,
     });
 
     return NextResponse.json({ success: true, message: "Usuario actualizado" });

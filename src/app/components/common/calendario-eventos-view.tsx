@@ -71,6 +71,19 @@ const formatHorarioResumen = (evento: Evento) => {
   return "Horario a confirmar";
 };
 
+const sortEventos = (list: Evento[]) =>
+  [...list].sort((a, b) => {
+    const aAllDay = a.todo_el_dia !== false;
+    const bAllDay = b.todo_el_dia !== false;
+    if (aAllDay !== bAllDay) return aAllDay ? -1 : 1;
+
+    const aTime = (a.hora_inicio || "99:99").trim();
+    const bTime = (b.hora_inicio || "99:99").trim();
+    if (aTime !== bTime) return aTime.localeCompare(bTime);
+
+    return (a.evento || "").localeCompare(b.evento || "", "es", { sensitivity: "base" });
+  });
+
 export default function CalendarioEventosView() {
   const { isAdmin } = useSession();
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -78,6 +91,21 @@ export default function CalendarioEventosView() {
   const [isMounted, setIsMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [dayModalDate, setDayModalDate] = useState<Date | null>(null);
+  const [colorFilter, setColorFilter] = useState<string>("all");
+  const [isCreatingFromDay, setIsCreatingFromDay] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createForm, setCreateForm] = useState<Evento>({
+    fecha: "",
+    fecha_fin: "",
+    evento: "",
+    descripcion: "",
+    color: "11",
+    hora_inicio: "",
+    hora_fin: "",
+    todo_el_dia: true,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -185,7 +213,83 @@ export default function CalendarioEventosView() {
   }, [currentMonth]);
 
   const selectedKey = toDateKey(selectedDate);
-  const selectedEvents = eventsByDay.get(selectedKey) || [];
+  const selectedEventsRaw = eventsByDay.get(selectedKey) || [];
+  const dayModalEventsRaw = dayModalDate ? eventsByDay.get(toDateKey(dayModalDate)) || [] : [];
+
+  const filterByColor = (list: Evento[]) => {
+    if (colorFilter === "all") return list;
+    return list.filter((evento) => String(evento.color || "") === colorFilter);
+  };
+
+  const selectedEvents = sortEventos(filterByColor(selectedEventsRaw));
+  const dayModalEvents = sortEventos(filterByColor(dayModalEventsRaw));
+
+  const openDayModal = (day: Date) => {
+    const dayKey = toDateKey(day);
+    setSelectedDate(day);
+    setDayModalDate(day);
+    setCreateForm((prev) => ({
+      ...prev,
+      fecha: dayKey,
+      fecha_fin: dayKey,
+      evento: "",
+      descripcion: "",
+      hora_inicio: "",
+      hora_fin: "",
+      todo_el_dia: true,
+    }));
+    setIsCreatingFromDay(false);
+    setIsDayModalOpen(true);
+  };
+
+  const closeDayModal = () => {
+    setIsDayModalOpen(false);
+    setDayModalDate(null);
+    setIsCreatingFromDay(false);
+  };
+
+  const handleCreateEventFromDay = async () => {
+    if (!createForm.evento?.trim() || !createForm.fecha?.trim()) return;
+
+    setIsCreating(true);
+    try {
+      const response = await fetch("/api/agenda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          evento: createForm.evento.trim(),
+          fecha: createForm.fecha,
+          fecha_fin: createForm.fecha_fin || undefined,
+          color: createForm.color || undefined,
+          descripcion: (createForm.descripcion || "").trim(),
+          hora_inicio: createForm.todo_el_dia === false ? createForm.hora_inicio || undefined : undefined,
+          hora_fin: createForm.todo_el_dia === false ? createForm.hora_fin || undefined : undefined,
+          todo_el_dia: createForm.todo_el_dia !== false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo crear el evento");
+      }
+
+      await refreshAgenda();
+      window.dispatchEvent(new Event("agendaUpdated"));
+      setIsCreatingFromDay(false);
+      setCreateForm((prev) => ({
+        ...prev,
+        evento: "",
+        descripcion: "",
+        hora_inicio: "",
+        hora_fin: "",
+        todo_el_dia: true,
+      }));
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo crear el evento.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const openModal = (evento: Evento) => {
     // El modal permite ver el detalle y, si hay permisos, editar o borrar el evento.
@@ -290,7 +394,17 @@ export default function CalendarioEventosView() {
           <h2 className="text-lg font-extrabold capitalize text-brand-brown sm:text-2xl">{monthLabel(currentMonth)}</h2>
           <p className="text-sm text-slate-500">Vista mensual con los mismos eventos de la agenda</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={colorFilter}
+            onChange={(event) => setColorFilter(event.target.value)}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+          >
+            <option value="all">Todos los colores</option>
+            {COLOR_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
           <button
             type="button"
             className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
@@ -325,7 +439,7 @@ export default function CalendarioEventosView() {
       <div className="mt-2 grid grid-cols-7 gap-1">
         {calendarDays.map((day) => {
           const key = toDateKey(day);
-          const list = eventsByDay.get(key) || [];
+          const list = sortEventos(filterByColor(eventsByDay.get(key) || []));
           const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
           const isToday = key === toDateKey(new Date());
           const isSelected = key === selectedKey;
@@ -334,7 +448,7 @@ export default function CalendarioEventosView() {
             <button
               key={key}
               type="button"
-              onClick={() => setSelectedDate(day)}
+              onClick={() => openDayModal(day)}
               className={`min-h-[92px] rounded-xl border p-2 text-left transition ${
                 isSelected
                   ? "border-brand-gold bg-amber-50"
@@ -547,6 +661,172 @@ export default function CalendarioEventosView() {
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {isMounted && isDayModalOpen && dayModalDate && createPortal(
+        <div className="fixed inset-0 z-[995] flex min-h-screen items-center justify-center bg-black/45 p-4" onClick={closeDayModal}>
+          <div
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-brand-gold/30 bg-white p-5 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h4 className="text-xl font-extrabold text-brand-brown">Eventos del día</h4>
+                <p className="mt-1 text-sm font-semibold text-slate-600">{dayLabel(dayModalDate)}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingFromDay((prev) => !prev)}
+                    className="rounded-lg border border-brand-gold/40 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-brand-brown transition hover:bg-amber-100"
+                  >
+                    {isCreatingFromDay ? "Cancelar alta" : "Nuevo evento"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={closeDayModal}
+                  className="rounded-full bg-slate-100 px-2.5 py-1.5 text-slate-600 transition hover:bg-slate-200"
+                  aria-label="Cerrar eventos del día"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {isAdmin && isCreatingFromDay && (
+              <div className="mb-3 space-y-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+                <input
+                  type="text"
+                  value={createForm.evento || ""}
+                  onChange={(event) => setCreateForm({ ...createForm, evento: event.target.value })}
+                  placeholder="Nombre del evento"
+                  className="w-full rounded-md border border-amber-200 bg-white p-2.5 font-semibold text-brand-brown outline-none focus:ring-2 focus:ring-brand-gold"
+                />
+                <textarea
+                  value={createForm.descripcion || ""}
+                  onChange={(event) => setCreateForm({ ...createForm, descripcion: event.target.value })}
+                  rows={3}
+                  placeholder="Descripción"
+                  className="w-full resize-none rounded-md border border-amber-200 bg-white p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-gold"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="date"
+                    value={createForm.fecha || ""}
+                    onChange={(event) => setCreateForm({ ...createForm, fecha: event.target.value })}
+                    className="rounded-md border border-amber-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                  />
+                  <input
+                    type="date"
+                    value={createForm.fecha_fin || ""}
+                    onChange={(event) => setCreateForm({ ...createForm, fecha_fin: event.target.value })}
+                    className="rounded-md border border-amber-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                  />
+                </div>
+                <label className="flex items-center gap-2 rounded-md border border-amber-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    checked={createForm.todo_el_dia !== false}
+                    onChange={(event) =>
+                      setCreateForm({
+                        ...createForm,
+                        todo_el_dia: event.target.checked,
+                        hora_inicio: event.target.checked ? "" : createForm.hora_inicio,
+                        hora_fin: event.target.checked ? "" : createForm.hora_fin,
+                      })
+                    }
+                  />
+                  <span className="text-sm font-semibold text-brand-brown">Todo el día</span>
+                </label>
+                {createForm.todo_el_dia === false && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="time"
+                      value={createForm.hora_inicio || ""}
+                      onChange={(event) => setCreateForm({ ...createForm, hora_inicio: event.target.value })}
+                      className="rounded-md border border-amber-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                    <input
+                      type="time"
+                      value={createForm.hora_fin || ""}
+                      onChange={(event) => setCreateForm({ ...createForm, hora_fin: event.target.value })}
+                      className="rounded-md border border-amber-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    />
+                  </div>
+                )}
+                <select
+                  value={createForm.color || "11"}
+                  onChange={(event) => setCreateForm({ ...createForm, color: event.target.value })}
+                  className="w-full rounded-md border border-amber-200 bg-white p-2.5 font-semibold text-brand-brown outline-none focus:ring-2 focus:ring-brand-gold"
+                >
+                  {COLOR_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={isCreating}
+                    onClick={handleCreateEventFromDay}
+                    className="rounded-lg bg-brand-brown px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-900 disabled:opacity-50"
+                  >
+                    {isCreating ? "Guardando..." : "Crear evento"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {dayModalEvents.length === 0 ? (
+              <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">No hay eventos para este día.</p>
+            ) : (
+              <ul className="space-y-3">
+                {dayModalEvents.map((evento, idx) => (
+                  <li
+                    key={`${evento.id || idx}-day-modal-${idx}`}
+                    className="rounded-xl border border-slate-200 bg-white p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`h-3 w-3 rounded-full ${COLOR_MAP[evento.color || ""] || "bg-brand-gold"}`} />
+                          <p className="font-bold text-brand-brown">{evento.evento}</p>
+                        </div>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {formatFechaCorta(parseLocalDate(evento.fecha))}
+                          {evento.fecha_fin && evento.fecha_fin !== evento.fecha
+                            ? ` — ${formatFechaCorta(parseLocalDate(evento.fecha_fin))}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {formatHorarioResumen(evento)}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          closeDayModal();
+                          openModal(evento);
+                        }}
+                        className="rounded-lg border border-brand-gold/40 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-brand-brown transition hover:bg-amber-100"
+                      >
+                        Ver detalle
+                      </button>
+                    </div>
+
+                    <p className="mt-3 rounded-lg bg-amber-50/50 p-3 text-sm leading-relaxed text-slate-700">
+                      {evento.descripcion?.trim() || "Sin descripción."}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>,

@@ -44,6 +44,10 @@ export type CarouselInput = {
   order?: number;
 };
 
+function normalizeCarouselImagePath(value: string) {
+  return value.replace("/uploads/carrusel/", "/uploads/carousel/");
+}
+
 function clientOrThrow() {
   const client = getTursoClient();
   if (!client) {
@@ -268,7 +272,7 @@ export async function createCarouselAdmin(data: CarouselInput) {
   const client = clientOrThrow();
   await client.execute({
     sql: "INSERT INTO carousel (slug, imageDesktop, imageMobile, alt, link, buttonText, \"order\") VALUES (?, ?, ?, ?, ?, ?, ?)",
-    args: [data.slug ?? null, data.imageDesktop, data.imageMobile, data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0],
+    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0],
   });
 }
 
@@ -276,7 +280,7 @@ export async function updateCarouselAdmin(id: number, data: CarouselInput) {
   const client = clientOrThrow();
   await client.execute({
     sql: "UPDATE carousel SET slug = ?, imageDesktop = ?, imageMobile = ?, alt = ?, link = ?, buttonText = ?, \"order\" = ? WHERE id = ?",
-    args: [data.slug ?? null, data.imageDesktop, data.imageMobile, data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0, id],
+    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0, id],
   });
 }
 

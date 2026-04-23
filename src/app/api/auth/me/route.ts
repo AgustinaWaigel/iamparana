@@ -25,6 +25,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       id: sessionUser.id,
       email: sessionUser.email,
+      nombre: sessionUser.nombre || "Usuario",
       role: sessionUser.role,
       isActive: sessionUser.isActive,
     });

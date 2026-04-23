@@ -19,22 +19,22 @@ export default async function HomePage() {
   return (
     <>
       {/* Pantalla principal: presenta el carrusel, accesos rápidos, noticias y agenda. */}
-      <header className="site-header" />
-      <main className="w-full">
+      <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
         {/* Bloque superior con el carrusel de imágenes destacado. */}
-        <section className="w-full text-center bg-brand-cream p-0 animate-fadeIn">
-          <section className="w-full 0 md:pt-12 md:pb-12">
+        <section className="w-full text-center bg-brand-cream animate-fadeIn">
+          <section className="w-full md:pb-12">
             <Carousel initialItems={carouselItems} />
           </section>
 
           {/* Botones de acceso a las áreas principales del sitio. */}
-          <div className="flex flex-wrap gap-4 justify-between min-h-[200px] w-full">
-            <div className="w-full text-center my-[10px] mx-auto h-auto">
-              <div className="flex flex-nowrap justify-center gap-6 max-w-full mx-auto overflow-x-auto pb-2 px-2 h-auto">
+          <div className="w-full px-3 pb-4">
+            <div className="mx-auto my-[10px] h-auto w-full text-center">
+              <div className="mx-auto grid h-auto w-full max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5">
                 {/* Animación Button */}
                 <Link
                   href="/animacion"
-                  className="group flex justify-center items-center px-4 py-8 sm:px-6 sm:py-12 md:px-6 md:py-12 text-black no-underline text-center bg-center bg-cover bg-no-repeat transition-all duration-300 rounded-lg min-w-[120px] sm:min-w-[160px] md:min-w-[200px] w-auto min-h-[80px] sm:min-h-[110px] md:min-h-[140px] font-bold text-sm sm:text-lg md:text-xl hover:scale-95 hover:shadow-sm whitespace-nowrap active:scale-90"
+                  className="group flex min-h-[84px] w-full items-center justify-center rounded-lg bg-center bg-cover bg-no-repeat px-4 py-6 text-center text-sm font-bold text-black no-underline transition-all duration-300 hover:scale-[0.98] hover:shadow-sm active:scale-95 sm:min-h-[110px] sm:text-lg md:min-h-[130px] md:text-xl"
                   style={{
                     backgroundImage: "url(/assets/textures/cartoon.webp)",
                     backgroundColor: "rgba(41, 218, 47, 0.7)",
@@ -48,7 +48,7 @@ export default async function HomePage() {
                 {/* Formación Button */}
                 <Link
                   href="/formacion"
-                  className="flex justify-center items-center px-4 py-8 sm:px-6 sm:py-12 md:px-6 md:py-12 text-black no-underline text-center bg-center bg-cover bg-no-repeat transition-all duration-300 rounded-lg min-w-[120px] sm:min-w-[160px] md:min-w-[200px] w-auto min-h-[80px] sm:min-h-[110px] md:min-h-[140px] font-bold text-sm sm:text-lg md:text-xl hover:scale-95 hover:shadow-sm whitespace-nowrap active:scale-90"
+                  className="flex min-h-[84px] w-full items-center justify-center rounded-lg bg-center bg-cover bg-no-repeat px-4 py-6 text-center text-sm font-bold text-black no-underline transition-all duration-300 hover:scale-[0.98] hover:shadow-sm active:scale-95 sm:min-h-[110px] sm:text-lg md:min-h-[130px] md:text-xl"
                   style={{
                     backgroundImage: "url(/assets/textures/cartoon.webp)",
                     backgroundColor: "rgba(227, 252, 4, 0.7)",
@@ -62,7 +62,7 @@ export default async function HomePage() {
                 {/* Espiritualidad Button */}
                 <Link
                   href="/espiritualidad"
-                  className="flex justify-center items-center px-4 py-8 sm:px-6 sm:py-12 md:px-6 md:py-12 text-black no-underline text-center bg-center bg-cover bg-no-repeat transition-all duration-300 rounded-lg min-w-[120px] sm:min-w-[160px] md:min-w-[200px] w-auto min-h-[80px] sm:min-h-[110px] md:min-h-[140px] font-bold text-sm sm:text-lg md:text-xl hover:scale-95 hover:shadow-sm whitespace-nowrap active:scale-90"
+                  className="flex min-h-[84px] w-full items-center justify-center rounded-lg bg-center bg-cover bg-no-repeat px-4 py-6 text-center text-sm font-bold text-black no-underline transition-all duration-300 hover:scale-[0.98] hover:shadow-sm active:scale-95 sm:min-h-[110px] sm:text-lg md:min-h-[130px] md:text-xl"
                   style={{
                     backgroundImage: "url(/assets/textures/cartoon.webp)",
                     backgroundColor: "rgba(105, 101, 101, 0.7)",
@@ -76,7 +76,7 @@ export default async function HomePage() {
                 {/* Logística Button */}
                 <Link
                   href="/logistica"
-                  className="flex justify-center items-center px-4 py-8 sm:px-6 sm:py-12 md:px-6 md:py-12 text-black no-underline text-center bg-center bg-cover bg-no-repeat transition-all duration-300 rounded-lg min-w-[120px] sm:min-w-[160px] md:min-w-[200px] w-auto min-h-[80px] sm:min-h-[110px] md:min-h-[140px] font-bold text-sm sm:text-lg md:text-xl hover:scale-95 hover:shadow-sm whitespace-nowrap active:scale-90"
+                  className="flex min-h-[84px] w-full items-center justify-center rounded-lg bg-center bg-cover bg-no-repeat px-4 py-6 text-center text-sm font-bold text-black no-underline transition-all duration-300 hover:scale-[0.98] hover:shadow-sm active:scale-95 sm:min-h-[110px] sm:text-lg md:min-h-[130px] md:text-xl"
                   style={{
                     backgroundImage: "url(/assets/textures/cartoon.webp)",
                     backgroundColor: "rgba(233, 42, 61, 0.7)",
@@ -90,7 +90,7 @@ export default async function HomePage() {
                 {/* Comunicación Button */}
                 <Link
                   href="/comunicacion"
-                  className="flex justify-center items-center px-4 py-8 sm:px-6 sm:py-12 md:px-6 md:py-12 text-black no-underline text-center bg-center bg-cover bg-no-repeat transition-all duration-300 rounded-lg min-w-[120px] sm:min-w-[160px] md:min-w-[200px] w-auto min-h-[80px] sm:min-h-[110px] md:min-h-[140px] font-bold text-sm sm:text-lg md:text-xl hover:scale-95 hover:shadow-sm whitespace-nowrap active:scale-90"
+                  className="flex min-h-[84px] w-full items-center justify-center rounded-lg bg-center bg-cover bg-no-repeat px-4 py-6 text-center text-sm font-bold text-black no-underline transition-all duration-300 hover:scale-[0.98] hover:shadow-sm active:scale-95 sm:min-h-[110px] sm:text-lg md:min-h-[130px] md:text-xl"
                   style={{
                     backgroundImage: "url(/assets/textures/cartoon.webp)",
                     backgroundColor: "rgba(34, 173, 238, 0.7)",
@@ -119,7 +119,9 @@ export default async function HomePage() {
         </div>
       </main>
       <footer className="site-footer" />
+      </div>
     </>
+  
   );
 }
 

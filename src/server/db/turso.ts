@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
   password_hash TEXT NOT NULL,
   role_id INTEGER NOT NULL DEFAULT 5,
   is_active INTEGER NOT NULL DEFAULT 1,
@@ -304,6 +305,21 @@ async function ensureAgendaColumns() {
   }
 }
 
+async function ensureUsersColumns() {
+  if (!cachedClient) {
+    return;
+  }
+
+  try {
+    await cachedClient.execute("ALTER TABLE users ADD COLUMN display_name TEXT");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || "").toLowerCase();
+    if (!message.includes("duplicate column")) {
+      throw error;
+    }
+  }
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -327,6 +343,7 @@ async function initializeSchema() {
     }
 
     await ensureAgendaColumns();
+    await ensureUsersColumns();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');

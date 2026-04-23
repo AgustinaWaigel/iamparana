@@ -28,8 +28,6 @@ export default function AnimacionPage() {
   return (
     <>
       {/* Sección principal de Animación: concentra juegos, canciones y recursos para encuentros. */}
-      <div id="header"></div>
-
       {/* Encabezado visual del área de Animación. */}
       <HeroSection
         title="Animación"

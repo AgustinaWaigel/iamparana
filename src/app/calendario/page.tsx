@@ -4,8 +4,8 @@ import CalendarioEventosView from "@/app/components/common/calendario-eventos-vi
 const GOOGLE_CALENDAR_ID = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID?.trim();
 const GOOGLE_CALENDAR_ADD_URL = GOOGLE_CALENDAR_ID
   ? `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(
-      GOOGLE_CALENDAR_ID
-    )}`
+    GOOGLE_CALENDAR_ID
+  )}`
   : "https://calendar.google.com/calendar/u/0/r";
 
 export async function generateMetadata() {
@@ -15,8 +15,8 @@ export async function generateMetadata() {
     openGraph: {
       title: "Calendario - IAM Paraná",
       description: "Consultá las fechas de nuestras próximas actividades y encuentros.",
-    // Esta página es la vista pública del calendario completo.
-    // Además de mostrar los eventos, ofrece un acceso directo al Google Calendar oficial.
+      // Esta página es la vista pública del calendario completo.
+      // Además de mostrar los eventos, ofrece un acceso directo al Google Calendar oficial.
       url: "https://iamparana.com.ar/calendario",
       siteName: "IAM Paraná",
       locale: "es_AR",
@@ -27,31 +27,34 @@ export async function generateMetadata() {
 
 export default function CalendarioPage() {
   return (
-    <main className="min-h-screen w-full bg-slate-50/50 px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+    <>
+    <main className="min-h-screen w-full bg-slate-50/50 px-4 pb-16 pt-4 sm:px-6 lg:px-8">
       {/* Header Card */}
       {/* Header Card */}
-<section className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-brand-gold/30 bg-gradient-to-br from-brand-brown via-brand-brown to-amber-900 p-8 text-white shadow-2xl sm:p-12">
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      
+    <section className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-brand-gold/30 bg-gradient-to-br from-brand-brown via-brand-brown to-amber-900 p-8 text-white shadow-2xl sm:p-12">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
     
     {/* Columna Izquierda: Descripción */}
-    <div className="space-y-4">
-      <div className="inline-block rounded-full bg-brand-gold/20 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold border border-brand-gold/30">
-        Información Oficial
+      <div className="space-y-4">
+        <div className="inline-block rounded-full bg-brand-gold/20 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold border border-brand-gold/30">
+          Información Oficial
+        </div>
+        <p className="text-lg font-medium text-amber-50/90 leading-relaxed italic border-l-2 border-brand-gold/50 pl-4">
+          Mantenete al tanto de todas las actividades, reuniones de guías y campamentos.
+        </p>
       </div>
-      <p className="text-lg font-medium text-amber-50/90 leading-relaxed italic border-l-2 border-brand-gold/50 pl-4">
-        Mantenete al tanto de todas las actividades, reuniones de guías y campamentos.
-      </p>
-    </div>
 
     {/* Columna Derecha: Título y Acción */}
-    <div className="flex flex-col lg:items-end gap-6">
-      <div className="lg:text-right">
+      <div className="flex flex-col lg:items-end gap-6">
+        <div className="lg:text-right">
             {/* Columna izquierda: contexto y descripción para el visitante. */}
-          Calendario <span className="text-brand-gold">IAM</span>
-        </h1>
-        <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-amber-50/40">
+          <h1 className="text-2xl font-bold text-white">
+            Calendario <span className="text-brand-gold">IAM</span>
+          </h1>
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-amber-50/40">
           Arquidiócesis de Paraná
-        </p>
+          </p>
       </div>
 
 
@@ -69,8 +72,8 @@ export default function CalendarioPage() {
     </div>
               {/* Botón para abrir o suscribirse al calendario oficial en Google. */}
 
-  </div>
-</section>
+    </div>
+    </section>
 
       <CalendarioEventosView />
 
@@ -80,5 +83,6 @@ export default function CalendarioPage() {
         </p>
       </footer>
     </main>
+   </>
   );
 }

@@ -78,6 +78,13 @@ function asNumber(value: unknown, fallback = 0) {
   return typeof value === "number" ? value : fallback;
 }
 
+function normalizeCarouselImagePath(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace("/uploads/carrusel/", "/uploads/carousel/");
+}
 function isValidSlug(slug: string) {
   return /^[a-z0-9-]+$/.test(slug);
 }
@@ -469,8 +476,8 @@ export async function listCarouselItems(): Promise<CarouselItem[]> {
       );
 
       return result.rows.map((row) => ({
-        imageDesktop: asString(row.imageDesktop),
-        imageMobile: asString(row.imageMobile),
+        imageDesktop: normalizeCarouselImagePath(row.imageDesktop),
+        imageMobile: normalizeCarouselImagePath(row.imageMobile),
         alt: asString(row.alt),
         link: asOptionalString(row.link),
         buttonText: asOptionalString(row.buttonText),

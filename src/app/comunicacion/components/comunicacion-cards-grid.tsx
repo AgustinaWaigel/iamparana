@@ -18,7 +18,7 @@ type CardItem = {
   description: string;
   href: string;
   badge: string;
-  accent: 'yellow' | 'green' | 'blue';
+  accent: 'blue' | 'green' | 'blue';
   resourceId: number; // Ahora es obligatorio, porque todos vienen de la DB
   googleDriveUrl?: string | null;
   linkUrl?: string;
@@ -27,14 +27,14 @@ type CardItem = {
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
 type DeleteDraft = { kind: CardItem['kind']; resourceId: number; title: string; };
 
-interface FormacionCardsGridProps {
+interface ComunicacionCardsGridProps {
   uploadedDocuments: UploadedDocument[];
   uploadedLinks: UploadedLink[];
   resourcePages: ResourcePageCard[];
 }
 
 // --- MAIN COMPONENT ---
-export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages }: FormacionCardsGridProps) {
+export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages }: ComunicacionCardsGridProps) {
   const { isAdmin } = useSession();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -129,7 +129,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
             id: editDraft.resourceId,
             title: nextTitle,
             description: nextDescription,
-            textureUrl: String(currentPage.texture_url || '/assets/textures/formacion.webp'),
+            textureUrl: String(currentPage.texture_url || '/assets/textures/comunicacion.webp'),
             template: String(currentPage.template || 'gold'),
           }),
         });
@@ -175,11 +175,11 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({
-      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: 'Enlace', accent: 'yellow', resourceId: resourceLink.id, linkUrl: resourceLink.url,
+      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: 'Enlace', accent: 'blue', resourceId: resourceLink.id, linkUrl: resourceLink.url,
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
-      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/formacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'yellow', resourceId: page.id,
+      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'blue', resourceId: page.id,
     }));
 
     // Ahora solo devolvemos lo que viene de la base de datos
@@ -197,8 +197,8 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   return (
     <>
       <div className="mb-8 md:mb-10 max-w-2xl mx-auto">
-        <div className="relative group flex items-center bg-white rounded-full border border-stone-200 shadow-sm transition-all focus-within:border-yellow-400 focus-within:ring-4 focus-within:ring-yellow-400/20 focus-within:shadow-md px-4 py-3">
-          <Search size={18} className="text-stone-400 group-focus-within:text-yellow-600 transition-colors shrink-0" />
+        <div className="relative group flex items-center bg-white rounded-full border border-stone-200 shadow-sm transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-400/20 focus-within:shadow-md px-4 py-3">
+          <Search size={18} className="text-stone-400 group-focus-within:text-blue-600 transition-colors shrink-0" />
           <input
             type="text"
             value={searchTerm}
@@ -236,8 +236,8 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-stone-100 shadow-sm mb-16">
-          <div className="bg-yellow-50 p-4 rounded-full mb-4">
-            <SearchX size={40} className="text-yellow-600" />
+          <div className="bg-blue-50 p-4 rounded-full mb-4">
+            <SearchX size={40} className="text-blue-600" />
           </div>
           <h3 className="text-xl font-bold text-brand-brown mb-2">No encontramos nada</h3>
           <p className="text-stone-500 max-w-sm">
@@ -245,7 +245,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
           </p>
           <button 
             onClick={() => setSearchTerm('')} 
-            className="mt-6 font-semibold text-yellow-700 hover:text-yellow-800 underline decoration-yellow-300 underline-offset-4"
+            className="mt-6 font-semibold text-blue-700 hover:text-blue-800 underline decoration-blue-300 underline-offset-4"
           >
             Limpiar búsqueda
           </button>
@@ -264,16 +264,16 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
             <form className="space-y-5 px-6 py-6" onSubmit={(e) => { e.preventDefault(); submitEdit().catch(() => undefined); }}>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-500 uppercase ml-1">Título</label>
-                <input value={editDraft.title} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all" required />
+                <input value={editDraft.title} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all" required />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-500 uppercase ml-1">Descripción</label>
-                <textarea value={editDraft.description} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, description: e.target.value } : prev))} rows={3} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all resize-none" />
+                <textarea value={editDraft.description} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, description: e.target.value } : prev))} rows={3} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all resize-none" />
               </div>
               {editDraft.kind === 'link' && (
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-stone-500 uppercase ml-1">URL</label>
-                  <input value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} placeholder="https://..." className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all" required />
+                  <input value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} placeholder="https://..." className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all" required />
                 </div>
               )}
               {editError && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{editError}</p>}
@@ -334,7 +334,7 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
   const actionBtnClass = {
     green: 'bg-green-50 text-green-700 hover:bg-green-100 hover:shadow-md border-green-200',
     blue: 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:shadow-md border-blue-200',
-    yellow: 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 hover:shadow-md border-yellow-200'
+    yellow: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:shadow-md border-yellow-200'
   }[card.accent];
 
   const ActionWrapper = card.href.startsWith('/') ? Link : 'a';

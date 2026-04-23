@@ -37,8 +37,6 @@ export const metadata: Metadata = {
 export default function DibujosPage() {
   return (
     <>
-      <div id="header"></div>
-
       <main>
         <div className="barra-contextual color-comunicacion fondo-comunicacion">
           <p>

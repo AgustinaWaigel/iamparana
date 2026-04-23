@@ -2,7 +2,7 @@
 
 import { useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ContenidoEditor } from '@/app/components/common/contenido-editor';
+import { ComunicacionEditor } from './comunicacion-editor';
 import { useSession } from '@/app/hooks/use-session';
 
 interface ComunicacionClientProps {
@@ -11,20 +11,16 @@ interface ComunicacionClientProps {
 
 export function ComunicacionClient({ children }: ComunicacionClientProps) {
   const router = useRouter();
-  const { isAdmin, isLoading } = useSession();
+  const { isAdmin } = useSession();
 
   const handleRefresh = useCallback(() => {
     router.refresh();
   }, [router]);
 
-  if (isLoading) {
-    return children;
-  }
-
   return (
     <>
       {children}
-      <ContenidoEditor isAdmin={isAdmin} seccion="comunicacion" onRefresh={handleRefresh} />
+      <ComunicacionEditor isAdmin={isAdmin} onRefresh={handleRefresh} />
     </>
   );
 }

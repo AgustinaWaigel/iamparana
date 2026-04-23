@@ -28,7 +28,6 @@ export default function juegosPage() {
   return (
     <>
       {/* Área institucional: concentra protocolos y documentos de referencia para animadores. */}
-      <div id="header"></div>
       {/* Título simple de la página para orientar al visitante. */}
       <h2 className='mt-20 py-8 px-5 text-3xl font-bold bg-gradient-to-r from-black to-gray-800 text-white text-center'>Institucional</h2>
       <main className="seccion areas" style={{ padding: '2rem' }}>

@@ -12,8 +12,12 @@
     "migrate:turso": "node scripts/migrate-to-turso.mjs"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@libsql/client": "^0.17.2",
     "@tombatossals/react-chords": "^0.2.10",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
+    "argon2": "^0.44.0",
     "googleapis": "^171.4.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.510.0",
@@ -25,7 +29,8 @@
     "react-markdown": "^10.1.0",
     "rehype-raw": "^7.0.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.34.1"
+    "sharp": "^0.34.1",
+    "upstash": "^0.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

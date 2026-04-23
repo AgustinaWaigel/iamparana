@@ -27,8 +27,6 @@ export default function Logistica() {
   return (
     <>
       {/* Área de logística: publica información de gastos y transparencia de eventos. */}
-      <div id="header"></div>
-
       {/* Encabezado visual de la sección de logística. */}
       <HeroSection
         title="Logística"

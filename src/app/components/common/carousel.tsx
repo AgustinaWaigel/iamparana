@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface CarouselItem {
   imageDesktop: string;
-  imageMobile: string;
+  imageMobile?: string | null;
   alt: string;
   link?: string;
   buttonText?: string;
@@ -18,6 +18,7 @@ interface CarouselProps {
 export default function Carousel({ initialItems = [] }: CarouselProps) {
   const [items, setItems] = useState<CarouselItem[]>(initialItems);
   const [index, setIndex] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
   // Si no hay items iniciales, fetcha del servidor (fallback)
@@ -41,6 +42,15 @@ export default function Carousel({ initialItems = [] }: CarouselProps) {
     const interval = setInterval(() => moveSlide(1), 40000);
     return () => clearInterval(interval);
   }, [moveSlide]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 800px)");
+    const sync = () => setIsMobileViewport(media.matches);
+    sync();
+
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
 
 
@@ -73,8 +83,22 @@ export default function Carousel({ initialItems = [] }: CarouselProps) {
     return <div className="relative mx-auto aspect-[4/5] w-full overflow-hidden shadow-md md:aspect-[12/5]"></div>;
   }
 
+  const getPrimaryImage = (item: CarouselItem) => {
+    if (isMobileViewport) {
+      return item.imageMobile || item.imageDesktop || "";
+    }
+    return item.imageDesktop || item.imageMobile || "";
+  };
+
+  const getFallbackImage = (item: CarouselItem) => {
+    if (isMobileViewport) {
+      return item.imageDesktop || "";
+    }
+    return item.imageMobile || item.imageDesktop || "";
+  };
+
   return (
-    <div className="relative mx-auto aspect-[4/5] w-full max-w-full overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.1)] md:aspect-[12/5] mt-4">
+    <div className="relative mx-auto aspect-[4/5] w-full max-w-full overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.1)] md:aspect-[12/5]">
       <div
         id="carousel-slide"
         ref={slideRef}
@@ -83,11 +107,22 @@ export default function Carousel({ initialItems = [] }: CarouselProps) {
       >
         {items.map((item, i) => (
           <div className="relative h-full w-full min-w-full flex-[0_0_100%] overflow-hidden" key={i}>
-            <picture>
-              <source media="(max-width: 800px)" srcSet={item.imageMobile} />
-              <source media="(min-width: 800px)" srcSet={item.imageDesktop} />
-              <img src={item.imageDesktop} alt={item.alt} loading="lazy" className="block h-full w-full object-cover transition-transform duration-700 hover:scale-105" />
-            </picture>
+            <img
+              src={getPrimaryImage(item)}
+              alt={item.alt}
+              loading="lazy"
+              className="block h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.dataset.fallbackApplied === "true") return;
+
+                const fallback = getFallbackImage(item);
+                if (fallback && fallback !== target.src) {
+                  target.dataset.fallbackApplied = "true";
+                  target.src = fallback;
+                }
+              }}
+            />
             {/* Overlay gradient para mejor contraste */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             {item.link && (

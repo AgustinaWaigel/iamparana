@@ -28,8 +28,6 @@ export default function Espiritualidad() {
   return (
     <>
       {/* Área de espiritualidad: reúne oraciones y guiones litúrgicos o formativos. */}
-      <div id="header"></div>
-
       {/* Encabezado visual de la sección. */}
       <HeroSection
         title="Espiritualidad"

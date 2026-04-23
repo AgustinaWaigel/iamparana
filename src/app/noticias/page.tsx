@@ -21,19 +21,19 @@ export default async function Noticias() {
 
   const content = (
     <>
-      <div id="header"></div>
-
       {/* Encabezado visual del área de noticias. */}
-      <HeroSection
-        title="Noticias"
-        textureUrl="/assets/textures/areasg.webp"
-        overlayColor="rgba(120, 75, 40, 0.7), rgba(139, 87, 42, 0.75)"
-        gradientClass="from-brand-brown to-brand-brown/80"
-        description="Entérate de las últimas novedades de la IAM Paraná"
-        textColor="text-white"
-      />
+      <section>
+        <HeroSection
+          title="Noticias"
+          textureUrl="/assets/textures/areasg.webp"
+          overlayColor="rgba(120, 75, 40, 0.7), rgba(139, 87, 42, 0.75)"
+          gradientClass="from-brand-brown to-brand-brown/80"
+          description="Entérate de las últimas novedades de la IAM Paraná"
+          textColor="text-white"
+        />
+      </section>
 
-      <main className="max-w-6xl mx-auto px-4 py-12 pb-12">
+      <main className="max-w-6xl mx-auto px-4 pt-0 pb-12">
         {/* Listado de noticias en tarjetas, una por cada publicación disponible. */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {noticias.map((item) => (
@@ -71,7 +71,6 @@ export default async function Noticias() {
           ))}
         </div>
       </main>
-      <div id="footer"></div>
     </>
   );
 
