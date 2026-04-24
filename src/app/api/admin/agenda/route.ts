@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { AgendaInput, createAgendaAdmin, listAgendaAdmin } from "@/server/db/admin-repository";
-import { badRequest, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
+import { AgendaInput, deleteAgendaAdmin, getAgendaAdmin, updateAgendaAdmin } from "@/server/db/admin-repository";
+import { badRequest, requirePermission, parseId, serverError } from "@/app/api/admin/_shared/auth";
 
 function isValidAgendaPayload(value: unknown): value is AgendaInput {
   if (typeof value !== "object" || value === null) return false;
@@ -8,22 +8,37 @@ function isValidAgendaPayload(value: unknown): value is AgendaInput {
   return typeof v.evento === "string" && typeof v.fecha === "string";
 }
 
-export async function GET(req: Request) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requirePermission("content.read");
   if ("errorResponse" in auth) return auth.errorResponse;
 
+  const params = await context.params;
+  const id = parseId(params.id);
+  if (!id) {
+    return badRequest("Id invalido");
+  }
+
   try {
-    const items = await listAgendaAdmin();
-    return NextResponse.json(items);
+    const item = await getAgendaAdmin(id);
+    if (!item) {
+      return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+    }
+    return NextResponse.json(item);
   } catch (error) {
     console.error(error);
     return serverError();
   }
 }
 
-export async function POST(req: Request) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
+
+  const params = await context.params;
+  const id = parseId(params.id);
+  if (!id) {
+    return badRequest("Id invalido");
+  }
 
   let body: unknown;
   try {
@@ -37,10 +52,29 @@ export async function POST(req: Request) {
   }
 
   try {
-    await createAgendaAdmin(body);
-    return NextResponse.json({ success: true }, { status: 201 });
+    await updateAgendaAdmin(id, body);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
-    return serverError("No se pudo crear el evento");
+    return serverError("No se pudo actualizar el evento");
+  }
+}
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const auth = await requirePermission("content.delete");
+  if ("errorResponse" in auth) return auth.errorResponse;
+
+  const params = await context.params;
+  const id = parseId(params.id);
+  if (!id) {
+    return badRequest("Id invalido");
+  }
+
+  try {
+    await deleteAgendaAdmin(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return serverError("No se pudo borrar el evento");
   }
 }
