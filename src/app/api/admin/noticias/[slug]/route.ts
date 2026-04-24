@@ -1,5 +1,5 @@
-// Administración de una noticia concreta: lectura, actualización y borrado por slug.
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   deleteNoticiaAdmin,
   getNoticiaAdmin,
@@ -22,7 +22,13 @@ function isValidUpdatePayload(value: unknown): value is UpdateNoticiaInput {
   );
 }
 
-export async function GET(req: Request, context: { params: Promise<{ slug: string }> }) {
+// Tipo para el contexto de Next.js 15
+type Context = {
+  params: Promise<{ slug: string }>;
+};
+
+// GET /api/admin/noticias/[slug]
+export async function GET(req: NextRequest, context: Context) {
   const auth = await requirePermission("content.read");
   if ("errorResponse" in auth) return auth.errorResponse;
 
@@ -38,12 +44,13 @@ export async function GET(req: Request, context: { params: Promise<{ slug: strin
     }
     return NextResponse.json(item);
   } catch (error) {
-    console.error(error);
+    console.error("Error en GET noticia:", error);
     return serverError();
   }
 }
 
-export async function PUT(req: Request, context: { params: Promise<{ slug: string }> }) {
+// PUT /api/admin/noticias/[slug]
+export async function PUT(req: NextRequest, context: Context) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
 
@@ -65,14 +72,21 @@ export async function PUT(req: Request, context: { params: Promise<{ slug: strin
 
   try {
     await updateNoticiaAdmin(slug, body);
+
+    // REVALIDACIÓN: Actualiza la lista de noticias y la noticia individual
+    revalidatePath("/noticias");
+    revalidatePath(`/noticias/${slug}`);
+    revalidatePath("/"); // Por si la noticia aparece en el home
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
+    console.error("Error en PUT noticia:", error);
     return serverError("No se pudo actualizar la noticia");
   }
 }
 
-export async function DELETE(req: Request, context: { params: Promise<{ slug: string }> }) {
+// DELETE /api/admin/noticias/[slug]
+export async function DELETE(req: NextRequest, context: Context) {
   const auth = await requirePermission("content.delete");
   if ("errorResponse" in auth) return auth.errorResponse;
 
@@ -83,9 +97,14 @@ export async function DELETE(req: Request, context: { params: Promise<{ slug: st
 
   try {
     await deleteNoticiaAdmin(slug);
+
+    // REVALIDACIÓN: Limpia la lista después de borrar
+    revalidatePath("/noticias");
+    revalidatePath("/");
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
+    console.error("Error en DELETE noticia:", error);
     return serverError("No se pudo borrar la noticia");
   }
 }
