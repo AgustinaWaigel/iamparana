@@ -1,5 +1,5 @@
-// Administración de documentos compartidos en formación e institucional.
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requirePermission, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import {
   saveDocument,
@@ -12,14 +12,17 @@ import {
 } from "@/server/db/admin-repository";
 import { uploadFileToDrive, getOrCreateFolder, deleteFileFromDrive } from "@/lib/google-drive-service";
 
-// GET /api/admin/documentos?section=noticias
-export async function GET(req: Request) {
+// Forzamos que la API no cachee los resultados y siempre consulte a la DB
+export const dynamic = 'force-dynamic';
+
+// GET /api/admin/documentos
+export async function GET(req: NextRequest) {
   const auth = await requirePermission("content.read");
   if ("errorResponse" in auth) return auth.errorResponse;
 
   try {
-    const url = new URL(req.url);
-    const section = url.searchParams.get("section");
+    const { searchParams } = new URL(req.url);
+    const section = searchParams.get("section");
 
     if (!section) {
       return badRequest("Section parameter required");
@@ -28,80 +31,49 @@ export async function GET(req: Request) {
     const documents = await getDocumentsBySection(section);
     return NextResponse.json(documents);
   } catch (error) {
-    console.error(error);
+    console.error("Error en GET documentos:", error);
     return serverError();
   }
 }
 
-// POST /api/admin/documentos - Upload file to Google Drive or save metadata
-export async function POST(req: Request) {
+// POST /api/admin/documentos
+export async function POST(req: NextRequest) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
 
   try {
-    // Determinar si es FormData o JSON
     const contentType = req.headers.get("content-type") || "";
     const isFormData = contentType.includes("multipart/form-data");
 
     if (isFormData) {
-      // Flujo original: Subir archivo desde FormData
       const formData = await req.formData();
       const file = formData.get("file") as File;
       const section = formData.get("section") as string;
       const title = formData.get("title") as string;
       const description = formData.get("description") as string | null;
 
-      // Validaciones
-      if (!file) {
-        return badRequest("File is required");
-      }
-
-      if (!section) {
-        return badRequest("Section is required");
-      }
-
-      if (!title) {
-        return badRequest("Title is required");
+      if (!file || !section || !title) {
+        return badRequest("Missing required fields (file, section, or title)");
       }
 
       if (file.size > 100 * 1024 * 1024) {
         return badRequest("File size exceeds 100MB limit");
       }
 
-      // Obtener o crear carpeta en Google Drive para esta sección
       const driveConfig = await getGoogleDriveConfig(section);
-      let folderId: string | null = null;
-      
-      if (driveConfig && driveConfig.folder_id) {
-        folderId = String(driveConfig.folder_id).trim();
-      }
+      let folderId = driveConfig?.folder_id ? String(driveConfig.folder_id).trim() : null;
 
       if (!folderId) {
-        // Crear carpeta raíz si no existe
         const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
-        if (!rootFolderId) {
-          return serverError("Google Drive root folder not configured");
-        }
-
+        if (!rootFolderId) return serverError("Root folder ID not configured");
         folderId = await getOrCreateFolder(section, rootFolderId);
-
-        // Guardar la configuración
         await updateGoogleDriveConfig(section, folderId, section);
       }
 
-      // Subir archivo a Google Drive
       const uploadResult = await uploadFileToDrive(file, file.name, folderId, file.type);
+      if (!uploadResult.success) return serverError(uploadResult.error || "Upload failed");
 
-      if (!uploadResult.success) {
-        return serverError(uploadResult.error || "Failed to upload file");
-      }
-
-      // Guardar referencia en BD
       const userId = auth.user?.id;
-      if (!userId) {
-        return serverError("User ID not found");
-      }
-
       await saveDocument({
         section,
         title,
@@ -113,64 +85,37 @@ export async function POST(req: Request) {
         uploadedByUserId: Number(userId),
       });
 
-      return NextResponse.json(
-        {
-          success: true,
-          fileId: uploadResult.fileId,
-          fileName: uploadResult.fileName,
-          url: uploadResult.url,
-        },
-        { status: 201 }
-      );
     } else {
-      // Nuevo flujo: Solo guardar metadata (archivo ya fue subido por /api/admin/upload)
       const body = await req.json();
-      const { titulo, descripcion, tipo, url, fileId, fecha } = body;
+      const { titulo, descripcion, tipo, url, fileId } = body;
 
-      // Validaciones
-      if (!titulo) {
-        return badRequest("Título is required");
-      }
+      if (!titulo || !url || !fileId) return badRequest("Missing metadata");
 
-      if (!url || !fileId) {
-        return badRequest("URL and fileId are required");
-      }
-
-      // Obtener userId
-      const userId = auth.user?.id;
-      if (!userId) {
-        return serverError("User ID not found");
-      }
-
-      // Guardar documento en BD
-      // Usar "formacion" como sección por defecto (puedes parametrizarlo si es necesario)
       await saveDocument({
         section: tipo || "formacion",
         title: titulo,
         description: descripcion || undefined,
         googleDriveId: fileId,
         googleDriveUrl: url,
-        fileSize: 0, // No tenemos este dato desde el cliente
-        fileType: "application/pdf", // Por defecto, puede ser mejorado
-        uploadedByUserId: Number(userId),
+        fileSize: 0,
+        fileType: "application/pdf",
+        uploadedByUserId: Number(auth.user?.id),
       });
-
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Documento guardado correctamente",
-        },
-        { status: 201 }
-      );
     }
+
+    // LIMPIEZA DE CACHÉ: Esto hace que los cambios se vean en Netlify
+    revalidatePath('/formacion');
+    revalidatePath('/formacion/recursos');
+
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error(error);
-    return serverError(error instanceof Error ? error.message : "Failed to upload document");
+    console.error("Error en POST documentos:", error);
+    return serverError("Failed to process document");
   }
 }
 
-// PUT /api/admin/documentos/[id] - Update document metadata
-export async function PUT(req: Request) {
+// PUT /api/admin/documentos
+export async function PUT(req: NextRequest) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
 
@@ -178,14 +123,10 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const { id, title, description, googleDriveUrl } = body;
 
-    if (!id) {
-      return badRequest("Document ID is required");
-    }
+    if (!id) return badRequest("Document ID is required");
 
     const document = await getDocument(id);
-    if (!document) {
-      return badRequest("Document not found");
-    }
+    if (!document) return badRequest("Document not found");
 
     await updateDocument(id, {
       title: title || String(document.title || '').trim(),
@@ -193,43 +134,43 @@ export async function PUT(req: Request) {
       googleDriveUrl: googleDriveUrl || String(document.google_drive_url || '').trim(),
     });
 
+    // Revalidamos para que el cambio de nombre se vea
+    revalidatePath('/formacion');
+    
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
+    console.error("Error en PUT documentos:", error);
     return serverError();
   }
 }
 
-// DELETE /api/admin/documentos/[id]
-export async function DELETE(req: Request) {
+// DELETE /api/admin/documentos
+export async function DELETE(req: NextRequest) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
 
   try {
-    const url = new URL(req.url);
-    const id = url.searchParams.get("id");
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
-    if (!id) {
-      return badRequest("Document ID is required");
-    }
+    if (!id) return badRequest("Document ID is required");
 
     const document = await getDocument(parseInt(id));
-    if (!document) {
-      return badRequest("Document not found");
-    }
+    if (!document) return badRequest("Document not found");
 
-    // Eliminar de Google Drive
     const googleDriveId = String(document.google_drive_id || '').trim();
     if (googleDriveId) {
-      await deleteFileFromDrive(googleDriveId);
+      await deleteFileFromDrive(googleDriveId).catch(console.error);
     }
 
-    // Eliminar de BD
     await deleteDocument(parseInt(id));
+
+    // Revalidamos para que desaparezca de la lista
+    revalidatePath('/formacion');
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
+    console.error("Error en DELETE documentos:", error);
     return serverError();
   }
 }
