@@ -397,25 +397,7 @@ export default function AgendaClient({
                   {selectedEvento.descripcion?.trim() || "Sin descripción."}
                 </p>
 
-                {isAdmin && (
-                  <div className="mt-2 flex flex-wrap gap-2 border-t border-slate-200 pt-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(true)}
-                      className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isDeleting}
-                      onClick={handleDeleteFromModal}
-                      className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
-                    >
-                      {isDeleting ? "Eliminando..." : "Eliminar"}
-                    </button>
-                  </div>
-                )}
+                
               </div>
             ) : (
               <div className="space-y-3">

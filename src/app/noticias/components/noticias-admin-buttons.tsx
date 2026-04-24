@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit2, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSession } from '@/app/hooks/use-session';
 
@@ -44,17 +44,18 @@ export function NoticiasAdminButtons({ noticia }: NoticiasAdminButtonsProps) {
 
   return (
     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+      {/* Acciones de Admin para la Sección */}
       <button
         onClick={handleEdit}
-        className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-lg"
+        className="p-2 hover:bg-stone-100 rounded-full text-stone-400 hover:text-stone-600 transition-colors"
         title="Editar"
       >
-        <Edit2 size={18} />
+        <Pencil size={18} />
       </button>
       <div className="relative">
         <button
           onClick={() => setDeleteConfirm(!deleteConfirm)}
-          className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-lg"
+          className="p-2 hover:bg-red-50 rounded-full text-stone-400 hover:text-red-600 transition-colors"
           title="Eliminar"
         >
           <Trash2 size={18} />
