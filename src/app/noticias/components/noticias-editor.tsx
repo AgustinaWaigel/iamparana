@@ -62,11 +62,18 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
     setCargandoNoticias(true);
     try {
       const response = await fetch('/api/admin/noticias', { credentials: 'include' });
-      if (!response.ok) throw new Error('Error al cargar noticias');
+      
+      if (!response.ok) {
+        // Esto te dirá si es 401 (no logueado), 404 (no existe) o 500 (error db)
+        const errorMsg = `Error ${response.status}: No se pudo cargar la lista`;
+        throw new Error(errorMsg);
+      }
+
       const noticias = await response.json();
       setNoticiasExistentes(noticias);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Detalle del error:", err);
+      setError(err.message); // Muestra el error en la UI para saber qué arreglar
     } finally {
       setCargandoNoticias(false);
     }
