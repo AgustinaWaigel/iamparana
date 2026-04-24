@@ -1,13 +1,17 @@
 "use client";
+import { useSession } from '@/app/hooks/use-session';
 
-export default function AgendaTitle() {
+
+export default function AgendaTitle({ isAdmin}: { isAdmin: boolean }) {
   const handleToggleAdmin = () => {
     window.dispatchEvent(new Event("agendaAdminToggle"));
-  };
+  }
+  const { user, isLoading } = useSession();
 
   return (
     <div className="mb-4 flex min-h-[64px] items-center justify-between gap-3 rounded-lg bg-brand-brown px-4 py-3 text-white">
       <h2 className="m-0 text-2xl font-bold leading-none text-white">Agenda</h2>
+      {isAdmin && (
       <button
         type="button"
         onClick={handleToggleAdmin}
@@ -24,6 +28,7 @@ export default function AgendaTitle() {
           />
         </svg>
       </button>
+      )}
     </div>
   );
 }

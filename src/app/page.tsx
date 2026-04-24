@@ -4,6 +4,7 @@ import AgendaTitle from "@/app/components/common/agenda-title";
 import Novedades from "@/app/components/common/novedades";
 import Link from 'next/link';
 import { listCarouselItems } from "@/server/db/content-repository";
+import { getSessionUser } from "@/server/lib/api-utils";
 export const dynamic = "force-dynamic";
 
 interface CarouselItem {
@@ -16,6 +17,8 @@ interface CarouselItem {
 
 export default async function HomePage() {
   const carouselItems = await listCarouselItems();
+  const user = await getSessionUser();
+const isAdmin = user?.role === "admin";
 
   return (
     <>
@@ -114,7 +117,7 @@ export default async function HomePage() {
           </section>
 
           <section className="w-full md:w-1/3">
-            <AgendaTitle />
+            <AgendaTitle isAdmin={isAdmin} />
             <Agenda />
           </section>
         </div>

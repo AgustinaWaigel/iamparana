@@ -54,7 +54,7 @@ const Header: React.FC = () => {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
       if (res.ok) {
         // Usamos window.location para asegurar un "hard reset" del estado de la app
-        window.location.href = '/login';
+        window.location.href = '/';
       }
     } catch (err) {
       console.error("Error al salir", err);
