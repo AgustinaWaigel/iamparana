@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   getNoticiaGaleria,
   addNoticiaGaleriaImage,
@@ -18,25 +18,34 @@ function isValidGaleriaPayload(value: unknown): value is NoticiaGaleriaInput {
   );
 }
 
-export async function GET(req: Request, context: { params: Promise<{ slug: string }> }) {
+/**
+ * ELIMINADO: 'context' con 'params'
+ * Como esta ruta es estática (/galeria/route.ts), el segundo argumento DEBE ser omitido 
+ * o no contener 'params' con propiedades que la ruta no tiene.
+ */
+export async function GET(req: NextRequest) {
   const auth = await requirePermission("content.read");
   if ("errorResponse" in auth) return auth.errorResponse;
 
-  const { slug } = await context.params;
-  if (!isValidSlug(slug)) {
-    return badRequest("Slug invalido");
+  // Extraemos el slug de la URL (query params)
+  // Ejemplo: /api/admin/noticias/galeria?slug=nombre-de-la-noticia
+  const { searchParams } = new URL(req.url);
+  const slug = searchParams.get("slug");
+
+  if (!slug || !isValidSlug(slug)) {
+    return badRequest("Slug inválido o ausente en los parámetros de búsqueda");
   }
 
   try {
     const galeria = await getNoticiaGaleria(slug);
     return NextResponse.json(galeria);
   } catch (error) {
-    console.error(error);
+    console.error("Error en GET galeria:", error);
     return serverError();
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
 
@@ -44,22 +53,22 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return badRequest("Body invalido");
+    return badRequest("Body inválido");
   }
 
   if (!isValidGaleriaPayload(body)) {
-    return badRequest("Payload de galería invalido");
+    return badRequest("Payload de galería inválido");
   }
 
   if (!isValidSlug(body.noticia_slug)) {
-    return badRequest("Slug de noticia invalido");
+    return badRequest("Slug de noticia inválido");
   }
 
   try {
     await addNoticiaGaleriaImage(body);
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("Error en POST galeria:", error);
     return serverError("No se pudo agregar imagen a la galería");
   }
 }
