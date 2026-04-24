@@ -251,10 +251,20 @@ export async function deleteAgendaAdmin(id: number) {
   });
 }
 
-export async function listCarouselAdmin() {
+export async function listCarouselItems() {
   const client = clientOrThrow();
+  // Forzamos los nombres de columna para que matcheen con el componente de React
   const result = await client.execute(
-    "SELECT id, slug, imageDesktop, imageMobile, alt, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
+    `SELECT 
+      id, 
+      imageDesktop as imageDesktop, 
+      imageMobile as imageMobile, 
+      alt, 
+      link, 
+      buttonText, 
+      "order" 
+     FROM carousel 
+     ORDER BY "order" ASC`
   );
   return result.rows;
 }
