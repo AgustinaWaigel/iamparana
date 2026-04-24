@@ -35,7 +35,7 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
   const theme = TEMPLATE_MAP[data.page.template] || TEMPLATE_MAP.gold;
 
   return (
-    <main className="pb-24 bg-[#F9F9F8] min-h-screen font-sans sticky top-0">
+    <main className="pb-24 bg-[#F9F9F8] min-h-screen font-sans">
       {/* Hero Section Minimalista */}
       <div className={`relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden ${theme.banner}`}>
         <div 

@@ -624,7 +624,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto custom-scrollbar">
+            <div className="p-6 overflow-y-auto custom-scrollbar ">
               <div className="flex p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
                 <button type="button" onClick={() => setMode('page')} className={modeButton('page')}>
                   <LayoutPanelTop size={16} /> Pagina
