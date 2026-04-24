@@ -5,6 +5,7 @@ import {
   isGoogleCalendarConfigured,
   listCalendarAgendaEvents,
 } from "@/server/lib/google-calendar-service";
+export const dynamic = "force-dynamic";
 
 interface Evento {
   id?: string | number;

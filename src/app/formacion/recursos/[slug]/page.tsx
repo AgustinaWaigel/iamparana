@@ -4,6 +4,7 @@ import { ArrowUpRight, ExternalLink, FileText, FolderKanban, Link as LinkIcon, F
 import { getResourcePageWithContent } from "@/server/db/resource-pages-repository";
 import { ResourcePageEditorFab } from "@/app/components/common/resource-page-editor-fab";
 import { getSessionUser } from "@/server/lib/api-utils";
+export const dynamic = "force-dynamic";
 
 // --- TIPOS Y TEMAS ---
 const TEMPLATE_MAP: Record<string, any> = {

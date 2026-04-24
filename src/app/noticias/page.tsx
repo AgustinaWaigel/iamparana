@@ -5,6 +5,7 @@ import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-b
 import { HeroSection } from "@/app/components/common/hero-section";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { listNoticiasPreview } from "@/server/db/content-repository";
+export const dynamic = "force-dynamic";
 
 interface Noticia {
   slug: string;

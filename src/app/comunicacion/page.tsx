@@ -9,6 +9,7 @@ import { ComunicacionCardsGrid } from "./components/comunicacion-cards-grid";
 // Base de Datos
 import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
 import { listResourcePages } from "@/server/db/resource-pages-repository";
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#3b82f6",
