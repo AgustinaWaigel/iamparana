@@ -41,7 +41,7 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
       <div className={`relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden ${theme.banner}`}>
         <div 
           className="absolute inset-0 opacity-40 mix-blend-overlay"
-          style={{ backgroundImage: `url(${data.page.texture_url || "/assets/textures/formacion.webp"})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+          style={{ backgroundImage: `url(${data.page.texture_url || "/assets/textures/areasg.webp"})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         />
         <div className="absolute inset-0 bg-black/10" />
         

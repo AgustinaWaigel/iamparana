@@ -31,7 +31,7 @@ export default function AnimacionPage() {
       {/* Encabezado visual del área de Animación. */}
       <HeroSection
         title="Animación"
-        textureUrl="/assets/textures/cartoon.webp"
+        textureUrl="/assets/textures/areasg.webp"
         overlayColor="rgba(20, 118, 60, 0.7), rgba(22, 163, 74, 0.75)"
         gradientClass="from-green-800 to-green-600"
         description="Juegos, dinámicas, canciones y muchos más recursos para tus encuentros con los niños y adolescentes."

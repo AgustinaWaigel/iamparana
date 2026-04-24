@@ -31,7 +31,7 @@ export default function Espiritualidad() {
       {/* Encabezado visual de la sección. */}
       <HeroSection
         title="Espiritualidad"
-        textureUrl="/assets/textures/espiritualidad.webp"
+        textureUrl="/assets/textures/areasg.webp"
         overlayColor="rgba(55, 65, 81, 0.7), rgba(75, 85, 99, 0.75)"
         gradientClass="from-gray-700 to-gray-600"
         description="En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM."

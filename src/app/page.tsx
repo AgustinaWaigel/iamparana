@@ -4,6 +4,7 @@ import AgendaTitle from "@/app/components/common/agenda-title";
 import Novedades from "@/app/components/common/novedades";
 import Link from 'next/link';
 import { listCarouselItems } from "@/server/db/content-repository";
+export const dynamic = "force-dynamic";
 
 interface CarouselItem {
   imageDesktop: string;

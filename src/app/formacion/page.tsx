@@ -72,7 +72,7 @@ export default async function FormacionPage() {
       <section>
         <HeroSection
           title="Formación"
-          textureUrl="/assets/textures/formacion.webp"
+          textureUrl="/assets/textures/areasg.webp"
           overlayColor="rgba(253, 224, 71, 0.7), rgba(250, 204, 21, 0.75)"
           gradientClass="from-yellow-600 to-yellow-500"
           description="Aquí podrás acceder a todos los recursos: presentaciones de talleres, el temario del año, la carta del Papa y mucho más."
