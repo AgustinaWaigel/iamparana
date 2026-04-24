@@ -67,17 +67,26 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
     return () => window.removeEventListener("agendaAdminToggle", handleToggle);
   }, []);
 
-  const refreshEventos = async () => {
-    try {
-      const response = await fetch("/api/agenda");
-      if (response.ok) {
-        const eventos: Evento[] = await response.json();
-        setTodosEventos(eventos.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()));
-      }
-    } catch (error) {
-      console.error("Error al refrescar:", error);
+ const refreshEventos = async () => {
+  try {
+    const response = await fetch("/api/agenda");
+    if (response.ok) {
+      const eventos: Evento[] = await response.json();
+      
+      // Obtenemos la fecha actual para filtrar
+      const hoy = new Date().toISOString().split('T')[0];
+
+      // Filtramos para que solo queden los que el usuario debería ver
+      const eventosFiltrados = eventos
+        .filter(ev => ev.fecha >= hoy) // Solo futuros o actuales
+        .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+
+      setTodosEventos(eventosFiltrados);
     }
-  };
+  } catch (error) {
+    console.error("Error al refrescar:", error);
+  }
+};
 
   if (isLoading || !user || user.role !== "admin") return null;
 
