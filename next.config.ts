@@ -1,7 +1,9 @@
-// next.config.mjs o next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',           // Genera la carpeta /out para GitHub Pages
+  basePath: '/iamparana',     // Prefijo para la URL del repositorio
   images: {
+    unoptimized: true,        // GitHub Pages no soporta optimización dinámica
     remotePatterns: [
       {
         protocol: 'https',
@@ -9,7 +11,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.googleusercontent.com', // Clave para las imágenes renderizadas
+        hostname: '*.googleusercontent.com',
       },
     ],
   },
