@@ -137,6 +137,7 @@ export async function POST(req: NextRequest) {
 }
 
 // PUT /api/admin/documentos
+// Reemplaza tu función PUT actual por esta versión más limpia:
 export async function PUT(req: NextRequest) {
   const auth = await requirePermission("content.write");
   if ("errorResponse" in auth) return auth.errorResponse;
@@ -150,15 +151,22 @@ export async function PUT(req: NextRequest) {
     const document = await getDocument(id);
     if (!document) return badRequest("Document not found");
 
+    // Lógica simplificada: 
+    // Si viene una miniatura nueva, se usa. 
+    // Si no viene nada (null o ''), mantenemos la que ya tenía el documento.
+    const finalThumbnail = (thumbnailUrl !== undefined && thumbnailUrl !== null)
+      ? String(thumbnailUrl).trim()
+      : (typeof document.thumbnail_url === 'string' ? document.thumbnail_url : undefined);
+
     await updateDocument(id, {
-      title: title || String(document.title || '').trim(),
-      description: description || String(document.description || '').trim(),
-      googleDriveUrl: googleDriveUrl || String(document.google_drive_url || '').trim(),
-      thumbnailUrl: thumbnailUrl === undefined ? String((document as { thumbnail_url?: unknown }).thumbnail_url || '').trim() || undefined : String(thumbnailUrl || '').trim() || undefined,
+      title: title || String(document.title),
+      description: description ?? (typeof document.description === 'string' ? document.description : undefined),
+      googleDriveUrl: googleDriveUrl || String(document.google_drive_url),
+      thumbnailUrl: finalThumbnail,
     });
 
-    revalidateContentSection((document as { section?: unknown }).section);
-    
+    revalidateContentSection(document.section);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error en PUT documentos:", error);
