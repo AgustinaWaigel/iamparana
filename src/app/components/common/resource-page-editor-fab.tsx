@@ -755,7 +755,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                     </div>
                   </div>
                   <div className="flex gap-3 pt-4 border-t border-stone-100">
-                    <button type="button" onClick={handleDeletePage} disabled={busy} className="flex-1 px-4 py-3 rounded-xl border border-red-200 text-red-700 font-bold hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2">
+                    <button type="button" onClick={() => handleDeletePage(true)} disabled={busy} className="flex-1 px-4 py-3 rounded-xl border border-red-200 text-red-700 font-bold hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2">
                       <Trash2 size={16} /> Eliminar pagina
                     </button>
                     <button disabled={busy} className={`flex-1 px-4 py-3 rounded-xl ${theme.accentBg} ${theme.accentBgHover} text-white font-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-md`}>
