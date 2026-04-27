@@ -23,9 +23,12 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
   // Estados de formularios
   const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'formacion' });
   const [file, setFile] = useState<File | null>(null);
+  const [docThumbnailFile, setDocThumbnailFile] = useState<File | null>(null);
 
   const [linkData, setLinkData] = useState({ title: '', description: '', url: '', icon: 'link' });
   const [pageData, setPageData] = useState({ title: '', slug: '', description: '', textureUrl: '/assets/textures/formacion.webp' });
+  const [linkThumbnailFile, setLinkThumbnailFile] = useState<File | null>(null);
+  const [pageThumbnailFile, setPageThumbnailFile] = useState<File | null>(null);
 
   // Estados de UI
   const [error, setError] = useState('');
@@ -47,6 +50,30 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
     setSuccess('');
   };
 
+  const uploadThumbnail = async (imageFile: File) => {
+    if (!imageFile.type.startsWith('image/')) {
+      throw new Error('La miniatura debe ser una imagen válida');
+    }
+
+    const formDataImage = new FormData();
+    formDataImage.append('file', imageFile);
+    formDataImage.append('type', 'imagen');
+
+    const uploadRes = await fetch('/api/admin/upload', {
+      method: 'POST',
+      credentials: 'include',
+      body: formDataImage,
+    });
+
+    if (!uploadRes.ok) {
+      const data = await uploadRes.json().catch(() => ({}));
+      throw new Error(data.error || 'No se pudo subir la miniatura');
+    }
+
+    const uploaded = await uploadRes.json();
+    return String(uploaded.url || '');
+  };
+
   // --- HANDLERS ---
   const handleSubmitDocument = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +81,11 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
 
     try {
       if (!file) throw new Error('Selecciona un archivo');
+
+      let docThumbnailUrl: string | undefined;
+      if (docThumbnailFile) {
+        docThumbnailUrl = await uploadThumbnail(docThumbnailFile);
+      }
 
       const formDataImage = new FormData();
       formDataImage.append('file', file);
@@ -71,7 +103,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          titulo: docData.titulo, descripcion: docData.descripcion, tipo: docData.tipo, url: uploadedData.url, fileId: uploadedData.fileId, fecha: new Date().toISOString().split('T')[0],
+          titulo: docData.titulo, descripcion: docData.descripcion, tipo: docData.tipo, thumbnailUrl: docThumbnailUrl, url: uploadedData.url, fileId: uploadedData.fileId, fecha: new Date().toISOString().split('T')[0],
         }),
       });
 
@@ -82,6 +114,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
 
       setDocData({ titulo: '', descripcion: '', tipo: 'formacion' });
       setFile(null);
+      setDocThumbnailFile(null);
       done('Documento subido correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -98,11 +131,16 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
       if (!linkData.title) throw new Error('El título es obligatorio');
       if (!linkData.url) throw new Error('La URL es obligatoria');
 
+      let linkThumbnailUrl: string | undefined;
+      if (linkThumbnailFile) {
+        linkThumbnailUrl = await uploadThumbnail(linkThumbnailFile);
+      }
+
       const response = await fetch('/api/admin/links', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ section: 'formacion', title: linkData.title, description: linkData.description || null, url: linkData.url, icon: linkData.icon }),
+        body: JSON.stringify({ section: 'formacion', title: linkData.title, description: linkData.description || null, url: linkData.url, icon: linkData.icon, thumbnailUrl: linkThumbnailUrl }),
       });
 
       if (!response.ok) {
@@ -111,6 +149,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
       }
 
       setLinkData({ title: '', description: '', url: '', icon: 'link' });
+      setLinkThumbnailFile(null);
       done('Enlace agregado correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -126,11 +165,16 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
     try {
       if (!pageData.title.trim()) throw new Error('El título es obligatorio');
 
+      let pageThumbnailUrl: string | undefined;
+      if (pageThumbnailFile) {
+        pageThumbnailUrl = await uploadThumbnail(pageThumbnailFile);
+      }
+
       const response = await fetch('/api/admin/resource-pages', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: pageData.title, slug: pageData.slug, description: pageData.description, textureUrl: pageData.textureUrl, template: 'gold' }),
+        body: JSON.stringify({ title: pageData.title, slug: pageData.slug, description: pageData.description, textureUrl: pageData.textureUrl, thumbnailUrl: pageThumbnailUrl, template: 'gold' }),
       });
 
       if (!response.ok) {
@@ -139,6 +183,7 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
       }
 
       setPageData({ title: '', slug: '', description: '', textureUrl: '/assets/textures/formacion.webp' });
+      setPageThumbnailFile(null);
       done('Página creada correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -266,6 +311,34 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
                         )}
                       </div>
                     </div>
+
+                    <div>
+                      <label className={labelClass}>Foto de miniatura (opcional)</label>
+                      <div className="relative overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 transition-colors rounded-2xl p-5 flex flex-col items-center justify-center gap-3 text-center group cursor-pointer">
+                        {docThumbnailFile ? (
+                          <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-yellow-100 text-yellow-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <span className="text-sm font-semibold text-stone-700 truncate">{docThumbnailFile.name}</span>
+                            </div>
+                            <button type="button" onClick={(e) => { e.preventDefault(); setDocThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                              <X size={18} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-yellow-500 group-hover:scale-110 transition-all">
+                              <UploadCloud size={24} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-stone-700">Subir imagen miniatura</p>
+                              <p className="text-xs text-stone-500 mt-1">PNG, JPG, WEBP, SVG...</p>
+                            </div>
+                            <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setDocThumbnailFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -284,6 +357,34 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
                     <div>
                       <label className={labelClass}>URL de destino *</label>
                       <input type="url" required value={linkData.url} onChange={(e) => setLinkData({ ...linkData, url: e.target.value })} className={inputClass} placeholder="https://..." />
+                    </div>
+
+                    <div>
+                      <label className={labelClass}>Miniatura (opcional)</label>
+                      <div className="relative overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 transition-colors rounded-2xl p-5 flex flex-col items-center justify-center gap-3 text-center group cursor-pointer">
+                        {linkThumbnailFile ? (
+                          <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-yellow-100 text-yellow-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <span className="text-sm font-semibold text-stone-700 truncate">{linkThumbnailFile.name}</span>
+                            </div>
+                            <button type="button" onClick={(e) => { e.preventDefault(); setLinkThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                              <X size={18} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-yellow-500 group-hover:scale-110 transition-all">
+                              <UploadCloud size={24} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-stone-700">Subir imagen miniatura</p>
+                              <p className="text-xs text-stone-500 mt-1">PNG, JPG, WEBP, SVG...</p>
+                            </div>
+                            <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setLinkThumbnailFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -328,6 +429,34 @@ export function FormacionEditor({ isAdmin, onRefresh }: FormacionEditorProps) {
                         className={inputClass}
                         placeholder="/assets/textures/formacion.webp"
                       />
+                    </div>
+
+                    <div>
+                      <label className={labelClass}>Miniatura (opcional)</label>
+                      <div className="relative overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 transition-colors rounded-2xl p-5 flex flex-col items-center justify-center gap-3 text-center group cursor-pointer">
+                        {pageThumbnailFile ? (
+                          <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-yellow-100 text-yellow-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <span className="text-sm font-semibold text-stone-700 truncate">{pageThumbnailFile.name}</span>
+                            </div>
+                            <button type="button" onClick={(e) => { e.preventDefault(); setPageThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                              <X size={18} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-yellow-500 group-hover:scale-110 transition-all">
+                              <UploadCloud size={24} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-stone-700">Subir imagen miniatura</p>
+                              <p className="text-xs text-stone-500 mt-1">Si subís imagen, reemplaza la textura manual.</p>
+                            </div>
+                            <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setPageThumbnailFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

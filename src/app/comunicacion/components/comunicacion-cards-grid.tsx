@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, FileText, GraduationCap, Link as LinkIcon, Pencil, Search, Trash2, X, SearchX } from 'lucide-react';
+import { ExternalLink, FileText, GraduationCap, Link as LinkIcon, Pencil, Trash2, SearchX } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
+import { SearchBar } from '@/app/components/common/search-bar';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 // --- TYPES ---
-type UploadedDocument = { id: number; title: string; description: string | null; google_drive_url: string | null; file_type: string | null; };
-type UploadedLink = { id: number; title: string; description: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
+type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; };
 
 // Eliminamos el tipo 'static'
 type CardItem = {
@@ -22,6 +25,7 @@ type CardItem = {
   resourceId: number; // Ahora es obligatorio, porque todos vienen de la DB
   googleDriveUrl?: string | null;
   linkUrl?: string;
+  thumbnailUrl?: string | null;
 };
 
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
@@ -31,6 +35,14 @@ interface ComunicacionCardsGridProps {
   uploadedDocuments: UploadedDocument[];
   uploadedLinks: UploadedLink[];
   resourcePages: ResourcePageCard[];
+}
+
+function isValidImageSource(value?: string | null): boolean {
+  if (!value) return false;
+  const src = value.trim().toLowerCase();
+  if (!src) return false;
+  if (src.startsWith('/')) return true;
+  return src.startsWith('http://') || src.startsWith('https://');
 }
 
 // --- MAIN COMPONENT ---
@@ -45,6 +57,8 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [editBusy, setEditBusy] = useState(false);
   const [editError, setEditError] = useState('');
+  const [editThumbnailUrl, setEditThumbnailUrl] = useState('');
+  const [editThumbnailFile, setEditThumbnailFile] = useState<File | null>(null);
   
   const [deleteDraft, setDeleteDraft] = useState<DeleteDraft | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -58,6 +72,8 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   const openEditModal = (card: CardItem) => {
     if (!isAdmin) return;
     setEditError('');
+    setEditThumbnailUrl(card.thumbnailUrl || '');
+    setEditThumbnailFile(null);
     setEditDraft({
       kind: card.kind,
       resourceId: card.resourceId,
@@ -73,6 +89,35 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
     setDeleteDraft({ kind: card.kind, resourceId: card.resourceId, title: card.title });
   };
 
+  const closeEditModal = () => {
+    setEditDraft(null);
+    setEditThumbnailUrl('');
+    setEditThumbnailFile(null);
+  };
+
+  const uploadThumbnail = async (imageFile: File) => {
+    if (!imageFile.type.startsWith('image/')) {
+      throw new Error('La miniatura debe ser una imagen válida');
+    }
+
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    formData.append('type', 'imagen');
+
+    const response = await fetch('/api/admin/upload', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || 'No se pudo subir la miniatura');
+    }
+
+    return String(data.url || '').trim();
+  };
+
   const submitEdit = async () => {
     if (!editDraft) return;
 
@@ -86,6 +131,11 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
     setEditBusy(true);
 
     try {
+      let nextThumbnailUrl = editThumbnailUrl.trim() || undefined;
+      if (editThumbnailFile) {
+        nextThumbnailUrl = await uploadThumbnail(editThumbnailFile);
+      }
+
       if (editDraft.kind === 'document') {
         const docInfo = documentsState.find((item) => item.id === editDraft.resourceId);
         const response = await fetch('/api/admin/documentos', {
@@ -97,10 +147,11 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
             title: nextTitle,
             description: nextDescription,
             googleDriveUrl: docInfo?.google_drive_url || '',
+            thumbnailUrl: nextThumbnailUrl,
           }),
         });
         if (!response.ok) throw new Error('No se pudo actualizar el documento');
-        setDocumentsState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription } : item)));
+        setDocumentsState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, thumbnail_url: nextThumbnailUrl || null } : item)));
       } 
       else if (editDraft.kind === 'link') {
         const nextUrl = editDraft.url.trim();
@@ -108,10 +159,10 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
           method: 'PUT',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: nextTitle, description: nextDescription, url: nextUrl, icon: 'link' }),
+          body: JSON.stringify({ title: nextTitle, description: nextDescription, url: nextUrl, icon: 'link', thumbnailUrl: nextThumbnailUrl }),
         });
         if (!response.ok) throw new Error('No se pudo actualizar el enlace');
-        setLinksState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, url: nextUrl } : item)));
+        setLinksState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, url: nextUrl, thumbnail_url: nextThumbnailUrl || null } : item)));
       } 
       else if (editDraft.kind === 'resource-page') {
         const pagesResponse = await fetch('/api/admin/resource-pages', { credentials: 'include' });
@@ -129,14 +180,15 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
             id: editDraft.resourceId,
             title: nextTitle,
             description: nextDescription,
+            thumbnailUrl: nextThumbnailUrl,
             textureUrl: String(currentPage.texture_url || '/assets/textures/comunicacion.webp'),
             template: String(currentPage.template || 'gold'),
           }),
         });
         if (!response.ok) throw new Error('No se pudo actualizar la página');
-        setResourcePagesState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription } : item)));
+        setResourcePagesState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, thumbnail_url: nextThumbnailUrl || null } : item)));
       }
-      setEditDraft(null);
+      closeEditModal();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : 'Error al editar');
     } finally {
@@ -171,15 +223,15 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   // --- DATA TRANSFORMATION ---
   const cards = useMemo<CardItem[]>(() => {
     const documentCards: CardItem[] = documentsState.map((doc) => ({
-      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'green', resourceId: doc.id, googleDriveUrl: doc.google_drive_url,
+      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'green', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || (doc.file_type?.startsWith('image/') ? doc.google_drive_url : null),
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({
-      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: 'Enlace', accent: 'blue', resourceId: resourceLink.id, linkUrl: resourceLink.url,
+      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: 'Enlace', accent: 'blue', resourceId: resourceLink.id, linkUrl: resourceLink.url, thumbnailUrl: resourceLink.thumbnail_url || null,
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
-      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'blue', resourceId: page.id,
+      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'blue', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
     }));
 
     // Ahora solo devolvemos lo que viene de la base de datos
@@ -197,26 +249,11 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   return (
     <>
       <div className="mb-8 md:mb-10 max-w-2xl mx-auto">
-        <div className="relative group flex items-center bg-white rounded-full border border-stone-200 shadow-sm transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-400/20 focus-within:shadow-md px-4 py-3">
-          <Search size={18} className="text-stone-400 group-focus-within:text-blue-600 transition-colors shrink-0" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar recursos, temarios o enlaces..."
-            className="w-full bg-transparent border-none text-stone-700 placeholder:text-stone-400 focus:outline-none ml-3 text-[15px]"
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
-              aria-label="Limpiar búsqueda"
-              className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar recursos, temarios o enlaces..."
+        />
         <div className="mt-3 text-center text-xs font-semibold text-stone-500">
           Mostrando {filteredCards.length} {filteredCards.length === 1 ? 'resultado' : 'resultados'}
         </div>
@@ -253,33 +290,42 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
       )}
 
       {editDraft && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-3xl border border-stone-200 bg-white shadow-2xl overflow-hidden transform transition-all">
-            <div className="border-b border-stone-100 px-6 py-5 bg-stone-50/50">
-              <h3 className="text-xl font-black text-brand-brown">Editar recurso</h3>
-              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-stone-400">
+        <div className="modal-overlay-unified">
+          <div className="modal-panel-unified max-w-lg transform transition-all">
+            <div className="modal-header-unified">
+              <h3 className="modal-title-unified">Editar recurso</h3>
+              <p className="modal-subtitle-unified">
                 {editDraft.kind === 'document' ? 'Documento' : editDraft.kind === 'link' ? 'Enlace' : 'Página de formación'}
               </p>
             </div>
-            <form className="space-y-5 px-6 py-6" onSubmit={(e) => { e.preventDefault(); submitEdit().catch(() => undefined); }}>
+            <form className="modal-body-unified" onSubmit={(e) => { e.preventDefault(); submitEdit().catch(() => undefined); }}>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-500 uppercase ml-1">Título</label>
-                <input value={editDraft.title} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all" required />
+                <label className="modal-label-unified">Título</label>
+                <input value={editDraft.title} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))} className="modal-input-unified" required />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-500 uppercase ml-1">Descripción</label>
-                <textarea value={editDraft.description} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, description: e.target.value } : prev))} rows={3} className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all resize-none" />
+                <label className="modal-label-unified">Descripción</label>
+                <textarea value={editDraft.description} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, description: e.target.value } : prev))} rows={3} className="modal-input-unified resize-none" />
               </div>
               {editDraft.kind === 'link' && (
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-stone-500 uppercase ml-1">URL</label>
-                  <input value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} placeholder="https://..." className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all" required />
+                  <label className="modal-label-unified">URL</label>
+                  <input value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} placeholder="https://..." className="modal-input-unified" required />
                 </div>
               )}
+              <div className="space-y-1">
+                <label className="modal-label-unified">Miniatura (URL opcional)</label>
+                <input value={editThumbnailUrl} onChange={(e) => setEditThumbnailUrl(e.target.value)} placeholder="https://... o /uploads/..." className="modal-input-unified" />
+              </div>
+              <div className="space-y-2">
+                <label className="modal-label-unified">Subir miniatura (opcional)</label>
+                <input type="file" accept="image/*" onChange={(e) => setEditThumbnailFile(e.target.files?.[0] || null)} className="upload-input-unified" />
+                {editThumbnailFile && <p className="text-xs text-stone-500">Archivo seleccionado: {editThumbnailFile.name}</p>}
+              </div>
               {editError && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{editError}</p>}
-              <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
-                <button type="button" onClick={() => !editBusy && setEditDraft(null)} disabled={editBusy} className="rounded-xl px-5 py-2.5 text-sm font-bold text-stone-600 hover:bg-stone-100 disabled:opacity-50 transition-colors">Cancelar</button>
-                <button type="submit" disabled={editBusy} className="inline-flex items-center gap-2 rounded-xl bg-brand-brown px-6 py-2.5 text-sm font-black text-white disabled:opacity-50 hover:bg-amber-900 shadow-md transition-all active:scale-95">
+              <div className="modal-actions-unified">
+                <button type="button" onClick={() => !editBusy && closeEditModal()} disabled={editBusy} className="modal-btn-secondary-unified">Cancelar</button>
+                <button type="submit" disabled={editBusy} className="modal-btn-primary-unified">
                   {editBusy ? 'Guardando...' : 'Guardar cambios'}
                 </button>
               </div>
@@ -288,39 +334,29 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
         </div>
       )}
 
-      {deleteDraft && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white shadow-2xl overflow-hidden">
-            <div className="border-b border-red-100 bg-red-50 px-6 py-5">
-              <h3 className="text-xl font-black text-red-700">Eliminar recurso</h3>
-            </div>
-            <div className="space-y-5 px-6 py-6">
-              <p className="text-stone-600 leading-relaxed">
-                ¿Estás seguro de que deseas eliminar <span className="font-bold text-stone-900">{deleteDraft.title}</span>? Esta acción no se puede deshacer.
-              </p>
-              {deleteError && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{deleteError}</p>}
-              <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
-                <button type="button" onClick={() => !deleteBusy && setDeleteDraft(null)} disabled={deleteBusy} className="rounded-xl px-5 py-2.5 text-sm font-bold text-stone-600 hover:bg-stone-100 disabled:opacity-50 transition-colors">Cancelar</button>
-                <button type="button" onClick={() => deleteCard().catch(() => undefined)} disabled={deleteBusy} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-black text-white disabled:opacity-50 hover:bg-red-700 shadow-md transition-all active:scale-95">
-                  {deleteBusy ? 'Eliminando...' : 'Sí, eliminar'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteDraft)}
+        title="Eliminar recurso"
+        itemName={deleteDraft?.title || ''}
+        error={deleteError || null}
+        busy={deleteBusy}
+        onCancel={() => !deleteBusy && setDeleteDraft(null)}
+        onConfirm={() => {
+          deleteCard().catch(() => undefined);
+        }}
+      />
     </>
   );
 }
 
 // --- SUB-COMPONENTS & HELPERS ---
 
-function getCardIcon(card: CardItem) {
-  const iconClass = "text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10";
+function getCardIcon(card: CardItem, size = 60, className = '') {
+  const iconClass = `text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10 ${className}`;
   // Ahora asignamos el ícono basado solo en el tipo de recurso
-  if (card.kind === 'resource-page') return <GraduationCap size={60} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'document') return <FileText size={60} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'link') return <LinkIcon size={60} className={iconClass} strokeWidth={1.5} />;
+  if (card.kind === 'resource-page') return <GraduationCap size={size} className={iconClass} strokeWidth={1.5} />;
+  if (card.kind === 'document') return <FileText size={size} className={iconClass} strokeWidth={1.5} />;
+  if (card.kind === 'link') return <LinkIcon size={size} className={iconClass} strokeWidth={1.5} />;
   return null;
 }
 
@@ -339,6 +375,8 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
 
   const ActionWrapper = card.href.startsWith('/') ? Link : 'a';
   const externalProps = card.href.startsWith('/') ? {} : { target: "_blank", rel: "noopener noreferrer" };
+  const normalizedThumbnailUrl = getGoogleDriveProxyImageUrl(card.thumbnailUrl);
+  const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : null;
 
   return (
     <article className="group flex flex-col bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 overflow-hidden">
@@ -356,7 +394,15 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
           </div>
         )}
 
-        {getCardIcon(card)}
+        {thumbnailUrl ? (
+          <>
+            <img src={thumbnailUrl} alt={`Miniatura de ${card.title}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-black/15" />
+            <div className="absolute left-4 bottom-4 z-20 rounded-xl bg-white/90 p-2 shadow-sm">
+              {getCardIcon(card, 28, 'text-brand-brown')}
+            </div>
+          </>
+        ) : getCardIcon(card)}
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 

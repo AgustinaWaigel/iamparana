@@ -151,6 +151,7 @@ CREATE TABLE IF NOT EXISTS documents (
   section TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
+  thumbnail_url TEXT,
   google_drive_id TEXT NOT NULL UNIQUE,
   google_drive_url TEXT,
   file_size INTEGER,
@@ -188,6 +189,7 @@ CREATE TABLE IF NOT EXISTS links (
   section TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
+  thumbnail_url TEXT,
   url TEXT NOT NULL,
   icon TEXT,
   created_by_user_id INTEGER NOT NULL,
@@ -204,6 +206,7 @@ CREATE TABLE IF NOT EXISTS resource_pages (
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
+  thumbnail_url TEXT,
   texture_url TEXT,
   created_by_user_id INTEGER NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -320,6 +323,39 @@ async function ensureUsersColumns() {
   }
 }
 
+async function ensureThumbnailColumns() {
+  if (!cachedClient) {
+    return;
+  }
+
+  try {
+    await cachedClient.execute("ALTER TABLE documents ADD COLUMN thumbnail_url TEXT");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || "").toLowerCase();
+    if (!message.includes("duplicate column")) {
+      throw error;
+    }
+  }
+
+  try {
+    await cachedClient.execute("ALTER TABLE links ADD COLUMN thumbnail_url TEXT");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || "").toLowerCase();
+    if (!message.includes("duplicate column")) {
+      throw error;
+    }
+  }
+
+  try {
+    await cachedClient.execute("ALTER TABLE resource_pages ADD COLUMN thumbnail_url TEXT");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || "").toLowerCase();
+    if (!message.includes("duplicate column")) {
+      throw error;
+    }
+  }
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -344,6 +380,7 @@ async function initializeSchema() {
 
     await ensureAgendaColumns();
     await ensureUsersColumns();
+    await ensureThumbnailColumns();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');

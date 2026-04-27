@@ -87,7 +87,7 @@ export function ContentUploadPanel({
           <input
             type="file"
             onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
-            className="w-full"
+            className="upload-input-unified"
             required
           />
           <button

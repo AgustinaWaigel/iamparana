@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .upload-input-unified {
+    @apply w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-600 outline-none transition-all file:mr-3 file:rounded-lg file:border-0 file:bg-stone-200 file:px-3 file:py-1.5 file:font-semibold file:text-stone-700 hover:border-stone-300 hover:bg-white hover:file:bg-stone-300;
+  }
+
+  .modal-overlay-unified {
+    @apply fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4 animate-in fade-in duration-200;
+  }
+
+  .modal-panel-unified {
+    @apply w-full rounded-3xl border border-stone-200 bg-white shadow-2xl overflow-hidden;
+  }
+
+  .modal-header-unified {
+    @apply border-b border-stone-100 bg-stone-50 px-6 py-5;
+  }
+
+  .modal-title-unified {
+    @apply text-xl font-black uppercase tracking-tight text-stone-800;
+  }
+
+  .modal-subtitle-unified {
+    @apply mt-1 text-xs font-bold uppercase tracking-widest text-stone-400;
+  }
+
+  .modal-close-unified {
+    @apply rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-800;
+  }
+
+  .modal-body-unified {
+    @apply space-y-5 px-6 py-6 text-stone-700;
+  }
+
+  .modal-label-unified {
+    @apply ml-1 text-xs font-bold uppercase tracking-wide text-stone-500;
+  }
+
+  .modal-input-unified {
+    @apply w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700 outline-none transition-all focus:border-brand-brown focus:bg-white focus:ring-2 focus:ring-brand-brown/20;
+  }
+
+  .modal-actions-unified {
+    @apply flex justify-end gap-3 border-t border-stone-100 pt-4;
+  }
+
+  .modal-btn-secondary-unified {
+    @apply rounded-xl px-5 py-2.5 text-sm font-bold text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-50;
+  }
+
+  .modal-btn-primary-unified {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-brown px-6 py-2.5 text-sm font-black text-white shadow-md transition-all hover:bg-amber-900 disabled:opacity-50 active:scale-95;
+  }
+}
+
 body {
   min-height: 100vh;
   margin: 0;

@@ -53,26 +53,48 @@ async function handleUpdate(req: Request, params: Promise<{ id: string }>) {
       const linkRaw = String(formData.get("link") ?? current.link ?? "").trim();
       const buttonTextRaw = String(formData.get("buttonText") ?? current.buttonText ?? "").trim();
       const orderRaw = String(formData.get("order") ?? current.order ?? "0").trim();
-      const maybeFile = formData.get("file");
+      const desktopFile = formData.get("fileDesktop");
+      const mobileFile = formData.get("fileMobile");
+      const legacyFile = formData.get("file");
 
       let imageDesktop = String(current.imageDesktop ?? "");
       let imageMobile = String(current.imageMobile ?? current.imageDesktop ?? "");
 
-      if (maybeFile instanceof File && maybeFile.size > 0) {
-        const folderId = await getOrCreateFolder(CAROUSEL_FOLDER_NAME);
-        const uploadResult = await uploadFileToDrive(
-          maybeFile,
-          maybeFile.name,
-          folderId,
-          maybeFile.type || "image/jpeg"
-        );
+      const desktopToUpload = desktopFile instanceof File && desktopFile.size > 0 ? desktopFile : (legacyFile instanceof File && legacyFile.size > 0 ? legacyFile : null);
+      const mobileToUpload = mobileFile instanceof File && mobileFile.size > 0 ? mobileFile : (legacyFile instanceof File && legacyFile.size > 0 ? legacyFile : null);
 
-        if (!uploadResult.success || !uploadResult.fileId) {
-          return serverError(uploadResult.error || "No se pudo subir la imagen a Drive");
+      if (desktopToUpload || mobileToUpload) {
+        const folderId = await getOrCreateFolder(CAROUSEL_FOLDER_NAME);
+
+        if (desktopToUpload) {
+          const desktopUploadResult = await uploadFileToDrive(
+            desktopToUpload,
+            desktopToUpload.name,
+            folderId,
+            desktopToUpload.type || "image/jpeg"
+          );
+
+          if (!desktopUploadResult.success || !desktopUploadResult.fileId) {
+            return serverError(desktopUploadResult.error || "No se pudo subir la imagen desktop a Drive");
+          }
+
+          imageDesktop = desktopUploadResult.fileId;
         }
 
-        imageDesktop = uploadResult.fileId;
-        imageMobile = uploadResult.fileId;
+        if (mobileToUpload) {
+          const mobileUploadResult = await uploadFileToDrive(
+            mobileToUpload,
+            mobileToUpload.name,
+            folderId,
+            mobileToUpload.type || "image/jpeg"
+          );
+
+          if (!mobileUploadResult.success || !mobileUploadResult.fileId) {
+            return serverError(mobileUploadResult.error || "No se pudo subir la imagen mobile a Drive");
+          }
+
+          imageMobile = mobileUploadResult.fileId;
+        }
       }
 
       await updateCarouselAdmin(carouselId, {

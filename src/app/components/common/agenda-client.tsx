@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "@/app/hooks/use-session";
+import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
 import { createPortal } from "react-dom";
 
 // Esta vista muestra la agenda resumida en la home: pocas actividades, botón para ver más
@@ -127,6 +128,7 @@ export default function AgendaClient({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [editForm, setEditForm] = useState<Evento>({
     fecha: "",
     fecha_fin: "",
@@ -191,6 +193,7 @@ export default function AgendaClient({
     setIsModalOpen(false);
     setSelectedEvento(null);
     setIsEditing(false);
+    setDeleteConfirmOpen(false);
   };
 
   const handleSaveEdit = async () => {
@@ -247,7 +250,6 @@ export default function AgendaClient({
       alert("Este evento no tiene ID eliminable.");
       return;
     }
-    if (!confirm("¿Seguro que querés eliminar este evento?")) return;
 
     setIsDeleting(true);
     try {
@@ -272,6 +274,7 @@ export default function AgendaClient({
 
       await refreshAgenda();
       window.dispatchEvent(new Event("agendaUpdated"));
+      setDeleteConfirmOpen(false);
       closeModal();
     } catch (error) {
       console.error(error);
@@ -363,9 +366,9 @@ export default function AgendaClient({
       )}
 
       {isMounted && isModalOpen && selectedEvento && createPortal(
-        <div className="fixed inset-0 z-[999] flex min-h-screen items-center justify-center bg-black/45 p-4" onClick={closeModal}>
+        <div className="modal-overlay-unified z-[999] min-h-screen" onClick={closeModal}>
           <div
-            className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-brand-gold/30 bg-white p-5 shadow-2xl"
+            className="modal-panel-unified max-h-[90vh] max-w-xl overflow-y-auto p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-start justify-between gap-3">
@@ -384,7 +387,7 @@ export default function AgendaClient({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-full bg-slate-100 px-2.5 py-1.5 text-slate-600 transition hover:bg-slate-200"
+                className="modal-close-unified"
                 aria-label="Cerrar detalle"
               >
                 ✕
@@ -397,7 +400,25 @@ export default function AgendaClient({
                   {selectedEvento.descripcion?.trim() || "Sin descripción."}
                 </p>
 
-                
+                {isAdmin && (
+                  <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="modal-btn-primary-unified"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => setDeleteConfirmOpen(true)}
+                      className="rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                    >
+                      {isDeleting ? "Eliminando..." : "Eliminar"}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -405,13 +426,13 @@ export default function AgendaClient({
                   type="text"
                   value={editForm.evento || ""}
                   onChange={(event) => setEditForm({ ...editForm, evento: event.target.value })}
-                  className="w-full rounded-md border border-amber-200 p-2.5 font-semibold text-brand-brown outline-none focus:ring-2 focus:ring-brand-gold"
+                  className="modal-input-unified"
                 />
                 <textarea
                   value={editForm.descripcion || ""}
                   onChange={(event) => setEditForm({ ...editForm, descripcion: event.target.value })}
                   rows={4}
-                  className="w-full resize-none rounded-md border border-amber-200 p-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-gold"
+                  className="modal-input-unified resize-none"
                   placeholder="Descripción"
                 />
                 <div className="grid grid-cols-2 gap-3">
@@ -419,16 +440,16 @@ export default function AgendaClient({
                     type="date"
                     value={editForm.fecha || ""}
                     onChange={(event) => setEditForm({ ...editForm, fecha: event.target.value })}
-                    className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    className="modal-input-unified"
                   />
                   <input
                     type="date"
                     value={editForm.fecha_fin || ""}
                     onChange={(event) => setEditForm({ ...editForm, fecha_fin: event.target.value })}
-                    className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                    className="modal-input-unified"
                   />
                 </div>
-                <label className="flex items-center gap-2 rounded-md border border-amber-200 bg-white p-2.5">
+                <label className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white p-2.5">
                   <input
                     type="checkbox"
                     checked={editForm.todo_el_dia !== false}
@@ -441,7 +462,7 @@ export default function AgendaClient({
                       })
                     }
                   />
-                  <span className="text-sm font-semibold text-brand-brown">Todo el día</span>
+                  <span className="text-sm font-semibold text-stone-700">Todo el día</span>
                 </label>
                 {editForm.todo_el_dia === false && (
                   <div className="grid grid-cols-2 gap-3">
@@ -449,20 +470,20 @@ export default function AgendaClient({
                       type="time"
                       value={editForm.hora_inicio || ""}
                       onChange={(event) => setEditForm({ ...editForm, hora_inicio: event.target.value })}
-                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                      className="modal-input-unified"
                     />
                     <input
                       type="time"
                       value={editForm.hora_fin || ""}
                       onChange={(event) => setEditForm({ ...editForm, hora_fin: event.target.value })}
-                      className="rounded-md border border-amber-200 p-2.5 outline-none focus:ring-2 focus:ring-brand-gold"
+                      className="modal-input-unified"
                     />
                   </div>
                 )}
                 <select
                   value={editForm.color || "11"}
                   onChange={(event) => setEditForm({ ...editForm, color: event.target.value })}
-                  className="w-full rounded-md border border-amber-200 bg-white p-2.5 font-semibold text-brand-brown outline-none focus:ring-2 focus:ring-brand-gold"
+                  className="modal-input-unified"
                 >
                   {COLOR_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -471,19 +492,19 @@ export default function AgendaClient({
                   ))}
                 </select>
 
-                <div className="flex gap-2 border-t border-slate-200 pt-3">
+                <div className="modal-actions-unified">
                   <button
                     type="button"
                     disabled={isSaving}
                     onClick={handleSaveEdit}
-                    className="rounded-lg bg-brand-brown px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-900 disabled:opacity-50"
+                    className="modal-btn-primary-unified"
                   >
                     {isSaving ? "Guardando..." : "Guardar"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                    className="modal-btn-secondary-unified"
                   >
                     Cancelar
                   </button>
@@ -494,6 +515,17 @@ export default function AgendaClient({
         </div>,
         document.body
       )}
+
+      <DeleteConfirmModal
+        isOpen={deleteConfirmOpen}
+        title="Eliminar evento"
+        itemName={selectedEvento?.evento || 'evento seleccionado'}
+        busy={isDeleting}
+        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          handleDeleteFromModal().catch(() => undefined);
+        }}
+      />
     </div>
   );
 }

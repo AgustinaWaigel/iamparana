@@ -30,6 +30,7 @@
     "rehype-raw": "^7.0.0",
     "server-only": "^0.0.1",
     "sharp": "^0.34.1",
+    "tailwindcss-animate": "^1.0.7",
     "upstash": "^0.0.1"
   },
   "devDependencies": {

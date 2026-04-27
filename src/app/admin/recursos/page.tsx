@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useSessionUser } from "@/app/lib/use-session";
+import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
 import { ContentUploadPanel } from "./components/content-upload-panel";
 import { CreatePagePanel } from "./components/create-page-panel";
 import { ManagePagePanel } from "./components/manage-page-panel";
@@ -56,6 +57,8 @@ export default function AdminRecursosPage() {
 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [deletePageConfirmOpen, setDeletePageConfirmOpen] = useState(false);
+  const [deleteSectionDraftId, setDeleteSectionDraftId] = useState<number | null>(null);
 
   const selectedPage = useMemo(
     () => pages.find((page) => page.id === selectedPageId) || null,
@@ -217,7 +220,11 @@ export default function AdminRecursosPage() {
 
   const removePage = async () => {
     if (!selectedPageId) return;
-    if (!confirm("Eliminar pagina, secciones y su contenido?")) return;
+    setDeletePageConfirmOpen(true);
+  };
+
+  const confirmRemovePage = async () => {
+    if (!selectedPageId) return;
 
     setBusy(true);
     try {
@@ -322,11 +329,15 @@ export default function AdminRecursosPage() {
 
   const removeSection = async (id: number) => {
     if (!selectedPageId) return;
-    if (!confirm("Eliminar seccion y su contenido?")) return;
+    setDeleteSectionDraftId(id);
+  };
+
+  const confirmRemoveSection = async () => {
+    if (!selectedPageId || !deleteSectionDraftId) return;
 
     setBusy(true);
     try {
-      const response = await fetch(`/api/admin/resource-sections?id=${id}`, {
+      const response = await fetch(`/api/admin/resource-sections?id=${deleteSectionDraftId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -338,6 +349,7 @@ export default function AdminRecursosPage() {
 
       await loadSections(selectedPageId);
       showMessage("Seccion eliminada");
+      setDeleteSectionDraftId(null);
     } catch (error) {
       showMessage(String(error instanceof Error ? error.message : error));
     } finally {
@@ -485,6 +497,29 @@ export default function AdminRecursosPage() {
           message={message}
         />
       </div>
+
+      <DeleteConfirmModal
+        isOpen={deletePageConfirmOpen}
+        title="Eliminar pagina"
+        itemName={selectedPage?.title || 'pagina seleccionada'}
+        busy={busy}
+        onCancel={() => setDeletePageConfirmOpen(false)}
+        onConfirm={() => {
+          confirmRemovePage().catch(() => undefined);
+          setDeletePageConfirmOpen(false);
+        }}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteSectionDraftId !== null}
+        title="Eliminar seccion"
+        itemName={sections.find((section) => section.id === deleteSectionDraftId)?.title || 'seccion seleccionada'}
+        busy={busy}
+        onCancel={() => setDeleteSectionDraftId(null)}
+        onConfirm={() => {
+          confirmRemoveSection().catch(() => undefined);
+        }}
+      />
     </main>
   );
 }

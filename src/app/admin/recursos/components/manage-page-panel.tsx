@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { ResourcePage, ResourceSection } from "../types";
 import { toSlug } from "../utils";
 import { TemplatePicker } from "./template-picker";
+import { AdminActionButton } from "@/app/components/common/admin-action-button";
 
 type EditPageForm = {
   title: string;
@@ -96,20 +97,18 @@ export function ManagePagePanel({
               className="w-full rounded-lg border border-stone-300 px-3 py-2"
             />
             <div className="flex gap-2">
-              <button
+              <AdminActionButton
+                action="save"
+                label="Guardar"
                 disabled={busy}
-                className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
-              >
-                <Pencil size={14} /> Guardar
-              </button>
-              <button
+              />
+              <AdminActionButton
+                action="delete"
+                label="Eliminar"
                 type="button"
                 onClick={onRemovePage}
                 disabled={busy}
-                className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
-              >
-                <Trash2 size={14} /> Eliminar
-              </button>
+              />
             </div>
           </form>
 
@@ -132,12 +131,11 @@ export function ManagePagePanel({
               placeholder="slug automatico"
               className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-stone-600"
             />
-            <button
+            <AdminActionButton
+              action="add"
+              label="Agregar sección"
               disabled={busy}
-              className="inline-flex items-center gap-1 rounded-lg bg-brand-brown px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
-            >
-              <Plus size={14} /> Agregar seccion
-            </button>
+            />
           </form>
 
           <div className="space-y-2 border-t border-stone-200 pt-3">
@@ -156,27 +154,24 @@ export function ManagePagePanel({
                   {section.title}
                 </button>
                 <div className="mt-2 flex gap-1">
-                  <button
+                  <AdminActionButton
+                    action="move-up"
+                    compact
                     type="button"
                     onClick={() => onMoveSection(section.id, "up")}
-                    className="rounded bg-stone-100 p-1"
-                  >
-                    <ArrowUp size={14} />
-                  </button>
-                  <button
+                  />
+                  <AdminActionButton
+                    action="move-down"
+                    compact
                     type="button"
                     onClick={() => onMoveSection(section.id, "down")}
-                    className="rounded bg-stone-100 p-1"
-                  >
-                    <ArrowDown size={14} />
-                  </button>
-                  <button
+                  />
+                  <AdminActionButton
+                    action="delete"
+                    compact
                     type="button"
                     onClick={() => onRemoveSection(section.id)}
-                    className="rounded bg-red-100 p-1 text-red-700"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  />
                 </div>
               </div>
             ))}

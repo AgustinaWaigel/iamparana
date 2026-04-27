@@ -15,6 +15,22 @@ import { uploadFileToDrive, getOrCreateFolder, deleteFileFromDrive } from "@/lib
 // Forzamos que la API no cachee los resultados y siempre consulte a la DB
 export const dynamic = 'force-dynamic';
 
+function revalidateContentSection(sectionValue: unknown) {
+  const section = String(sectionValue || '').trim().toLowerCase();
+  if (!section) return;
+
+  const routesBySection: Record<string, string[]> = {
+    formacion: ['/formacion', '/formacion/recursos'],
+    animacion: ['/animacion', '/animacion/recursos', '/animacion/juegos', '/animacion/canciones'],
+    juegos: ['/animacion', '/animacion/juegos'],
+    canciones: ['/animacion', '/animacion/canciones'],
+    recursos: ['/animacion', '/animacion/recursos'],
+  };
+
+  const routes = routesBySection[section] || [`/${section}`];
+  routes.forEach((route) => revalidatePath(route));
+}
+
 // GET /api/admin/documentos
 export async function GET(req: NextRequest) {
   const auth = await requirePermission("content.read");
@@ -42,6 +58,7 @@ export async function POST(req: NextRequest) {
   if ("errorResponse" in auth) return auth.errorResponse;
 
   try {
+    let touchedSection: string | null = null;
     const contentType = req.headers.get("content-type") || "";
     const isFormData = contentType.includes("multipart/form-data");
 
@@ -51,10 +68,12 @@ export async function POST(req: NextRequest) {
       const section = formData.get("section") as string;
       const title = formData.get("title") as string;
       const description = formData.get("description") as string | null;
+      const thumbnailUrl = formData.get("thumbnailUrl") as string | null;
 
       if (!file || !section || !title) {
         return badRequest("Missing required fields (file, section, or title)");
       }
+      touchedSection = section;
 
       if (file.size > 100 * 1024 * 1024) {
         return badRequest("File size exceeds 100MB limit");
@@ -78,6 +97,7 @@ export async function POST(req: NextRequest) {
         section,
         title,
         description: description || undefined,
+        thumbnailUrl: thumbnailUrl || undefined,
         googleDriveId: uploadResult.fileId!,
         googleDriveUrl: uploadResult.url,
         fileSize: uploadResult.size,
@@ -87,14 +107,17 @@ export async function POST(req: NextRequest) {
 
     } else {
       const body = await req.json();
-      const { titulo, descripcion, tipo, url, fileId } = body;
+      const { titulo, descripcion, tipo, url, fileId, thumbnailUrl } = body;
 
       if (!titulo || !url || !fileId) return badRequest("Missing metadata");
+
+      touchedSection = tipo || 'formacion';
 
       await saveDocument({
         section: tipo || "formacion",
         title: titulo,
         description: descripcion || undefined,
+        thumbnailUrl: thumbnailUrl || undefined,
         googleDriveId: fileId,
         googleDriveUrl: url,
         fileSize: 0,
@@ -103,9 +126,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // LIMPIEZA DE CACHÉ: Esto hace que los cambios se vean en Netlify
-    revalidatePath('/formacion');
-    revalidatePath('/formacion/recursos');
+    // Limpieza de cache para reflejar cambios en la sección correspondiente.
+    revalidateContentSection(touchedSection);
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
@@ -121,7 +143,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, title, description, googleDriveUrl } = body;
+    const { id, title, description, googleDriveUrl, thumbnailUrl } = body;
 
     if (!id) return badRequest("Document ID is required");
 
@@ -132,10 +154,10 @@ export async function PUT(req: NextRequest) {
       title: title || String(document.title || '').trim(),
       description: description || String(document.description || '').trim(),
       googleDriveUrl: googleDriveUrl || String(document.google_drive_url || '').trim(),
+      thumbnailUrl: thumbnailUrl === undefined ? String((document as { thumbnail_url?: unknown }).thumbnail_url || '').trim() || undefined : String(thumbnailUrl || '').trim() || undefined,
     });
 
-    // Revalidamos para que el cambio de nombre se vea
-    revalidatePath('/formacion');
+    revalidateContentSection((document as { section?: unknown }).section);
     
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -165,8 +187,7 @@ export async function DELETE(req: NextRequest) {
 
     await deleteDocument(parseInt(id));
 
-    // Revalidamos para que desaparezca de la lista
-    revalidatePath('/formacion');
+    revalidateContentSection((document as { section?: unknown }).section);
 
     return NextResponse.json({ success: true });
   } catch (error) {

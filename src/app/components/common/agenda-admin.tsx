@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/use-session";
 import { X, Calendar, Plus, Trash2, Pencil, Clock, Palette, AlertCircle, Loader2 } from "lucide-react";
+import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
 
 interface Evento {
   id?: string | number;
@@ -38,6 +39,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
   const [editingId, setEditingId] = useState<string | number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [todosEventos, setTodosEventos] = useState<Evento[]>([]);
+  const [deleteDraftId, setDeleteDraftId] = useState<string | number | null>(null);
 
   const [formData, setFormData] = useState<Evento>({
     fecha: "",
@@ -133,7 +135,6 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
   }
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm("¿Seguro que deseas eliminar este evento?")) return;
     try {
       const response = await fetch("/api/agenda", {
         method: "DELETE",
@@ -143,30 +144,31 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
       if (response.ok) {
         setTodosEventos(prev => prev.filter(e => e.id !== id));
         window.dispatchEvent(new Event("agendaUpdated"));
+        setDeleteDraftId(null);
       }
     } catch (error) {
       alert("Error al eliminar");
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all";
+  const inputClass = "modal-input-unified";
   const labelClass = "block text-xs font-bold text-stone-500 uppercase tracking-wide ml-1 mb-1.5";
 
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all">
+        <div className="modal-overlay-unified">
+          <div className="modal-panel-unified max-h-[90vh] max-w-2xl flex flex-col rounded-[2.5rem] transform transition-all">
             
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-stone-100 bg-stone-50/50">
+            <div className="modal-header-unified flex items-center justify-between p-6">
               <div className="flex items-center gap-3 text-brand-brown">
                 <div className="p-2 bg-white rounded-xl shadow-sm border border-stone-100">
                   <Calendar size={22} />
                 </div>
-                <h2 className="text-xl font-black italic uppercase tracking-tighter">Gestión de Agenda</h2>
+                <h2 className="modal-title-unified italic">Gestión de Agenda</h2>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors">
+              <button onClick={() => setIsOpen(false)} className="modal-close-unified">
                 <X size={20} />
               </button>
             </div>
@@ -265,7 +267,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => { setEditingId(ev.id!); setFormData({ ...ev, hora_inicio: ev.hora_inicio || "", hora_fin: ev.hora_fin || "", todo_el_dia: ev.todo_el_dia !== false }); }} className="p-2 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Pencil size={16} /></button>
-                        <button onClick={() => handleDelete(ev.id!)} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={16} /></button>
+                        <button onClick={() => setDeleteDraftId(ev.id!)} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   ))}
@@ -275,6 +277,18 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
           </div>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={deleteDraftId !== null}
+        title="Eliminar evento"
+        itemName={todosEventos.find((ev) => ev.id === deleteDraftId)?.evento || 'evento seleccionado'}
+        busy={isSubmitting}
+        onCancel={() => setDeleteDraftId(null)}
+        onConfirm={() => {
+          if (deleteDraftId === null) return;
+          handleDelete(deleteDraftId).catch(() => undefined);
+        }}
+      />
     </>
   );
 }

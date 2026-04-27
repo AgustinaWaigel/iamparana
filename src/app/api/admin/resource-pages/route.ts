@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { badRequest, isValidSlug, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
 import {
   createResourcePage,
@@ -7,6 +8,11 @@ import {
   listResourcePages,
   updateResourcePage,
 } from "@/server/db/resource-pages-repository";
+
+function revalidateResourcePages() {
+  revalidatePath('/animacion');
+  revalidatePath('/animacion/recursos');
+}
 
 export async function GET() {
   const auth = await requirePermission("content.read");
@@ -30,6 +36,7 @@ export async function POST(req: Request) {
     const slug = String(body.slug || "").trim();
     const title = String(body.title || "").trim();
     const description = String(body.description || "").trim();
+    const thumbnailUrl = String(body.thumbnailUrl || "").trim();
     const textureUrl = String(body.textureUrl || "").trim();
     const template = String(body.template || "gold").trim();
 
@@ -50,10 +57,13 @@ export async function POST(req: Request) {
       slug,
       title,
       description: description || undefined,
+      thumbnailUrl: thumbnailUrl || undefined,
       textureUrl: textureUrl || undefined,
       template: template || "gold",
       createdByUserId: Number(userId),
     });
+
+    revalidateResourcePages();
 
     return NextResponse.json({ success: true, id }, { status: 201 });
   } catch (error) {
@@ -71,6 +81,7 @@ export async function PUT(req: Request) {
     const id = Number(body.id || 0);
     const title = String(body.title || "").trim();
     const description = String(body.description || "").trim();
+    const thumbnailUrl = String(body.thumbnailUrl || "").trim();
     const textureUrl = String(body.textureUrl || "").trim();
     const template = String(body.template || "gold").trim();
 
@@ -86,9 +97,12 @@ export async function PUT(req: Request) {
     await updateResourcePage(id, {
       title: title || page.title,
       description: description || "",
+      thumbnailUrl: thumbnailUrl || page.thumbnail_url || "",
       textureUrl: textureUrl || "",
       template: template || "gold",
     });
+
+    revalidateResourcePages();
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -110,6 +124,7 @@ export async function DELETE(req: Request) {
     }
 
     await deleteResourcePage(id);
+    revalidateResourcePages();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

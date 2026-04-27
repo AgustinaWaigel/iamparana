@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { requirePermission, serverError } from '@/app/api/admin/_shared/auth';
 import { uploadFileToDrive, getOrCreateFolder } from '@/lib/google-drive-service';
+import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 const UPLOAD_FOLDERS = {
   noticia: 'IAM Paraná - Noticias',
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      url: result.url,
+      url: type === 'imagen' ? getGoogleDriveProxyImageUrl(result.fileId || result.url || '') : result.url,
       fileId: result.fileId,
       fileName: result.fileName,
       size: result.size,

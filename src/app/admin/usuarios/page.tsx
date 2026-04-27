@@ -4,7 +4,9 @@ import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSessionUser } from '@/app/lib/use-session';
-import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2, Search } from 'lucide-react';
+import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { SearchBar } from '@/app/components/common/search-bar';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
 interface User {
   id: number;
@@ -25,6 +27,7 @@ export default function UsuariosPage() {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ displayName: '', role: 'animador', password: '' });
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
   // 🛡️ Redirección de seguridad (Cliente como respaldo del Servidor)
   useEffect(() => {
@@ -87,7 +90,6 @@ export default function UsuariosPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de desactivar este usuario?')) return;
     setProcessingId(id);
     try {
       const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
@@ -176,14 +178,11 @@ export default function UsuariosPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
         <div className="p-4 border-b border-stone-100 bg-stone-50/50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <div className="relative min-w-0 sm:min-w-80">
-              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input
-                type="text"
+            <div className="min-w-0 sm:min-w-80">
+              <SearchBar
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={setSearchTerm}
                 placeholder="Buscar por nombre, email, rol o ID..."
-                className="w-full text-sm border border-stone-300 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-brown/20 focus:border-brand-brown"
               />
             </div>
             <select
@@ -257,7 +256,7 @@ export default function UsuariosPage() {
                       </button>
                       <button
                         disabled={processingId === u.id || u.is_active !== 1}
-                        onClick={() => handleDelete(u.id)}
+                        onClick={() => setDeleteUserId(u.id)}
                         className="p-2 text-stone-400 hover:text-red-600 hover:bg-white rounded-lg border border-transparent hover:border-stone-200 transition-all shadow-none hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Desactivar"
                       >
@@ -273,12 +272,12 @@ export default function UsuariosPage() {
       </div>
 
       {editingUser && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4" onClick={() => setEditingUser(null)}>
+        <div className="modal-overlay-unified z-[120]" onClick={() => setEditingUser(null)}>
           <div
-            className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-5 shadow-2xl"
+            className="modal-panel-unified max-w-md p-5"
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 className="text-xl font-black text-brand-brown">Editar usuario</h3>
+            <h3 className="modal-title-unified">Editar usuario</h3>
             <p className="mt-1 text-sm text-stone-500">{editingUser.email}</p>
 
             <div className="mt-4 space-y-3">
@@ -287,7 +286,7 @@ export default function UsuariosPage() {
                 <input
                   value={editForm.displayName}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, displayName: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-brown/20 focus:border-brand-brown"
+                  className="modal-input-unified mt-1"
                 />
               </div>
 
@@ -296,7 +295,7 @@ export default function UsuariosPage() {
                 <select
                   value={editForm.role}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value }))}
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-brown/20 focus:border-brand-brown"
+                  className="modal-input-unified mt-1"
                 >
                   {['admin', 'equipo', 'redactor', 'coordinador', 'animador'].map((role) => (
                     <option key={role} value={role}>{role}</option>
@@ -311,16 +310,16 @@ export default function UsuariosPage() {
                   value={editForm.password}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, password: e.target.value }))}
                   placeholder="Mínimo 8 caracteres"
-                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-brown/20 focus:border-brand-brown"
+                  className="modal-input-unified mt-1"
                 />
               </div>
             </div>
 
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="modal-actions-unified mt-5">
               <button
                 type="button"
                 onClick={() => setEditingUser(null)}
-                className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100"
+                className="modal-btn-secondary-unified"
               >
                 Cancelar
               </button>
@@ -328,7 +327,7 @@ export default function UsuariosPage() {
                 type="button"
                 disabled={processingId === editingUser.id}
                 onClick={handleSaveEdit}
-                className="rounded-lg bg-brand-brown px-4 py-2 text-sm font-bold text-white hover:bg-amber-900 disabled:opacity-50"
+                className="modal-btn-primary-unified"
               >
                 {processingId === editingUser.id ? 'Guardando...' : 'Guardar'}
               </button>
@@ -336,6 +335,20 @@ export default function UsuariosPage() {
           </div>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={deleteUserId !== null}
+        title="Desactivar usuario"
+        itemName={users.find((u) => u.id === deleteUserId)?.email || 'usuario seleccionado'}
+        busy={processingId === deleteUserId}
+        onCancel={() => setDeleteUserId(null)}
+        onConfirm={() => {
+          if (deleteUserId === null) return;
+          handleDelete(deleteUserId).catch(() => undefined);
+          setDeleteUserId(null);
+        }}
+        confirmLabel="Si, desactivar"
+      />
     </main>
   );
 }

@@ -28,7 +28,9 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     
-    const file = formData.get("file") as File | null;
+    const fileDesktop = formData.get("fileDesktop") as File | null;
+    const fileMobile = formData.get("fileMobile") as File | null;
+    const legacyFile = formData.get("file") as File | null;
     const alt = formData.get("alt") as string;
     const link = formData.get("link") as string;
     const buttonText = formData.get("buttonText") as string;
@@ -39,28 +41,42 @@ export async function POST(req: Request) {
       return badRequest("El campo 'alt' es obligatorio");
     }
 
-    if (!file || file.size === 0) {
-      return badRequest("Debes seleccionar una imagen para subir");
+    const desktopToUpload = fileDesktop && fileDesktop.size > 0 ? fileDesktop : legacyFile;
+    const mobileToUpload = fileMobile && fileMobile.size > 0 ? fileMobile : legacyFile;
+
+    if (!desktopToUpload || desktopToUpload.size === 0) {
+      return badRequest("Debes seleccionar una imagen Desktop para subir");
     }
 
-     let imageId = "";
+    if (!mobileToUpload || mobileToUpload.size === 0) {
+      return badRequest("Debes seleccionar una imagen Mobile para subir");
+    }
+
+     let imageDesktopId = "";
+     let imageMobileId = "";
     try {
        const folderId = await getOrCreateFolder(CAROUSEL_FOLDER_NAME);
-       const uploadResult = await uploadFileToDrive(file, file.name, folderId, file.type || "image/jpeg");
+       const desktopUploadResult = await uploadFileToDrive(desktopToUpload, desktopToUpload.name, folderId, desktopToUpload.type || "image/jpeg");
+       const mobileUploadResult = await uploadFileToDrive(mobileToUpload, mobileToUpload.name, folderId, mobileToUpload.type || "image/jpeg");
 
-       if (!uploadResult.success || !uploadResult.fileId) {
-        return serverError(uploadResult.error || "No se pudo subir la imagen a Drive");
+       if (!desktopUploadResult.success || !desktopUploadResult.fileId) {
+        return serverError(desktopUploadResult.error || "No se pudo subir la imagen desktop a Drive");
        }
 
-       imageId = uploadResult.fileId;
+       if (!mobileUploadResult.success || !mobileUploadResult.fileId) {
+        return serverError(mobileUploadResult.error || "No se pudo subir la imagen mobile a Drive");
+       }
+
+       imageDesktopId = desktopUploadResult.fileId;
+       imageMobileId = mobileUploadResult.fileId;
     } catch (driveError) {
        console.error("Error Drive:", driveError);
        return serverError("No se pudo subir la imagen a Drive");
     }
 
     await createCarouselAdmin({
-      imageDesktop: imageId,
-      imageMobile: imageId,
+      imageDesktop: imageDesktopId,
+      imageMobile: imageMobileId,
       alt: alt.trim(),
       link: link && link.trim() !== "" ? link.trim() : null,
       buttonText: buttonText && buttonText.trim() !== "" ? buttonText.trim() : null,

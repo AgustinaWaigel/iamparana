@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Save, Upload, Loader2, Pencil, Trash2, Plus } from "lucide-react";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
+import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
 
 
 interface Props {
@@ -39,7 +40,8 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
   const [mounted, setMounted] = useState(false);
   const [items, setItems] = useState<CarouselAdminItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [fileDesktop, setFileDesktop] = useState<File | null>(null);
+  const [fileMobile, setFileMobile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteDraft, setDeleteDraft] = useState<DeleteDraft | null>(null);
@@ -50,7 +52,8 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
   const resetForm = () => {
     setEditingId(null);
     setFormData(EMPTY_FORM);
-    setFile(null);
+    setFileDesktop(null);
+    setFileMobile(null);
   };
 
   const openDeleteModal = (item: CarouselAdminItem) => {
@@ -99,7 +102,8 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
       buttonText: item.buttonText || "",
       order: Number(item.order ?? 0),
     });
-    setFile(null);
+    setFileDesktop(null);
+    setFileMobile(null);
   };
 
   const deleteSlide = async () => {
@@ -137,7 +141,8 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
     setLoading(true);
 
     const body = new FormData();
-    if (file) body.append("file", file);
+    if (fileDesktop) body.append("fileDesktop", fileDesktop);
+    if (fileMobile) body.append("fileMobile", fileMobile);
     body.append("alt", formData.alt);
     body.append("link", formData.link);
     body.append("buttonText", formData.buttonText);
@@ -168,11 +173,11 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-5xl max-h-[92vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="p-4 md:p-6 border-b flex justify-between items-center bg-stone-50 shrink-0">
-          <h2 className="text-xl font-black text-stone-800 uppercase tracking-tight">Gestionar Carrusel</h2>
-          <button onClick={onClose} className="p-2 hover:bg-stone-200 rounded-full transition-colors" type="button">
+    <div className="modal-overlay-unified">
+      <div className="modal-panel-unified max-h-[92vh] max-w-5xl flex flex-col">
+        <div className="modal-header-unified p-4 md:p-6 flex items-center justify-between shrink-0">
+          <h2 className="modal-title-unified">Gestionar Carrusel</h2>
+          <button onClick={onClose} className="modal-close-unified" type="button">
             <X size={20} />
           </button>
         </div>
@@ -250,26 +255,51 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
             </h3>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Imagen (Drive)</label>
+              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Imagen Desktop (Drive)</label>
               <div
                 className={`relative border-2 border-dashed rounded-2xl p-8 transition-all flex flex-col items-center justify-center gap-2 ${
-                  file ? "border-orange-500 bg-orange-50" : "border-stone-200 hover:border-stone-400"
+                  fileDesktop ? "border-orange-500 bg-orange-50" : "border-stone-200 hover:border-stone-400"
                 }`}
               >
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setFileDesktop(e.target.files?.[0] || null)}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   required={!editingId}
                 />
-                <Upload className={file ? "text-orange-600" : "text-stone-400"} />
+                <Upload className={fileDesktop ? "text-orange-600" : "text-stone-400"} />
                 <p className="text-sm font-medium text-stone-600 text-center">
-                  {file
-                    ? file.name
+                  {fileDesktop
+                    ? fileDesktop.name
                     : editingId
-                      ? "Opcional: selecciona una imagen para reemplazar"
-                      : "Seleccionar imagen o soltar aquí"}
+                      ? "Opcional: selecciona imagen desktop para reemplazar"
+                      : "Seleccionar imagen desktop o soltar aquí"}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Imagen Mobile (Drive)</label>
+              <div
+                className={`relative border-2 border-dashed rounded-2xl p-8 transition-all flex flex-col items-center justify-center gap-2 ${
+                  fileMobile ? "border-orange-500 bg-orange-50" : "border-stone-200 hover:border-stone-400"
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFileMobile(e.target.files?.[0] || null)}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  required={!editingId}
+                />
+                <Upload className={fileMobile ? "text-orange-600" : "text-stone-400"} />
+                <p className="text-sm font-medium text-stone-600 text-center">
+                  {fileMobile
+                    ? fileMobile.name
+                    : editingId
+                      ? "Opcional: selecciona imagen mobile para reemplazar"
+                      : "Seleccionar imagen mobile o soltar aquí"}
                 </p>
               </div>
             </div>
@@ -344,43 +374,18 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
         </div>
       </div>
 
-      {deleteDraft && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white shadow-2xl overflow-hidden">
-            <div className="border-b border-red-100 bg-red-50 px-6 py-5">
-              <h3 className="text-xl font-black text-red-700">Eliminar slide</h3>
-            </div>
-            <div className="space-y-5 px-6 py-6">
-              <p className="text-stone-600 leading-relaxed">
-                ¿Estás seguro de que deseas eliminar <span className="font-bold text-stone-900">{deleteDraft.title}</span>? Esta acción no se puede deshacer.
-              </p>
-              {deleteError && (
-                <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  {deleteError}
-                </p>
-              )}
-              <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => !deleteBusy && setDeleteDraft(null)}
-                  disabled={deleteBusy}
-                  className="rounded-xl px-5 py-2.5 text-sm font-bold text-stone-600 hover:bg-stone-100 disabled:opacity-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteSlide().catch(() => undefined)}
-                  disabled={deleteBusy}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-black text-white disabled:opacity-50 hover:bg-red-700 shadow-md transition-all active:scale-95"
-                >
-                  {deleteBusy ? "Eliminando..." : "Sí, eliminar"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteDraft)}
+        title="Eliminar slide"
+        itemName={deleteDraft?.title || ""}
+        error={deleteError}
+        busy={deleteBusy}
+        zIndexClass="z-[10000]"
+        onCancel={() => !deleteBusy && setDeleteDraft(null)}
+        onConfirm={() => {
+          deleteSlide().catch(() => undefined);
+        }}
+      />
     </div>
   );
 

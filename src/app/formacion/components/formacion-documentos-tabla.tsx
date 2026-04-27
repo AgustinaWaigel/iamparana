@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, forwardRef } from 'react';
-import { Trash2, AlertCircle, Download, CalendarDays, HardDrive, FileText, Search } from 'lucide-react';
+import { Trash2, AlertCircle, Download, CalendarDays, HardDrive, FileText } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
+import { SearchBar } from '@/app/components/common/search-bar';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
 interface Document {
   id: number;
@@ -48,6 +50,7 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { isAdmin } = useSession();
+    const [deleteDraftId, setDeleteDraftId] = useState<number | null>(null);
 
     const typeOptions = useMemo(() => {
       const values = new Set<string>();
@@ -101,10 +104,6 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
     }, []);
 
     const handleDelete = async (id: number) => {
-      if (!confirm('¿Estás seguro de que querés eliminar este documento?')) {
-        return;
-      }
-
       try {
         const response = await fetch(`/api/admin/documentos?id=${id}`, {
           method: 'DELETE',
@@ -160,16 +159,11 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
     return (
       <>
         <div className="col-span-full mb-1 flex flex-col gap-3 rounded-2xl border border-green-100 bg-white/80 p-4">
-          <div className="relative">
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por titulo o descripcion..."
-              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-green-400 focus:ring-2 focus:ring-green-100"
-            />
-          </div>
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar por titulo o descripcion..."
+          />
           <div className="flex flex-wrap gap-2">
             {typeOptions.map((type) => {
               const isActive = selectedType === type;
@@ -245,7 +239,7 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
                 )}
                 {isAdmin && (
                   <button
-                    onClick={() => handleDelete(doc.id)}
+                    onClick={() => setDeleteDraftId(doc.id)}
                     className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-red-600 transition-colors hover:bg-red-100"
                     title="Eliminar documento"
                   >
@@ -256,6 +250,18 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
             </div>
           </article>
         ))}
+
+        <DeleteConfirmModal
+          isOpen={deleteDraftId !== null}
+          title="Eliminar documento"
+          itemName={documents.find((doc) => doc.id === deleteDraftId)?.title || 'documento seleccionado'}
+          onCancel={() => setDeleteDraftId(null)}
+          onConfirm={() => {
+            if (deleteDraftId === null) return;
+            handleDelete(deleteDraftId).catch(() => undefined);
+            setDeleteDraftId(null);
+          }}
+        />
       </>
     );
   }

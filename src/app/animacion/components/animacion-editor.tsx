@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import { Plus, X, Loader2, Link as LinkIcon, FileUp, ChevronDown, AlertCircle, CheckCircle2, LayoutPanelTop, FileText, UploadCloud } from 'lucide-react';
 
-interface ComunicacionEditorProps {
+interface AnimacionEditorProps {
   isAdmin: boolean;
   onRefresh?: () => void;
 }
 
-export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorProps) {
+export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
   const documentTypeOptions = [
-    { value: 'comunicacion', label: 'Comunicación General' },
-    { value: 'logos', label: 'Logos' },
-    { value: 'dibujos', label: 'Dibujos' },
+    { value: 'animacion', label: 'Animación General' },
+    { value: 'juegos', label: 'Juegos' },
+    { value: 'canciones', label: 'Canciones' },
     { value: 'recursos', label: 'Recursos' },
   ] as const;
 
@@ -20,7 +20,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
   const [mode, setMode] = useState<'document' | 'link' | 'page'>('document');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'comunicacion' });
+  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'animacion' });
   const [file, setFile] = useState<File | null>(null);
   const [docThumbnailFile, setDocThumbnailFile] = useState<File | null>(null);
 
@@ -121,7 +121,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
         throw new Error(data.error || 'Error al guardar documento');
       }
 
-      setDocData({ titulo: '', descripcion: '', tipo: 'comunicacion' });
+      setDocData({ titulo: '', descripcion: '', tipo: 'animacion' });
       setFile(null);
       setDocThumbnailFile(null);
       done('Documento subido correctamente');
@@ -152,7 +152,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          section: 'comunicacion',
+          section: 'animacion',
           title: linkData.title,
           description: linkData.description || null,
           url: linkData.url,
@@ -200,7 +200,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
           description: pageData.description,
           textureUrl: pageData.textureUrl,
           thumbnailUrl: pageThumbnailUrl,
-          template: 'blue',
+          template: 'earth',
         }),
       });
 
@@ -221,7 +221,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
 
   const handleSubmit = mode === 'document' ? handleSubmitDocument : mode === 'link' ? handleSubmitLink : handleSubmitPage;
 
-  const inputClass = 'w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition-all';
+  const inputClass = 'w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all';
   const labelClass = 'block text-xs font-bold text-stone-500 uppercase tracking-wide ml-1 mb-1.5';
 
   return (
@@ -232,7 +232,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
           setError('');
           setSuccess('');
         }}
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-40 flex items-center gap-2 group"
+        className="fixed bottom-8 right-8 bg-brand-brown hover:bg-amber-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-40 flex items-center gap-2 group"
       >
         <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
         <span className="hidden md:inline text-sm font-bold pr-2">Añadir recurso</span>
@@ -242,7 +242,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform transition-all">
             <div className="flex justify-between items-center p-6 border-b border-stone-100 bg-stone-50/50 shrink-0">
-              <div className="flex items-center gap-3 text-blue-700">
+              <div className="flex items-center gap-3 text-brand-brown">
                 <div className="p-2 bg-white rounded-xl shadow-sm border border-stone-100">
                   {mode === 'document' ? <FileText size={22} /> : mode === 'link' ? <LinkIcon size={22} /> : <LayoutPanelTop size={22} />}
                 </div>
@@ -257,13 +257,13 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
 
             <div className="p-6 overflow-y-auto custom-scrollbar">
               <div className="flex p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
-                <button onClick={() => changeMode('document')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'document' ? 'bg-white text-blue-700 shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
+                <button onClick={() => changeMode('document')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'document' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
                   <FileUp size={16} /> Documento
                 </button>
-                <button onClick={() => changeMode('link')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'link' ? 'bg-white text-blue-700 shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
+                <button onClick={() => changeMode('link')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'link' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
                   <LinkIcon size={16} /> Enlace
                 </button>
-                <button onClick={() => changeMode('page')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'page' ? 'bg-white text-blue-700 shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
+                <button onClick={() => changeMode('page')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'page' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
                   <LayoutPanelTop size={16} /> Página
                 </button>
               </div>
@@ -286,7 +286,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
                       <label className={labelClass}>Título del Documento *</label>
-                      <input type="text" required value={docData.titulo} onChange={(e) => setDocData({ ...docData, titulo: e.target.value })} className={inputClass} placeholder="Ej: Kit de Logos 2026" />
+                      <input type="text" required value={docData.titulo} onChange={(e) => setDocData({ ...docData, titulo: e.target.value })} className={inputClass} placeholder="Ej: Guía de dinámicas" />
                     </div>
 
                     <div>
@@ -310,7 +310,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                         {file ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <div className="p-2 bg-yellow-100 text-yellow-700 rounded-lg shrink-0"><FileText size={20} /></div>
                               <span className="text-sm font-semibold text-stone-700 truncate">{file.name}</span>
                             </div>
                             <button type="button" onClick={(e) => { e.preventDefault(); setFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
@@ -319,7 +319,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                           </div>
                         ) : (
                           <>
-                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-blue-600 group-hover:scale-110 transition-all">
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-yellow-600 group-hover:scale-110 transition-all">
                               <UploadCloud size={24} />
                             </div>
                             <div>
@@ -338,7 +338,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                         {docThumbnailFile ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <div className="p-2 bg-green-100 text-green-700 rounded-lg shrink-0"><FileText size={20} /></div>
                               <span className="text-sm font-semibold text-stone-700 truncate">{docThumbnailFile.name}</span>
                             </div>
                             <button type="button" onClick={(e) => { e.preventDefault(); setDocThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
@@ -347,7 +347,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                           </div>
                         ) : (
                           <>
-                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-blue-600 group-hover:scale-110 transition-all">
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-green-600 group-hover:scale-110 transition-all">
                               <UploadCloud size={24} />
                             </div>
                             <div>
@@ -366,7 +366,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
                       <label className={labelClass}>Título del Enlace *</label>
-                      <input type="text" required value={linkData.title} onChange={(e) => setLinkData({ ...linkData, title: e.target.value })} className={inputClass} placeholder="Ej: Banco de imágenes" />
+                      <input type="text" required value={linkData.title} onChange={(e) => setLinkData({ ...linkData, title: e.target.value })} className={inputClass} placeholder="Ej: Banco de dinámicas" />
                     </div>
 
                     <div>
@@ -385,7 +385,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                         {linkThumbnailFile ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <div className="p-2 bg-green-100 text-green-700 rounded-lg shrink-0"><FileText size={20} /></div>
                               <span className="text-sm font-semibold text-stone-700 truncate">{linkThumbnailFile.name}</span>
                             </div>
                             <button type="button" onClick={(e) => { e.preventDefault(); setLinkThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
@@ -394,7 +394,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                           </div>
                         ) : (
                           <>
-                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-blue-600 group-hover:scale-110 transition-all">
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-green-600 group-hover:scale-110 transition-all">
                               <UploadCloud size={24} />
                             </div>
                             <div>
@@ -425,7 +425,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                           }))
                         }
                         className={inputClass}
-                        placeholder="Ej: Recursos para Campamentos"
+                        placeholder="Ej: Reuniones misioneras"
                       />
                     </div>
 
@@ -457,7 +457,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                         {pageThumbnailFile ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0"><FileText size={20} /></div>
+                              <div className="p-2 bg-green-100 text-green-700 rounded-lg shrink-0"><FileText size={20} /></div>
                               <span className="text-sm font-semibold text-stone-700 truncate">{pageThumbnailFile.name}</span>
                             </div>
                             <button type="button" onClick={(e) => { e.preventDefault(); setPageThumbnailFile(null); }} className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0">
@@ -466,7 +466,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                           </div>
                         ) : (
                           <>
-                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-blue-600 group-hover:scale-110 transition-all">
+                            <div className="p-3 bg-white rounded-full shadow-sm text-stone-400 group-hover:text-green-600 group-hover:scale-110 transition-all">
                               <UploadCloud size={24} />
                             </div>
                             <div>
@@ -485,7 +485,7 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                   <button type="button" onClick={() => setIsOpen(false)} disabled={isLoading} className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors disabled:opacity-50">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={isLoading} className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-black hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-md">
+                  <button type="submit" disabled={isLoading} className="flex-1 px-4 py-3 rounded-xl bg-brand-brown text-white font-black hover:bg-amber-900 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-md">
                     {isLoading ? (
                       <><Loader2 size={18} className="animate-spin" /> Guardando...</>
                     ) : (

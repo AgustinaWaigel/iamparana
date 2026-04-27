@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requirePermission, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import {
   saveLink,
@@ -7,6 +8,22 @@ import {
   updateLink,
   deleteLink,
 } from "@/server/db/admin-repository";
+
+function revalidateLinkedSection(sectionValue: unknown) {
+  const section = String(sectionValue || '').trim().toLowerCase();
+  if (!section) return;
+
+  const routesBySection: Record<string, string[]> = {
+    animacion: ['/animacion', '/animacion/recursos', '/animacion/juegos', '/animacion/canciones'],
+    juegos: ['/animacion', '/animacion/juegos'],
+    canciones: ['/animacion', '/animacion/canciones'],
+    recursos: ['/animacion', '/animacion/recursos'],
+    formacion: ['/formacion', '/formacion/recursos'],
+  };
+
+  const routes = routesBySection[section] || [`/${section}`];
+  routes.forEach((route) => revalidatePath(route));
+}
 
 // GET /api/admin/links?section=formacion
 export async function GET(req: Request) {
@@ -42,7 +59,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { section, title, description, url, icon } = body;
+    const { section, title, description, url, icon, thumbnailUrl } = body;
 
     if (!section) {
       return badRequest("Section is required");
@@ -72,12 +89,14 @@ export async function POST(req: Request) {
       section,
       title,
       description,
+      thumbnailUrl,
       url,
       icon,
       created_by_user_id: userId,
     });
 
     const newLink = await getLink(Number(linkId));
+    revalidateLinkedSection(section);
     return NextResponse.json(newLink, { status: 201 });
   } catch (error) {
     console.error(error);
@@ -99,7 +118,7 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { title, description, url: newUrl, icon } = body;
+    const { title, description, url: newUrl, icon, thumbnailUrl } = body;
 
     if (newUrl) {
       try {
@@ -109,14 +128,21 @@ export async function PUT(req: Request) {
       }
     }
 
+    const currentLink = await getLink(parseInt(id));
+    if (!currentLink) {
+      return badRequest("Link not found");
+    }
+
     await updateLink(parseInt(id), {
       title,
       description,
       url: newUrl,
+      thumbnailUrl,
       icon,
     });
 
     const updated = await getLink(parseInt(id));
+    revalidateLinkedSection((currentLink as { section?: unknown }).section);
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
@@ -137,7 +163,13 @@ export async function DELETE(req: Request) {
       return badRequest("ID parameter required");
     }
 
+    const currentLink = await getLink(parseInt(id));
+    if (!currentLink) {
+      return badRequest("Link not found");
+    }
+
     await deleteLink(parseInt(id));
+    revalidateLinkedSection((currentLink as { section?: unknown }).section);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

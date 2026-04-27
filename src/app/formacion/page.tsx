@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   icons: { icon: '/assets/resources/favicon.ico' },
 };
 
-type UploadedDocument = { id: number; title: string; description: string | null; google_drive_url: string | null; file_type: string | null; };
-type UploadedLink = { id: number; title: string; description: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
+type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
 
 export default async function FormacionPage() {
   const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
@@ -44,6 +44,7 @@ export default async function FormacionPage() {
       id: Number(item.id),
       title: String(item.title || ''),
       description: item.description ? String(item.description) : null,
+      thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       google_drive_url: item.google_drive_url ? String(item.google_drive_url) : null,
       file_type: item.file_type ? String(item.file_type) : null,
     }))
@@ -53,6 +54,7 @@ export default async function FormacionPage() {
     id: Number(item.id),
     title: String(item.title || ''),
     description: item.description ? String(item.description) : null,
+    thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
     url: String(item.url || ''),
     icon: item.icon ? String(item.icon) : null,
   }));
@@ -64,6 +66,8 @@ export default async function FormacionPage() {
       title: String(item.title || ''),
       description: item.description ? String(item.description) : null,
       template: String(item.template || 'gold'),
+      thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
+      texture_url: item.texture_url ? String(item.texture_url) : null,
     }))
     .filter((item) => item.template === 'gold');
 
@@ -76,7 +80,6 @@ export default async function FormacionPage() {
           overlayColor="rgba(253, 224, 71, 0.7), rgba(250, 204, 21, 0.75)"
           gradientClass="from-yellow-600 to-yellow-500"
           description="Aquí podrás acceder a todos los recursos: presentaciones de talleres, el temario del año, la carta del Papa y mucho más."
-          badges={["Documentos", "Presentaciones", "Enlaces", "Material actualizado"]}
           textColor="text-brand-brown"
         />
       </section>

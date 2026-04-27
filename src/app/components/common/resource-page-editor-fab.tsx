@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSessionUser } from '@/app/lib/use-session';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
 // Botón flotante de administración para editar páginas de recursos, secciones y contenido asociado.
 type EditorSection = {
@@ -48,6 +49,12 @@ type EditorPage = {
   description: string | null;
   texture_url: string | null;
   template: string;
+};
+
+type DeleteDraft = {
+  kind: 'page' | 'section' | 'document' | 'link';
+  id: number;
+  title: string;
 };
 
 type EditorTheme = {
@@ -157,6 +164,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [deleteDraft, setDeleteDraft] = useState<DeleteDraft | null>(null);
 
   const selectedSectionKey = useMemo(() => {
     return sections.find((section) => section.id === selectedSectionId)?.section_key || '';
@@ -275,8 +283,11 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
     }
   };
 
-  const handleDeletePage = async () => {
-    if (!confirm('Eliminar esta pagina completa con todas sus secciones y contenido?')) return;
+  const handleDeletePage = async (confirmed = false) => {
+    if (!confirmed) {
+      setDeleteDraft({ kind: 'page', id: page.id, title: page.title });
+      return;
+    }
     clearMessages();
     setBusy(true);
 
@@ -291,6 +302,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
         throw new Error(data.error || 'No se pudo eliminar la pagina');
       }
 
+      setDeleteDraft(null);
       router.replace('/formacion');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar pagina');
@@ -358,8 +370,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
     }
   };
 
-  const handleDeleteSection = async (sectionId: number) => {
-    if (!confirm('Eliminar esta seccion y todo su contenido?')) return;
+  const handleDeleteSection = async (sectionId: number, confirmed = false) => {
+    if (!confirmed) {
+      const sectionTitle = sections.find((section) => section.id === sectionId)?.title || 'seccion seleccionada';
+      setDeleteDraft({ kind: 'section', id: sectionId, title: sectionTitle });
+      return;
+    }
     clearMessages();
     setBusy(true);
     try {
@@ -377,6 +393,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
       const nextSection = sections.find((item) => item.id !== sectionId);
       await refreshSectionContent(nextSection?.section_key || '');
       setSuccess('Seccion eliminada');
+      setDeleteDraft(null);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar seccion');
@@ -470,8 +487,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
     }
   };
 
-  const handleDeleteDocument = async (id: number) => {
-    if (!confirm('Eliminar este documento?')) return;
+  const handleDeleteDocument = async (id: number, confirmed = false) => {
+    if (!confirmed) {
+      const documentTitle = documents.find((doc) => doc.id === id)?.title || 'documento seleccionado';
+      setDeleteDraft({ kind: 'document', id, title: documentTitle });
+      return;
+    }
     clearMessages();
     setBusy(true);
     try {
@@ -486,6 +507,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
       }
 
       setSuccess('Documento eliminado');
+      setDeleteDraft(null);
       await refreshSectionContent(selectedSectionKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar documento');
@@ -561,8 +583,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
     }
   };
 
-  const handleDeleteLink = async (id: number) => {
-    if (!confirm('Eliminar este enlace?')) return;
+  const handleDeleteLink = async (id: number, confirmed = false) => {
+    if (!confirmed) {
+      const linkTitle = links.find((link) => link.id === id)?.title || 'enlace seleccionado';
+      setDeleteDraft({ kind: 'link', id, title: linkTitle });
+      return;
+    }
     clearMessages();
     setBusy(true);
     try {
@@ -577,6 +603,7 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
       }
 
       setSuccess('Enlace eliminado');
+      setDeleteDraft(null);
       await refreshSectionContent(selectedSectionKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar enlace');
@@ -977,6 +1004,38 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
           </div>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteDraft)}
+        title={
+          deleteDraft?.kind === 'page'
+            ? 'Eliminar pagina'
+            : deleteDraft?.kind === 'section'
+              ? 'Eliminar seccion'
+              : deleteDraft?.kind === 'document'
+                ? 'Eliminar documento'
+                : 'Eliminar enlace'
+        }
+        itemName={deleteDraft?.title || 'recurso seleccionado'}
+        busy={busy}
+        onCancel={() => setDeleteDraft(null)}
+        onConfirm={() => {
+          if (!deleteDraft) return;
+          if (deleteDraft.kind === 'page') {
+            handleDeletePage(true).catch(() => undefined);
+            return;
+          }
+          if (deleteDraft.kind === 'section') {
+            handleDeleteSection(deleteDraft.id, true).catch(() => undefined);
+            return;
+          }
+          if (deleteDraft.kind === 'document') {
+            handleDeleteDocument(deleteDraft.id, true).catch(() => undefined);
+            return;
+          }
+          handleDeleteLink(deleteDraft.id, true).catch(() => undefined);
+        }}
+      />
     </>
   );
 }

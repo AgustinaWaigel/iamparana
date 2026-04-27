@@ -5,6 +5,8 @@ import {
   Loader2, Save, Plus, Database, FileText, 
   Music, Calendar, Image as ImageIcon, Trash2, AlertCircle 
 } from 'lucide-react';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { AdminActionButton } from '@/app/components/common/admin-action-button';
 
 type Entity = 'noticias' | 'canciones' | 'agenda' | 'carousel';
 
@@ -23,6 +25,7 @@ export default function AdminPage() {
   const [editorValue, setEditorValue] = useState('');
   const [status, setStatus] = useState({ message: 'Listo', isError: false });
   const [loading, setLoading] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const updateStatus = (msg: string, isError = false) => {
     setStatus({ message: msg, isError });
@@ -79,7 +82,7 @@ export default function AdminPage() {
   };
 
   const deleteItem = async () => {
-    if (!selectedKey || !confirm('¿Eliminar este registro permanentemente?')) return;
+    if (!selectedKey) return;
     setLoading(true);
     try {
       await fetchAdmin(`/api/admin/${entity}/${selectedKey}`, { method: 'DELETE' });
@@ -92,6 +95,11 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const requestDeleteItem = () => {
+    if (!selectedKey) return;
+    setDeleteConfirmOpen(true);
   };
 
   return (
@@ -142,12 +150,11 @@ export default function AdminPage() {
             <div className="bg-white rounded-[2rem] shadow-sm border border-stone-200 overflow-hidden">
               <div className="p-5 bg-stone-50/50 border-b border-stone-100 flex justify-between items-center">
                 <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Registros</span>
-                <button 
+                <AdminActionButton
+                  action="add"
                   onClick={() => { setSelectedKey(''); setEditorValue('{\n  \n}'); }}
-                  className="p-1.5 hover:bg-white rounded-lg text-brand-brown transition-colors border border-transparent hover:border-stone-200"
-                >
-                  <Plus size={18} />
-                </button>
+                  compact
+                />
               </div>
               <div className="max-h-[450px] overflow-y-auto p-3 space-y-2">
                 {items.map(item => {
@@ -176,22 +183,18 @@ export default function AdminPage() {
           <div className="space-y-4">
             <div className="flex justify-end gap-3">
               {selectedKey && (
-                <button 
-                  onClick={deleteItem}
-                  className="flex items-center gap-2 px-5 py-2.5 text-red-600 font-bold text-sm hover:bg-red-50 rounded-xl transition-all"
-                >
-                  <Trash2 size={18} />
-                  Eliminar
-                </button>
+                <AdminActionButton
+                  action="delete"
+                  onClick={requestDeleteItem}
+                  label="Eliminar"
+                />
               )}
-              <button 
+              <AdminActionButton
+                action="save"
                 onClick={saveItem}
                 disabled={loading || !editorValue}
-                className="flex items-center gap-2 bg-brand-brown text-white px-8 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:bg-stone-800 transition-all disabled:opacity-40 active:scale-95"
-              >
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                {selectedKey ? 'Actualizar Registro' : 'Crear Nuevo'}
-              </button>
+                label={selectedKey ? 'Actualizar Registro' : 'Crear Nuevo'}
+              />
             </div>
 
             <div className="relative group">
@@ -211,6 +214,17 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      <DeleteConfirmModal
+        isOpen={deleteConfirmOpen}
+        title="Eliminar registro"
+        itemName={selectedKey || 'registro seleccionado'}
+        busy={loading}
+        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          deleteItem().catch(() => undefined);
+          setDeleteConfirmOpen(false);
+        }}
+      />
     </main>
   );
 }

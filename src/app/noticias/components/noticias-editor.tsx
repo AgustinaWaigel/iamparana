@@ -287,7 +287,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
                                   <span className="text-[10px] font-bold uppercase mt-2">Sin imagen</span>
                                 </div>
                               )}
-                              <input type="file" className="text-[10px] font-bold text-stone-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-stone-200 file:text-stone-700 hover:file:bg-yellow-400 transition-all" onChange={(e) => {
+                              <input type="file" className="upload-input-unified" onChange={(e) => {
                                 const f = e.target.files?.[0];
                                 if(f) actualizarBloque(b.id, URL.createObjectURL(f), f);
                               }} />

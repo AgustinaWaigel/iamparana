@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, Trash2, Plus } from 'lucide-react';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
 interface GaleriaImagen {
   id: number;
@@ -24,6 +25,7 @@ export function NoticiaGaleria({ slug, onImageAdded }: NoticiaGaleriaProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [altText, setAltText] = useState('');
   const [caption, setCaption] = useState('');
+  const [deleteDraftId, setDeleteDraftId] = useState<number | null>(null);
 
   useEffect(() => {
     if (slug) {
@@ -104,8 +106,6 @@ export function NoticiaGaleria({ slug, onImageAdded }: NoticiaGaleriaProps) {
   };
 
   const handleEliminarImagen = async (id: number) => {
-    if (!confirm('¿Eliminar esta imagen de la galería?')) return;
-
     setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/noticias/galeria/${id}`, {
@@ -150,7 +150,7 @@ export function NoticiaGaleria({ slug, onImageAdded }: NoticiaGaleriaProps) {
             type="file"
             accept="image/*"
             onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            className="upload-input-unified"
             disabled={isLoading}
           />
         </div>
@@ -223,7 +223,7 @@ export function NoticiaGaleria({ slug, onImageAdded }: NoticiaGaleriaProps) {
                   <p className="text-xs p-2 text-gray-600 truncate">{img.caption}</p>
                 )}
                 <button
-                  onClick={() => handleEliminarImagen(img.id)}
+                  onClick={() => setDeleteDraftId(img.id)}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-red-600 text-white rounded hover:bg-red-700"
                   title="Eliminar imagen"
                 >
@@ -236,6 +236,19 @@ export function NoticiaGaleria({ slug, onImageAdded }: NoticiaGaleriaProps) {
       ) : (
         <p className="text-sm text-gray-500">No hay imágenes en la galería aún</p>
       )}
+
+      <DeleteConfirmModal
+        isOpen={deleteDraftId !== null}
+        title="Eliminar imagen"
+        itemName={galeria.find((img) => img.id === deleteDraftId)?.caption || galeria.find((img) => img.id === deleteDraftId)?.alt_text || 'imagen de la galeria'}
+        busy={isLoading}
+        onCancel={() => setDeleteDraftId(null)}
+        onConfirm={() => {
+          if (deleteDraftId === null) return;
+          handleEliminarImagen(deleteDraftId).catch(() => undefined);
+          setDeleteDraftId(null);
+        }}
+      />
     </div>
   );
 }

@@ -68,7 +68,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
   }
 
   return (
-    <div className="relative w-full aspect-[4/5] md:aspect-[12/5] overflow-hidden rounded-xl bg-stone-900 shadow-xl">
+    <div className="relative w-full aspect-[4/5] md:aspect-[12/5] overflow-hidden rounded-b-xl bg-stone-900 shadow-xl">
       {isAdmin && (
         <div className="absolute top-3 right-3 z-30">
           <CarouselAdminTools compact />

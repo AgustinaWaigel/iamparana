@@ -6,7 +6,6 @@ interface HeroSectionProps {
   gradientClass: string; // e.g., "from-yellow-600 to-yellow-500"
   overlayColor: string; // e.g., "rgba(253, 224, 71, 0.7), rgba(250, 204, 21, 0.75)"
   description?: string;
-  badges?: string[];
   textColor?: string; // e.g., "text-brand-brown" or "text-white"
   template?: 'gold' | 'ocean' | 'blue' | 'earth';
 }
@@ -17,7 +16,6 @@ export function HeroSection({
   gradientClass,
   overlayColor,
   description,
-  badges,
   textColor = 'text-brand-brown',
   template = 'gold',
 }: HeroSectionProps) {
@@ -40,7 +38,7 @@ export function HeroSection({
       </div>
 
       {/* Description Section */}
-      {(description || badges) && (
+      {(description) && (
         <main className="md:pt-16 max-w-7xl mx-auto">
           <div className="mb-12 text-center max-w-3xl mx-auto">
             {description && (
@@ -48,15 +46,7 @@ export function HeroSection({
                 {description}
               </p>
             )}
-            {badges && badges.length > 0 && (
-              <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2 text-xs sm:text-sm font-semibold text-brand-brown">
-                {badges.map((badge, idx) => (
-                  <span key={idx} className="rounded-full bg-white px-3 py-1 border border-gray-200">
-                    {badge}
-                  </span>
-                ))}
-              </div>
-            )}
+            
           </div>
         </main>
       )}

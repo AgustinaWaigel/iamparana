@@ -3,6 +3,7 @@ import "./globals.css";
 import ClientLayout from "./clientlayout"; 
 import AnalyticsProvider from '@/app/components/providers/analyticsprovider';
 import { ServiceWorkerRegistration } from '@/app/components/common/service-worker-registration';
+import { BackButton } from '@/app/components/common/back-button';
 
 // Este layout envuelve toda la aplicación: carga fuentes globales, estilos base,
 // métricas, y el service worker para que el sitio funcione como una PWA.
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body
         className="antialiased"
       >
+        <BackButton />
         <ClientLayout>{children}</ClientLayout>
         <AnalyticsProvider />
         <ServiceWorkerRegistration />

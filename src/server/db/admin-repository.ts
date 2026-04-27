@@ -308,6 +308,7 @@ export type DocumentInput = {
   section: string;
   title: string;
   description?: string;
+  thumbnailUrl?: string;
   googleDriveId: string;
   googleDriveUrl?: string;
   fileSize?: number;
@@ -318,11 +319,12 @@ export type DocumentInput = {
 export async function saveDocument(data: DocumentInput) {
   const client = clientOrThrow();
   await client.execute({
-    sql: "INSERT INTO documents (section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    sql: "INSERT INTO documents (section, title, description, thumbnail_url, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     args: [
       data.section,
       data.title,
       data.description ?? null,
+      data.thumbnailUrl ?? null,
       data.googleDriveId,
       data.googleDriveUrl ?? null,
       data.fileSize ?? null,
@@ -335,7 +337,7 @@ export async function saveDocument(data: DocumentInput) {
 export async function getDocumentsBySection(section: string) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: "SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE section = ? ORDER BY created_at DESC",
+    sql: "SELECT id, section, title, description, thumbnail_url, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE section = ? ORDER BY created_at DESC",
     args: [section],
   });
   return result.rows;
@@ -351,7 +353,7 @@ export async function getDocumentsBySections(sections: string[]) {
 
   const placeholders = normalized.map(() => "?").join(", ");
   const result = await client.execute({
-    sql: `SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at
+    sql: `SELECT id, section, title, description, thumbnail_url, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at
           FROM documents
           WHERE section IN (${placeholders})
           ORDER BY created_at DESC`,
@@ -364,7 +366,7 @@ export async function getDocumentsBySections(sections: string[]) {
 export async function getDocument(id: number) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: "SELECT id, section, title, description, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE id = ? LIMIT 1",
+    sql: "SELECT id, section, title, description, thumbnail_url, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at FROM documents WHERE id = ? LIMIT 1",
     args: [id],
   });
   return result.rows[0] ?? null;
@@ -388,6 +390,10 @@ export async function updateDocument(id: number, data: Partial<DocumentInput>) {
   if (data.googleDriveUrl !== undefined) {
     setClauses.push("google_drive_url = ?");
     values.push(data.googleDriveUrl);
+  }
+  if (data.thumbnailUrl !== undefined) {
+    setClauses.push("thumbnail_url = ?");
+    values.push(data.thumbnailUrl);
   }
   
   setClauses.push("updated_at = CURRENT_TIMESTAMP");
@@ -432,6 +438,7 @@ interface LinkInput {
   section: string;
   title: string;
   description?: string;
+  thumbnailUrl?: string;
   url: string;
   icon?: string;
   created_by_user_id: number;
@@ -440,9 +447,9 @@ interface LinkInput {
 export async function saveLink(link: LinkInput) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: `INSERT INTO links (section, title, description, url, icon, created_by_user_id)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-    args: [link.section, link.title, link.description || null, link.url, link.icon || null, link.created_by_user_id],
+    sql: `INSERT INTO links (section, title, description, thumbnail_url, url, icon, created_by_user_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    args: [link.section, link.title, link.description || null, link.thumbnailUrl || null, link.url, link.icon || null, link.created_by_user_id],
   });
   return result.lastInsertRowid;
 }
@@ -450,7 +457,7 @@ export async function saveLink(link: LinkInput) {
 export async function getLinksBySection(section: string) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: "SELECT id, section, title, description, url, icon, created_by_user_id, created_at FROM links WHERE section = ? ORDER BY created_at DESC",
+    sql: "SELECT id, section, title, description, thumbnail_url, url, icon, created_by_user_id, created_at FROM links WHERE section = ? ORDER BY created_at DESC",
     args: [section],
   });
   return result.rows;
@@ -466,7 +473,7 @@ export async function getLinksBySections(sections: string[]) {
 
   const placeholders = normalized.map(() => "?").join(", ");
   const result = await client.execute({
-    sql: `SELECT id, section, title, description, url, icon, created_by_user_id, created_at
+    sql: `SELECT id, section, title, description, thumbnail_url, url, icon, created_by_user_id, created_at
           FROM links
           WHERE section IN (${placeholders})
           ORDER BY created_at DESC`,
@@ -479,7 +486,7 @@ export async function getLinksBySections(sections: string[]) {
 export async function getLink(id: number) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: "SELECT id, section, title, description, url, icon, created_by_user_id, created_at FROM links WHERE id = ? LIMIT 1",
+    sql: "SELECT id, section, title, description, thumbnail_url, url, icon, created_by_user_id, created_at FROM links WHERE id = ? LIMIT 1",
     args: [id],
   });
   return result.rows[0] ?? null;
@@ -502,6 +509,10 @@ export async function updateLink(id: number, link: Partial<LinkInput>) {
   if (link.url !== undefined) {
     setClauses.push('url = ?');
     values.push(link.url);
+  }
+  if (link.thumbnailUrl !== undefined) {
+    setClauses.push('thumbnail_url = ?');
+    values.push(link.thumbnailUrl);
   }
   if (link.icon !== undefined) {
     setClauses.push('icon = ?');

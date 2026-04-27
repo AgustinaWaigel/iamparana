@@ -7,6 +7,7 @@ export interface ResourcePage {
   slug: string;
   title: string;
   description: string | null;
+  thumbnail_url: string | null;
   texture_url: string | null;
   template: string;
   created_by_user_id: number;
@@ -115,7 +116,7 @@ export async function listResourcePages(): Promise<ResourcePage[]> {
   await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute(`
-    SELECT p.id, p.slug, p.title, p.description, p.texture_url, p.created_by_user_id, p.created_at,
+    SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
            COALESCE(s.template, 'gold') as template
     FROM resource_pages p
     LEFT JOIN resource_page_styles s ON s.page_id = p.id
@@ -128,6 +129,7 @@ export async function createResourcePage(input: {
   slug: string;
   title: string;
   description?: string;
+  thumbnailUrl?: string;
   textureUrl?: string;
   template?: string;
   createdByUserId: number;
@@ -136,11 +138,12 @@ export async function createResourcePage(input: {
   const client = clientOrThrow();
   const slug = await getUniquePageSlug(input.slug || input.title);
   const result = await client.execute({
-    sql: "INSERT INTO resource_pages (slug, title, description, texture_url, created_by_user_id) VALUES (?, ?, ?, ?, ?)",
+    sql: "INSERT INTO resource_pages (slug, title, description, thumbnail_url, texture_url, created_by_user_id) VALUES (?, ?, ?, ?, ?, ?)",
     args: [
       slug,
       input.title,
       input.description ?? null,
+      input.thumbnailUrl ?? null,
       input.textureUrl ?? null,
       input.createdByUserId,
     ],
@@ -159,7 +162,7 @@ export async function getResourcePageBySlug(slug: string): Promise<ResourcePage 
   await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: `SELECT p.id, p.slug, p.title, p.description, p.texture_url, p.created_by_user_id, p.created_at,
+    sql: `SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
                  COALESCE(s.template, 'gold') as template
           FROM resource_pages p
           LEFT JOIN resource_page_styles s ON s.page_id = p.id
@@ -175,7 +178,7 @@ export async function getResourcePageById(id: number): Promise<ResourcePage | nu
   await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: `SELECT p.id, p.slug, p.title, p.description, p.texture_url, p.created_by_user_id, p.created_at,
+    sql: `SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
                  COALESCE(s.template, 'gold') as template
           FROM resource_pages p
           LEFT JOIN resource_page_styles s ON s.page_id = p.id
@@ -237,7 +240,7 @@ export async function getResourceSectionById(id: number): Promise<ResourceSectio
 
 export async function updateResourcePage(
   id: number,
-  data: { title?: string; description?: string; textureUrl?: string; template?: string }
+  data: { title?: string; description?: string; thumbnailUrl?: string; textureUrl?: string; template?: string }
 ) {
   await ensureSchemaInitialized();
   const client = clientOrThrow();
@@ -246,10 +249,11 @@ export async function updateResourcePage(
     sql: `UPDATE resource_pages
           SET title = COALESCE(?, title),
               description = ?,
+              thumbnail_url = ?,
               texture_url = ?,
               updated_at = CURRENT_TIMESTAMP
           WHERE id = ?`,
-    args: [data.title ?? null, data.description ?? null, data.textureUrl ?? null, id],
+    args: [data.title ?? null, data.description ?? null, data.thumbnailUrl ?? null, data.textureUrl ?? null, id],
   });
 
   if (data.template) {

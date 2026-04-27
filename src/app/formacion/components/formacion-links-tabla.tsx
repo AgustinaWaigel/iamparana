@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo, forwardRef } from 'react';
-import { Trash2, AlertCircle, ExternalLink, CalendarDays, Link as LinkIcon, Search } from 'lucide-react';
+import { Trash2, AlertCircle, ExternalLink, CalendarDays, Link as LinkIcon } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
+import { SearchBar } from '@/app/components/common/search-bar';
+import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
 interface Link {
   id: number;
@@ -54,6 +56,7 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { isAdmin } = useSession();
+    const [deleteDraftId, setDeleteDraftId] = useState<number | null>(null);
 
     const domainOptions = useMemo(() => {
       const values = new Set<string>();
@@ -109,10 +112,6 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
     }, []);
 
     const handleDelete = async (id: number) => {
-      if (!confirm('¿Estás seguro de que querés eliminar este enlace?')) {
-        return;
-      }
-
       try {
         const response = await fetch(`/api/admin/links?id=${id}`, {
           method: 'DELETE',
@@ -168,16 +167,11 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
     return (
       <>
         <div className="col-span-full mb-1 flex flex-col gap-3 rounded-2xl border border-blue-100 bg-white/80 p-4">
-          <div className="relative">
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por titulo, descripcion o URL..."
-              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-            />
-          </div>
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar por titulo, descripcion o URL..."
+          />
           <div className="flex flex-wrap gap-2">
             {domainOptions.map((domain) => {
               const isActive = selectedDomain === domain;
@@ -253,7 +247,7 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
                 )}
                 {isAdmin && (
                   <button
-                    onClick={() => handleDelete(link.id)}
+                    onClick={() => setDeleteDraftId(link.id)}
                     className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-red-600 transition-colors hover:bg-red-100"
                     title="Eliminar enlace"
                   >
@@ -264,6 +258,18 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
             </div>
           </article>
         ))}
+
+        <DeleteConfirmModal
+          isOpen={deleteDraftId !== null}
+          title="Eliminar enlace"
+          itemName={links.find((link) => link.id === deleteDraftId)?.title || 'enlace seleccionado'}
+          onCancel={() => setDeleteDraftId(null)}
+          onConfirm={() => {
+            if (deleteDraftId === null) return;
+            handleDelete(deleteDraftId).catch(() => undefined);
+            setDeleteDraftId(null);
+          }}
+        />
       </>
     );
   }
