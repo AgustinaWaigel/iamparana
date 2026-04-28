@@ -67,7 +67,12 @@ body {
   flex-direction: column;
   justify-content: space-between;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
   width: 100%;
+}
+
+html {
+  overscroll-behavior-y: none;
 }
 header.header {
   background-color: #622d0d;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Save, Upload, Loader2, Pencil, Trash2, Plus } from "lucide-react";
-import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
+import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
 
 
@@ -216,7 +216,7 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
                     >
                       <div className="flex gap-3">
                         <img
-                          src={getGoogleDriveImageUrl(item.imageDesktop)}
+                          src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
                           alt={item.alt || "Slide"}
                           className="h-16 w-24 rounded-lg object-cover bg-stone-100"
                         />

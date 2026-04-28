@@ -151,12 +151,9 @@ export async function PUT(req: NextRequest) {
     const document = await getDocument(id);
     if (!document) return badRequest("Document not found");
 
-    // Lógica simplificada: 
-    // Si viene una miniatura nueva, se usa. 
-    // Si no viene nada (null o ''), mantenemos la que ya tenía el documento.
-    const finalThumbnail = (thumbnailUrl !== undefined && thumbnailUrl !== null)
-      ? String(thumbnailUrl).trim()
-      : (typeof document.thumbnail_url === 'string' ? document.thumbnail_url : undefined);
+    const finalThumbnail = thumbnailUrl === undefined
+      ? (typeof document.thumbnail_url === 'string' ? document.thumbnail_url : null)
+      : String(thumbnailUrl).trim() || null;
 
     await updateDocument(id, {
       title: title || String(document.title),

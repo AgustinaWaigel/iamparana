@@ -240,7 +240,7 @@ export async function getResourceSectionById(id: number): Promise<ResourceSectio
 
 export async function updateResourcePage(
   id: number,
-  data: { title?: string; description?: string; thumbnailUrl?: string; textureUrl?: string; template?: string }
+  data: { title?: string; description?: string; thumbnailUrl?: string | null; textureUrl?: string; template?: string }
 ) {
   await ensureSchemaInitialized();
   const client = clientOrThrow();

@@ -21,7 +21,7 @@ type CardItem = {
   description: string;
   href: string;
   badge: string;
-  accent: 'blue' | 'green' | 'blue';
+  accent: 'blue' | 'brown';
   resourceId: number; // Ahora es obligatorio, porque todos vienen de la DB
   googleDriveUrl?: string | null;
   linkUrl?: string;
@@ -223,7 +223,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   // --- DATA TRANSFORMATION ---
   const cards = useMemo<CardItem[]>(() => {
     const documentCards: CardItem[] = documentsState.map((doc) => ({
-      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'green', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || (doc.file_type?.startsWith('image/') ? doc.google_drive_url : null),
+      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'brown', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || null,
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({
@@ -231,7 +231,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
-      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'blue', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
+      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'brown', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
     }));
 
     // Ahora solo devolvemos lo que viene de la base de datos
@@ -273,8 +273,8 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-stone-100 shadow-sm mb-16">
-          <div className="bg-blue-50 p-4 rounded-full mb-4">
-            <SearchX size={40} className="text-blue-600" />
+          <div className="bg-amber-50 p-4 rounded-full mb-4">
+            <SearchX size={40} className="text-amber-700" />
           </div>
           <h3 className="text-xl font-bold text-brand-brown mb-2">No encontramos nada</h3>
           <p className="text-stone-500 max-w-sm">
@@ -282,7 +282,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
           </p>
           <button 
             onClick={() => setSearchTerm('')} 
-            className="mt-6 font-semibold text-blue-700 hover:text-blue-800 underline decoration-blue-300 underline-offset-4"
+            className="mt-6 font-semibold text-amber-800 hover:text-amber-900 underline decoration-amber-300 underline-offset-4"
           >
             Limpiar búsqueda
           </button>
@@ -362,15 +362,13 @@ function getCardIcon(card: CardItem, size = 60, className = '') {
 
 function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isAdmin: boolean; onEdit: () => void; onDelete: () => void; }) {
   const headerBg = {
-    green: 'bg-gradient-to-br from-green-300 to-green-500',
-    blue: 'bg-gradient-to-br from-blue-300 to-blue-500',
-    yellow: 'bg-gradient-to-br from-yellow-300 to-yellow-500'
+    blue: 'bg-gradient-to-br from-sky-300 to-blue-500',
+    brown: 'bg-gradient-to-br from-amber-300 to-brand-brown'
   }[card.accent];
 
   const actionBtnClass = {
-    green: 'bg-green-50 text-green-700 hover:bg-green-100 hover:shadow-md border-green-200',
     blue: 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:shadow-md border-blue-200',
-    yellow: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:shadow-md border-yellow-200'
+    brown: 'bg-amber-50 text-brand-brown hover:bg-amber-100 hover:shadow-md border-amber-200'
   }[card.accent];
 
   const ActionWrapper = card.href.startsWith('/') ? Link : 'a';

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     const slug = String(body.slug || "").trim();
     const title = String(body.title || "").trim();
     const description = String(body.description || "").trim();
-    const thumbnailUrl = String(body.thumbnailUrl || "").trim();
+    const thumbnailUrl = String(body.thumbnailUrl ?? "").trim();
     const textureUrl = String(body.textureUrl || "").trim();
     const template = String(body.template || "gold").trim();
 
@@ -97,7 +97,7 @@ export async function PUT(req: Request) {
     await updateResourcePage(id, {
       title: title || page.title,
       description: description || "",
-      thumbnailUrl: thumbnailUrl || page.thumbnail_url || "",
+      thumbnailUrl: thumbnailUrl || null,
       textureUrl: textureUrl || "",
       template: template || "gold",
     });

@@ -127,7 +127,7 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
     setEditBusy(true);
 
     try {
-      let nextThumbnailUrl = editThumbnailUrl.trim() || undefined;
+      let nextThumbnailUrl = editThumbnailUrl.trim() || null;
       if (editThumbnailFile) {
         nextThumbnailUrl = await uploadThumbnail(editThumbnailFile);
       }
@@ -225,7 +225,7 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
       accent: 'green',
       resourceId: doc.id,
       googleDriveUrl: doc.google_drive_url,
-      thumbnailUrl: doc.thumbnail_url || (doc.file_type?.startsWith('image/') ? doc.google_drive_url : null),
+      thumbnailUrl: doc.thumbnail_url || null,
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({

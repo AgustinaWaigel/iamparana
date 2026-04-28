@@ -131,7 +131,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
     setEditBusy(true);
 
     try {
-      let nextThumbnailUrl = editThumbnailUrl.trim() || undefined;
+      let nextThumbnailUrl = editThumbnailUrl.trim() || null;
       if (editThumbnailFile) {
         nextThumbnailUrl = await uploadThumbnail(editThumbnailFile);
       }
@@ -223,7 +223,7 @@ export function FormacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   // --- DATA TRANSFORMATION ---
   const cards = useMemo<CardItem[]>(() => {
     const documentCards: CardItem[] = documentsState.map((doc) => ({
-      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'green', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || (doc.file_type?.startsWith('image/') ? doc.google_drive_url : null),
+      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'green', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || null,
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({

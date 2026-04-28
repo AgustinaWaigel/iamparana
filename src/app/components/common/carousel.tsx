@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
+import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import CarouselAdminTools from "@/app/components/common/CarouselAdminTools";
 import { Settings } from "lucide-react";
 
@@ -82,9 +82,9 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         {items.map((item, i) => (
           <div key={item.id || i} className="min-w-full h-full relative">
             <picture>
-              <source media="(max-width: 767px)" srcSet={getGoogleDriveImageUrl(item.imageMobile || item.imageDesktop)} />
+              <source media="(max-width: 767px)" srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)} />
               <img
-                src={getGoogleDriveImageUrl(item.imageDesktop)}
+                src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
                 alt={item.alt}
                 className="w-full h-full object-cover"
                 loading={i === 0 ? "eager" : "lazy"}

@@ -93,9 +93,9 @@ const Header: React.FC = () => {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menú"
         >
-          <span className={`block h-0.5 w-6 rounded-full bg-brand-gold transition-all duration-300 ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}></span>
-          <span className={`block h-0.5 w-6 rounded-full bg-brand-gold transition-all duration-300 ${menuOpen ? 'opacity-0 scale-75' : ''}`}></span>
-          <span className={`block h-0.5 w-6 rounded-full bg-brand-gold transition-all duration-300 ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}></span>
+          <span className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}></span>
+          <span className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${menuOpen ? 'opacity-0 scale-75' : ''}`}></span>
+          <span className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}></span>
         </button>
 
         <nav>

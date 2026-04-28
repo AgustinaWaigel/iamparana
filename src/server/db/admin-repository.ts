@@ -308,7 +308,7 @@ export type DocumentInput = {
   section: string;
   title: string;
   description?: string;
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   googleDriveId: string;
   googleDriveUrl?: string;
   fileSize?: number;
@@ -438,7 +438,7 @@ interface LinkInput {
   section: string;
   title: string;
   description?: string;
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   url: string;
   icon?: string;
   created_by_user_id: number;
