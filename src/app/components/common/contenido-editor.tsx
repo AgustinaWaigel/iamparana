@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, X, Loader2 } from 'lucide-react';
+import { AdminActionButton } from '@/app/components/common/admin-action-button';
 
 interface ContenidoEditorProps {
   isAdmin: boolean;
@@ -92,13 +92,12 @@ export function ContenidoEditor({ isAdmin, seccion, onRefresh }: ContenidoEditor
   return (
     <>
       {/* Botón flotante */}
-      <button
+      <AdminActionButton
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-8 right-8 ${getColor()} text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 flex items-center gap-2`}
-      >
-        <Plus size={24} />
-        <span className="hidden md:inline text-sm font-bold">Editar</span>
-      </button>
+        action="add"
+        label="Editar"
+        className="fixed bottom-8 right-8 z-40 shadow-lg hover:shadow-xl"
+      />
 
       {/* Modal */}
       {isOpen && (
@@ -107,12 +106,13 @@ export function ContenidoEditor({ isAdmin, seccion, onRefresh }: ContenidoEditor
             {/* Header */}
             <div className={`sticky top-0 ${getHeaderColor()} text-white p-6 flex justify-between items-center`}>
               <h2 className="text-2xl font-bold">Editar Contenido</h2>
-              <button
+              <AdminActionButton
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
-              >
-                <X size={24} />
-              </button>
+                action="close"
+                compact
+                tone="neutral"
+                className="p-1 bg-white/10 text-white border-white/10 hover:bg-white/20 hover:text-white hover:border-white/20"
+              />
             </div>
 
             {/* Formulario */}
@@ -172,27 +172,21 @@ export function ContenidoEditor({ isAdmin, seccion, onRefresh }: ContenidoEditor
 
               {/* Botones */}
               <div className="flex gap-3 pt-4">
-                <button
+                <AdminActionButton
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
+                  action="close"
+                  tone="neutral"
+                  label="Cancelar"
+                  className="flex-1 px-4 py-2"
+                />
+                <AdminActionButton
                   type="submit"
                   disabled={isLoading}
-                  className={`flex-1 px-4 py-2 ${getColor()} text-white rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-bold`}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    'Guardar Contenido'
-                  )}
-                </button>
+                  action="save"
+                  label={isLoading ? 'Guardando...' : 'Guardar Contenido'}
+                  className="flex-1 px-4 py-2"
+                />
               </div>
             </form>
           </div>

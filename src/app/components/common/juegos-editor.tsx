@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Plus, X, Loader2, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { Loader2, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { AdminActionButton } from '@/app/components/common/admin-action-button';
 
 // Editor flotante para agregar, modificar o borrar juegos del módulo Animación.
 interface Juego {
@@ -154,25 +155,25 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
   return (
     <>
       {/* Botón flotante para agregar juego */}
-      <button
+      <AdminActionButton
         onClick={handleOpenEditor}
-        className="fixed bottom-8 right-8 bg-brand-brown hover:bg-brand-brown/90 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-5000 flex items-center gap-2"
-      >
-        <Plus size={20} />
-        <span className="text-sm font-bold">Agregar Juego</span>
-      </button>
+        action="add"
+        label="Agregar Juego"
+        className="fixed bottom-8 right-8 z-40 shadow-lg hover:shadow-xl"
+      />
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
               <h2 className="text-xl font-bold">Gestionar Juegos</h2>
-              <button
+              <AdminActionButton
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X size={20} />
-              </button>
+                action="close"
+                tone="neutral"
+                compact
+                className="p-1"
+              />
             </div>
 
             <div className="p-6 space-y-6">

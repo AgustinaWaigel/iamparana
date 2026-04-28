@@ -3,6 +3,7 @@ import { useState } from "react";
 import CarouselModal from "./carouselModal";
 import { useRouter } from "next/navigation";
 import { Settings } from "lucide-react";
+import { AdminActionButton } from "@/app/components/common/admin-action-button";
 
 interface CarouselAdminToolsProps {
   compact?: boolean;
@@ -15,15 +16,15 @@ export default function CarouselAdminTools({ compact = false }: CarouselAdminToo
   return (
     <>
       <div className={compact ? "" : "fixed bottom-8 right-8 z-[100]"}>
-        <button 
+        <AdminActionButton
           onClick={() => setIsOpen(true)}
-          className={`bg-stone-900 text-white rounded-full shadow-2xl hover:bg-orange-600 transition-all flex items-center gap-2 group ${compact ? "px-3 py-2" : "p-4"}`}
+          action="add"
+          icon={Settings}
+          label="Gestionar Carrusel"
+          compact={compact}
+          className={`shadow-lg hover:shadow-xl ${compact ? "px-3 py-2" : "p-4"} ${compact ? "" : "rounded-full"}`}
         >
-          <Settings size={compact ? 16 : 20} className="group-hover:rotate-90 transition-transform duration-500" />
-          <span className={`font-bold uppercase tracking-widest ${compact ? "text-[10px]" : "text-xs hidden md:inline"}`}>
-            Gestionar Carrusel
-          </span>
-        </button>
+        </AdminActionButton>
       </div>
 
       <CarouselModal 

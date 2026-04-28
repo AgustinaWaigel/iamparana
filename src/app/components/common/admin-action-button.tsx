@@ -12,6 +12,7 @@ type AdminActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   tone?: AdminTone;
   compact?: boolean;
   iconClassName?: string;
+  icon?: ComponentType<{ size?: number; className?: string }>;
   children?: ReactNode;
 };
 
@@ -39,10 +40,11 @@ export function AdminActionButton({
   className = '',
   iconClassName = '',
   type = 'button',
+  icon,
   children,
   ...props
 }: AdminActionButtonProps) {
-  const Icon = ACTION_ICONS[action];
+  const Icon = icon ?? ACTION_ICONS[action];
   const resolvedTone = tone ?? (action === 'delete' ? 'danger' : action === 'save' || action === 'add' ? 'brand' : 'neutral');
   const isIconOnly = compact || !label;
 

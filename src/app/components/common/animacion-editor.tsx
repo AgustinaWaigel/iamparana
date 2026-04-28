@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Edit2, Save, X, Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { AdminActionButton } from '@/app/components/common/admin-action-button';
 
 // Editor flotante para administrar el contenido editorial de la sección Animación.
 interface AnimacionContent {
@@ -109,26 +110,26 @@ export function AnimacionEditor({ isAdmin: propIsAdmin, onRefresh }: AnimacionEd
   return (
     <>
       {/* Botón flotante para editar */}
-      <button
+      <AdminActionButton
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 bg-brand-brown hover:bg-brand-brown/90 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 flex items-center gap-2"
+        action="add"
+        label="Editar"
+        className="fixed bottom-8 right-8 z-40 shadow-lg hover:shadow-xl"
         title="Editar Animación"
-      >
-        <Edit2 size={20} />
-        <span className="text-sm font-bold">Editar</span>
-      </button>
+      />
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
               <h2 className="text-xl font-bold">Editar Animación</h2>
-              <button
+              <AdminActionButton
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X size={20} />
-              </button>
+                action="close"
+                compact
+                tone="neutral"
+                className="p-1"
+              />
             </div>
 
             <div className="p-6 space-y-4">
@@ -175,20 +176,20 @@ export function AnimacionEditor({ isAdmin: propIsAdmin, onRefresh }: AnimacionEd
               </div>
 
               <div className="flex gap-2 justify-end pt-4">
-                <button
+                <AdminActionButton
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-                >
-                  Cancelar
-                </button>
-                <button
+                  action="close"
+                  tone="neutral"
+                  label="Cancelar"
+                  className="px-4 py-2"
+                />
+                <AdminActionButton
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  Guardar
-                </button>
+                  action="save"
+                  label={isLoading ? 'Guardando...' : 'Guardar'}
+                  className="px-4 py-2"
+                />
               </div>
             </div>
           </div>

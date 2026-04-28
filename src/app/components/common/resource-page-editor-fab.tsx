@@ -625,14 +625,13 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
 
   return (
     <>
-      <button
+      <AdminActionButton
         type="button"
         onClick={openModal}
-        className={`fixed bottom-8 right-8 ${theme.accentBg} ${theme.accentBgHover} text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-40 flex items-center gap-2 group`}
-      >
-        <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-        <span className="hidden md:inline text-sm font-bold pr-2">Editar pagina</span>
-      </button>
+        action="add"
+        label="Editar pagina"
+        className="fixed bottom-8 right-8 z-40 shadow-lg hover:shadow-xl"
+      />
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -755,12 +754,20 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                     </div>
                   </div>
                   <div className="flex gap-3 pt-4 border-t border-stone-100">
-                    <button type="button" onClick={() => handleDeletePage(true)} disabled={busy} className="flex-1 px-4 py-3 rounded-xl border border-red-200 text-red-700 font-bold hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2">
-                      <Trash2 size={16} /> Eliminar pagina
-                    </button>
-                    <button disabled={busy} className={`flex-1 px-4 py-3 rounded-xl ${theme.accentBg} ${theme.accentBgHover} text-white font-black transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-md`}>
-                      {busy ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Guardar pagina
-                    </button>
+                    <AdminActionButton
+                      type="button"
+                      onClick={() => handleDeletePage(true)}
+                      action="delete"
+                      label="Eliminar pagina"
+                      disabled={busy}
+                      className="flex-1 px-4 py-3"
+                    />
+                    <AdminActionButton
+                      disabled={busy}
+                      action="save"
+                      label={busy ? 'Guardando...' : 'Guardar pagina'}
+                      className="flex-1 px-4 py-3"
+                    />
                   </div>
                 </form>
               )}
@@ -788,9 +795,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                       <label className={labelClass}>Slug generado</label>
                       <input value={sectionForm.slug} readOnly className="w-full rounded-xl border border-stone-200 bg-stone-100 px-4 py-3 text-sm text-stone-600" />
                     </div>*/}
-                    <button disabled={busy} className={`inline-flex items-center gap-2 rounded-xl ${theme.accentBg} ${theme.accentBgHover} px-4 py-3 text-sm font-black text-white disabled:opacity-60 transition-colors shadow-md`}>
-                      {busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} Crear seccion
-                    </button>
+                    <AdminActionButton
+                      disabled={busy}
+                      action="add"
+                      label={busy ? 'Creando...' : 'Crear seccion'}
+                      className="px-4 py-3"
+                    />
                   </form>
 
                   <div className="space-y-3 border-t border-stone-200 pt-5">
@@ -809,20 +819,22 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                           className={inputClass}
                         />
                         <div className="mt-3 flex gap-2">
-                          <button
+                          <AdminActionButton
                             type="button"
                             onClick={() => handleUpdateSection(section)}
-                            className={`px-3 py-2 rounded-lg ${theme.accentBgSoft} ${theme.accentCardText} text-xs font-bold hover:opacity-90 transition-colors`}
-                          >
-                            Guardar
-                          </button>
-                          <button
+                            action="save"
+                            label="Guardar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
+                          <AdminActionButton
                             type="button"
                             onClick={() => handleDeleteSection(section.id)}
-                            className="px-3 py-2 rounded-lg bg-red-100 text-red-700 text-xs font-bold hover:bg-red-200 transition-colors"
-                          >
-                            Eliminar
-                          </button>
+                            action="delete"
+                            label="Eliminar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
                         </div>
                       </div>
                     ))}
@@ -868,9 +880,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                         )}
                       </div>
                     </div>
-                    <button disabled={busy || !selectedSectionKey} className={`inline-flex items-center gap-2 rounded-xl ${theme.accentBg} ${theme.accentBgHover} px-4 py-3 text-sm font-black text-white disabled:opacity-60 transition-colors shadow-md`}>
-                      {busy ? <Loader2 size={16} className="animate-spin" /> : <FileUp size={16} />} Subir documento
-                    </button>
+                    <AdminActionButton
+                      disabled={busy || !selectedSectionKey}
+                      action="add"
+                      label={busy ? 'Subiendo...' : 'Subir documento'}
+                      className="px-4 py-3"
+                    />
                   </form>
 
                   <div className="space-y-3 border-t border-stone-200 pt-5">
@@ -902,16 +917,22 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                           className={`${inputClass} resize-none`}
                         />
                         <div className="mt-3 flex gap-2">
-                          <button
+                          <AdminActionButton
                             type="button"
                             onClick={() => handleUpdateDocument(doc)}
-                            className={`px-3 py-2 rounded-lg ${theme.accentBgSoft} ${theme.accentCardText} text-xs font-bold hover:opacity-90 transition-colors`}
-                          >
-                            Guardar
-                          </button>
-                          <button type="button" onClick={() => handleDeleteDocument(doc.id)} className="px-3 py-2 rounded-lg bg-red-100 text-red-700 text-xs font-bold hover:bg-red-200 transition-colors">
-                            Eliminar
-                          </button>
+                            action="save"
+                            label="Guardar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
+                          <AdminActionButton
+                            type="button"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            action="delete"
+                            label="Eliminar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
                         </div>
                       </div>
                     ))}
@@ -938,9 +959,12 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                       <label className={labelClass}>Icono (opcional)</label>
                       <input value={linkForm.icon} onChange={(e) => setLinkForm((prev) => ({ ...prev, icon: e.target.value }))} placeholder="🔗" className={inputClass} />
                     </div>
-                    <button disabled={busy || !selectedSectionKey} className={`inline-flex items-center gap-2 rounded-xl ${theme.accentBg} ${theme.accentBgHover} px-4 py-3 text-sm font-black text-white disabled:opacity-60 transition-colors shadow-md`}>
-                      {busy ? <Loader2 size={16} className="animate-spin" /> : <LinkIcon size={16} />} Agregar enlace
-                    </button>
+                    <AdminActionButton
+                      disabled={busy || !selectedSectionKey}
+                      action="add"
+                      label={busy ? 'Agregando...' : 'Agregar enlace'}
+                      className="px-4 py-3"
+                    />
                   </form>
 
                   <div className="space-y-3 border-t border-stone-200 pt-5">
@@ -984,16 +1008,22 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                           className={inputClass}
                         />
                         <div className="mt-3 flex gap-2">
-                          <button
+                          <AdminActionButton
                             type="button"
                             onClick={() => handleUpdateLink(link)}
-                            className={`px-3 py-2 rounded-lg ${theme.accentBgSoft} ${theme.accentCardText} text-xs font-bold hover:opacity-90 transition-colors`}
-                          >
-                            Guardar
-                          </button>
-                          <button type="button" onClick={() => handleDeleteLink(link.id)} className="px-3 py-2 rounded-lg bg-red-100 text-red-700 text-xs font-bold hover:bg-red-200 transition-colors">
-                            Eliminar
-                          </button>
+                            action="save"
+                            label="Guardar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
+                          <AdminActionButton
+                            type="button"
+                            onClick={() => handleDeleteLink(link.id)}
+                            action="delete"
+                            label="Eliminar"
+                            compact
+                            className="px-3 py-2 text-xs"
+                          />
                         </div>
                       </div>
                     ))}
