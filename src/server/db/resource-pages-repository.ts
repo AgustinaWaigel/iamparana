@@ -6,6 +6,7 @@ export interface ResourcePage {
   id: number;
   slug: string;
   title: string;
+  section: string; 
   description: string | null;
   thumbnail_url: string | null;
   texture_url: string | null;
@@ -116,7 +117,7 @@ export async function listResourcePages(): Promise<ResourcePage[]> {
   await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute(`
-    SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
+    SELECT p.id, p.slug, p.title, p.section, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
            COALESCE(s.template, 'gold') as template
     FROM resource_pages p
     LEFT JOIN resource_page_styles s ON s.page_id = p.id
@@ -128,6 +129,7 @@ export async function listResourcePages(): Promise<ResourcePage[]> {
 export async function createResourcePage(input: {
   slug: string;
   title: string;
+  section: string; // <-- Campo obligatorio
   description?: string;
   thumbnailUrl?: string;
   textureUrl?: string;
@@ -137,11 +139,13 @@ export async function createResourcePage(input: {
   await ensureSchemaInitialized();
   const client = clientOrThrow();
   const slug = await getUniquePageSlug(input.slug || input.title);
+  
   const result = await client.execute({
-    sql: "INSERT INTO resource_pages (slug, title, description, thumbnail_url, texture_url, created_by_user_id) VALUES (?, ?, ?, ?, ?, ?)",
+    sql: "INSERT INTO resource_pages (slug, title, section, description, thumbnail_url, texture_url, created_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
     args: [
       slug,
       input.title,
+      input.section, // <-- Guardamos la sección
       input.description ?? null,
       input.thumbnailUrl ?? null,
       input.textureUrl ?? null,
@@ -240,7 +244,7 @@ export async function getResourceSectionById(id: number): Promise<ResourceSectio
 
 export async function updateResourcePage(
   id: number,
-  data: { title?: string; description?: string; thumbnailUrl?: string | null; textureUrl?: string; template?: string }
+  data: { title?: string; section?: string; description?: string; thumbnailUrl?: string | null; textureUrl?: string; template?: string }
 ) {
   await ensureSchemaInitialized();
   const client = clientOrThrow();
@@ -248,12 +252,13 @@ export async function updateResourcePage(
   await client.execute({
     sql: `UPDATE resource_pages
           SET title = COALESCE(?, title),
+              section = COALESCE(?, section),
               description = ?,
               thumbnail_url = ?,
               texture_url = ?,
               updated_at = CURRENT_TIMESTAMP
           WHERE id = ?`,
-    args: [data.title ?? null, data.description ?? null, data.thumbnailUrl ?? null, data.textureUrl ?? null, id],
+    args: [data.title ?? null, data.section ?? null, data.description ?? null, data.thumbnailUrl ?? null, data.textureUrl ?? null, id],
   });
 
   if (data.template) {

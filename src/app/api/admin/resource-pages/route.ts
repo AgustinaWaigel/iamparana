@@ -12,6 +12,10 @@ import {
 function revalidateResourcePages() {
   revalidatePath('/animacion');
   revalidatePath('/animacion/recursos');
+  revalidatePath('/formacion');
+  revalidatePath('/formacion/recursos');
+  revalidatePath('/espiritualidad');
+  revalidatePath('/espiritualidad/recursos');
 }
 
 export async function GET() {
@@ -39,6 +43,7 @@ export async function POST(req: Request) {
     const thumbnailUrl = String(body.thumbnailUrl ?? "").trim();
     const textureUrl = String(body.textureUrl || "").trim();
     const template = String(body.template || "gold").trim();
+    const section = String(body.section || "animacion").trim();
 
     if (!title) {
       return badRequest("Title is required");
@@ -56,6 +61,7 @@ export async function POST(req: Request) {
     const id = await createResourcePage({
       slug,
       title,
+      section,
       description: description || undefined,
       thumbnailUrl: thumbnailUrl || undefined,
       textureUrl: textureUrl || undefined,

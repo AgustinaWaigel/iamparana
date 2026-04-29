@@ -49,7 +49,7 @@ type ResourcePageCard = { id: number; slug: string; title: string; description: 
 
 export default async function Espiritualidad() {
   const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['espiritualidad']),
+    getDocumentsBySections(['espiritualidad', 'recursos', 'oraciones', 'guiones']),
     getLinksBySection('espiritualidad'),
     listResourcePages(),
   ]);
@@ -83,21 +83,21 @@ export default async function Espiritualidad() {
       id: Number(item.id),
       slug: String(item.slug || ''),
       title: String(item.title || ''),
+      section: String(item.section || ''),
       description: item.description ? String(item.description) : null,
-      template: String(item.template || 'purple'),
+      template: String(item.template || 'purple'), // Mantenemos el fallback
       thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       texture_url: item.texture_url ? String(item.texture_url) : null,
     }))
-    .filter((item) => item.template === 'purple');
 
   return (
     <EspiritualidadClient>
       <section>
         <HeroSection
           title="Espiritualidad"
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(55, 65, 81, 0.7), rgba(75, 85, 99, 0.75)"
-          gradientClass="from-gray-700 to-gray-600"
+          textureUrl="/assets/textures/areasg.webp" // Cambiado de areasg.webp para mayor calidad
+          overlayColor="rgba(31, 41, 55, 0.7), rgba(55, 65, 81, 0.8)" // Grises más profundos (Slate/Gray 800)
+          gradientClass="from-gray-800 to-gray-700"
           description="En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM."
           textColor="text-white"
         />

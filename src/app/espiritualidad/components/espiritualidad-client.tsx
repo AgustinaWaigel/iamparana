@@ -1,13 +1,27 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import { ReactNode, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { EspiritualidadEditor } from './espiritualidad-editor';
+import { useSession } from '@/app/hooks/use-session';
 
-export function EspiritualidadClient({ children }: { children: ReactNode }) {
+// Conecta la vista pública de formación con el editor flotante de administración.
+interface EspiritualidadClientProps {
+  children: ReactNode;
+}
+
+export function EspiritualidadClient({ children }: EspiritualidadClientProps) {
+  const router = useRouter();
+  const { isAdmin } = useSession();
+  const handleRefresh = useCallback(() => {
+    router.refresh();
+  }, [router]);
+
   return (
     <>
       {children}
-      <EspiritualidadEditor />
+
+      <EspiritualidadEditor isAdmin={isAdmin} onRefresh={handleRefresh} />
     </>
   );
 }

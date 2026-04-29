@@ -231,7 +231,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
-      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de formación', accent: 'brown', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
+      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos con secciones y contenido.', href: `/comunicacion/recursos/${page.slug}`, badge: 'Página de comunicación', accent: 'brown', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
     }));
 
     // Ahora solo devolvemos lo que viene de la base de datos
@@ -295,7 +295,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
             <div className="modal-header-unified">
               <h3 className="modal-title-unified">Editar recurso</h3>
               <p className="modal-subtitle-unified">
-                {editDraft.kind === 'document' ? 'Documento' : editDraft.kind === 'link' ? 'Enlace' : 'Página de formación'}
+                {editDraft.kind === 'document' ? 'Documento' : editDraft.kind === 'link' ? 'Enlace' : 'Página de comunicación'}
               </p>
             </div>
             <form className="modal-body-unified" onSubmit={(e) => { e.preventDefault(); submitEdit().catch(() => undefined); }}>
