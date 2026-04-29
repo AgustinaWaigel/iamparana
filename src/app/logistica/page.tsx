@@ -1,62 +1,115 @@
-export async function generateMetadata() {
-  return {
-    title: "Logística",
-    description: "Resumen de gastos y transparencia en eventos realizados",
-    openGraph: {
-      title: "Logística",
-      description: "Resumen de gastos y transparencia en eventos realizados",
-      url: "https://iamparana.com.ar/logistica",
-      siteName: "Logística - IAM Paraná",
-      images: [
-        {
-          url: "https://iamparana.com.ar/logoiam.jpg",
-          width: 800,
-          height: 600,
-          alt: "Resumen de gastos",
-        },
-      ],
-      locale: "es_AR",
-      type: "website",
-    },
-  };
-}
-
+import React from "react";
+import { Metadata, Viewport } from "next";
 import { HeroSection } from "@/app/components/common/hero-section";
 
-export default function Logistica() {
+// Componentes
+import { LogisticaClient } from "@/app/logistica/components/logistica-client";
+import { LogisticaCardsGrid } from "./components/logistica-cards-grid";
+
+// Base de Datos
+import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
+import { listResourcePages } from "@/server/db/resource-pages-repository";
+
+export const dynamic = "force-dynamic";
+
+export const viewport: Viewport = {
+  themeColor: "#dc2626",
+};
+
+export const metadata: Metadata = {
+  title: "Logística",
+  description: "Resumen de gastos y transparencia en eventos realizados",
+  openGraph: {
+    title: "Logística",
+    description: "Resumen de gastos y transparencia en eventos realizados",
+    url: "https://iamparana.com.ar/logistica",
+    images: [
+      {
+        url: "https://iamparana.com.ar/logoiam.jpg",
+        alt: "Logo IAM Paraná",
+        width: 800,
+        height: 600,
+      },
+    ],
+    type: "website",
+  },
+  icons: {
+    icon: "/assets/resources/favicon.ico",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Logística",
+  },
+};
+
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
+type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
+
+export default async function Logistica() {
+  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
+    getDocumentsBySections(['logistica']),
+    getLinksBySection('logistica'),
+    listResourcePages(),
+  ]);
+
+  const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
+  const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;
+  const resourcePagesRows = JSON.parse(JSON.stringify(resourcePagesRaw)) as Array<Record<string, unknown>>;
+
+  const uploadedDocuments = uploadedDocumentsRows
+    .map((item) => ({
+      id: Number(item.id),
+      title: String(item.title || ''),
+      description: item.description ? String(item.description) : null,
+      thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
+      google_drive_url: item.google_drive_url ? String(item.google_drive_url) : null,
+      file_type: item.file_type ? String(item.file_type) : null,
+    }))
+    .filter((item) => Boolean(item.google_drive_url));
+
+  const uploadedLinks = uploadedLinksRows.map((item) => ({
+    id: Number(item.id),
+    title: String(item.title || ''),
+    description: item.description ? String(item.description) : null,
+    thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
+    url: String(item.url || ''),
+    icon: item.icon ? String(item.icon) : null,
+  }));
+
+  const resourcePages = resourcePagesRows
+    .map((item) => ({
+      id: Number(item.id),
+      slug: String(item.slug || ''),
+      title: String(item.title || ''),
+      description: item.description ? String(item.description) : null,
+      template: String(item.template || 'red'),
+      thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
+      texture_url: item.texture_url ? String(item.texture_url) : null,
+    }))
+    .filter((item) => item.template === 'red');
+
   return (
-    <>
-      {/* Área de logística: publica información de gastos y transparencia de eventos. */}
-      {/* Encabezado visual de la sección de logística. */}
-      <HeroSection
-        title="Logística"
-        textureUrl="/assets/textures/areasg.webp"
-        overlayColor="rgba(220, 38, 38, 0.7), rgba(239, 68, 68, 0.75)"
-        gradientClass="from-red-600 to-red-500"
-        description="Es muy importante manejarse con transparencia. Aquí vas a poder encontrar los resúmenes de ingresos-egresos de los distintos eventos que hemos realizado."
-        textColor="text-white"
-      />
-
-      <main className="seccion areas">
-        {/* Resumen visual de los gastos o rendiciones disponibles para consulta. */}
-        <h2 className="subtitulo-descriptivo" style={{ marginTop: '2rem' }}>
-          Resumen de gastos en la formación de animadores
-        </h2>
-
-        <img
-          src="/assets/multimedia/gastosformacion.webp"
-          alt="Resumen de gastos"
-          style={{
-            maxWidth: '90%',
-            display: 'block',
-            margin: '1rem auto',
-            borderRadius: '12px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-          }}
+    <LogisticaClient>
+      <section>
+        <HeroSection
+          title="Logística"
+          textureUrl="/assets/textures/areasg.webp"
+          overlayColor="rgba(220, 38, 38, 0.7), rgba(239, 68, 68, 0.75)"
+          gradientClass="from-red-600 to-red-500"
+          description="Es muy importante manejarse con transparencia. Aquí vas a poder encontrar los resúmenes de ingresos-egresos de los distintos eventos que hemos realizado."
+          textColor="text-white"
         />
-                <hr className="divisor" />
+      </section>
+
+      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
+        <LogisticaCardsGrid
+          uploadedDocuments={uploadedDocuments}
+          uploadedLinks={uploadedLinks}
+          resourcePages={resourcePages}
+        />
       </main>
-      <div id="footer"></div>
-    </>
+    </LogisticaClient>
   );
 }

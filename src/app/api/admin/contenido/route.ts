@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requirePermission, serverError, badRequest } from '@/app/api/admin/_shared/auth';
-import { saveContent } from '@/server/db/content-repository';
+import { getContentBySection, saveContent } from '@/server/db/content-repository';
 
 export async function POST(req: Request) {
   const auth = await requirePermission('content.write');
@@ -50,8 +50,3 @@ export async function GET(req: Request) {
   }
 }
 
-// Función auxiliar (necesitarías implementarla en content-repository)
-async function getContentBySection(section: string) {
-  // Implementar según tu base de datos
-  return { section, content: null };
-}

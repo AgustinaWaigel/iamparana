@@ -506,7 +506,7 @@ export async function saveContent(
     await client.execute(
       `CREATE TABLE IF NOT EXISTS custom_content (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        seccion TEXT NOT NULL,
+        seccion TEXT NOT NULL UNIQUE,
         titulo TEXT,
         contenido TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -528,4 +528,32 @@ export async function saveContent(
     console.error("Error saving content to Turso:", error);
     throw error;
   }
+}
+
+export async function getContentBySection(section: string) {
+  const client = getTursoClient();
+  if (!client) {
+    throw new Error("Database client not available");
+  }
+
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS custom_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      seccion TEXT NOT NULL UNIQUE,
+      titulo TEXT,
+      contenido TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`
+  );
+
+  const result = await client.execute(
+    `SELECT seccion, titulo, contenido, created_at, updated_at
+     FROM custom_content
+     WHERE seccion = ?
+     LIMIT 1`,
+    [section]
+  );
+
+  return result.rows[0] ?? null;
 }

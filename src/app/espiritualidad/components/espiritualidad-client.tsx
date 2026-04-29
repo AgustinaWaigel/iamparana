@@ -1,31 +1,13 @@
 'use client';
 
-import { useCallback, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { ContenidoEditor } from '@/app/components/common/contenido-editor';
-import { useSession } from '@/app/hooks/use-session';
+import React, { ReactNode } from 'react';
+import { EspiritualidadEditor } from './espiritualidad-editor';
 
-// Conecta la página de espiritualidad con el editor de contenido reutilizable.
-interface EspiritualidadClientProps {
-  children: ReactNode;
-}
-
-export function EspiritualidadClient({ children }: EspiritualidadClientProps) {
-  const router = useRouter();
-  const { isAdmin, isLoading } = useSession();
-
-  const handleRefresh = useCallback(() => {
-    router.refresh();
-  }, [router]);
-
-  if (isLoading) {
-    return children;
-  }
-
+export function EspiritualidadClient({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <ContenidoEditor isAdmin={isAdmin} seccion="espiritualidad" onRefresh={handleRefresh} />
+      <EspiritualidadEditor />
     </>
   );
 }

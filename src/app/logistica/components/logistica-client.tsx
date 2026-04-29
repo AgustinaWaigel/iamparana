@@ -1,30 +1,13 @@
 'use client';
 
-import { useCallback, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { ContenidoEditor } from '@/app/components/common/contenido-editor';
-import { useSession } from '@/app/hooks/use-session';
+import React, { ReactNode } from 'react';
+import { LogisticaEditor } from './logistica-editor';
 
-interface LogisticaClientProps {
-  children: ReactNode;
-}
-
-export function LogisticaClient({ children }: LogisticaClientProps) {
-  const router = useRouter();
-  const { isAdmin, isLoading } = useSession();
-
-  const handleRefresh = useCallback(() => {
-    router.refresh();
-  }, [router]);
-
-  if (isLoading) {
-    return children;
-  }
-
+export function LogisticaClient({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <ContenidoEditor isAdmin={isAdmin} seccion="logistica" onRefresh={handleRefresh} />
+      <LogisticaEditor />
     </>
   );
 }

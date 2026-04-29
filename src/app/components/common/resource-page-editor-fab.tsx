@@ -18,6 +18,7 @@ import {
   UploadCloud,
   X,
 } from 'lucide-react';
+import { AdminActionButton } from '@/app/components/common/admin-action-button';
 import { useSessionUser } from '@/app/lib/use-session';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 
@@ -645,10 +646,14 @@ export function ResourcePageEditorFab({ page, initialSections }: ResourcePageEdi
                   {mode === 'page' ? 'Editar Pagina' : mode === 'section' ? 'Editar Secciones' : mode === 'document' ? 'Gestionar Documentos' : 'Gestionar Enlaces'}
                 </h3>
               </div>
-              <button type="button" onClick={() => setIsOpen(false)} className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors">
-                <X size={20} />
-              </button>
-            </div>
+              <AdminActionButton
+                type="button"
+                onClick={() => setIsOpen(false)}
+                action="close"
+                compact
+                tone="neutral"
+                className="p-2"
+              />            </div>
 
             <div className="p-6 overflow-y-auto custom-scrollbar ">
               <div className="flex p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
