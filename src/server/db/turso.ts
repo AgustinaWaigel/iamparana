@@ -62,6 +62,17 @@ CREATE TABLE IF NOT EXISTS carousel (
 
 CREATE INDEX IF NOT EXISTS idx_carousel_order ON carousel("order");
 
+CREATE TABLE IF NOT EXISTS juegos_sections (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  position INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_juegos_sections_position ON juegos_sections(position ASC);
+
 CREATE TABLE IF NOT EXISTS juegos (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -69,9 +80,11 @@ CREATE TABLE IF NOT EXISTS juegos (
   description TEXT NOT NULL,
   youtubeId TEXT,
   category TEXT DEFAULT 'general',
+  section_id INTEGER,
   "order" INTEGER DEFAULT 999,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (section_id) REFERENCES juegos_sections(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_juegos_order ON juegos("order");
@@ -365,6 +378,73 @@ async function ensureThumbnailColumns() {
   }
 }
 
+async function ensureJuegosSections() {
+  if (!cachedClient) {
+    return;
+  }
+
+  await cachedClient.execute(`
+    CREATE TABLE IF NOT EXISTS juegos_sections (
+      id INTEGER PRIMARY KEY,
+      slug TEXT UNIQUE NOT NULL,
+      title TEXT NOT NULL,
+      position INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  try {
+    await cachedClient.execute('ALTER TABLE juegos ADD COLUMN section_id INTEGER');
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || '').toLowerCase();
+    if (!message.includes('duplicate column')) {
+      throw error;
+    }
+  }
+
+  await cachedClient.execute('CREATE INDEX IF NOT EXISTS idx_juegos_sections_position ON juegos_sections(position ASC)');
+  await cachedClient.execute('CREATE INDEX IF NOT EXISTS idx_juegos_section_id ON juegos(section_id)');
+
+  const categoriesResult = await cachedClient.execute(
+    'SELECT DISTINCT category FROM juegos WHERE category IS NOT NULL'
+  );
+
+  const rawCategories = categoriesResult.rows
+    .map((row) => String(row.category || '').trim())
+    .filter(Boolean);
+
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
+
+  let position = 0;
+  for (const category of rawCategories) {
+    const slug = slugify(category);
+    if (!slug) continue;
+    await cachedClient.execute(
+      'INSERT OR IGNORE INTO juegos_sections (slug, title, position) VALUES (?, ?, ?)',
+      [slug, category, position]
+    );
+    await cachedClient.execute(
+      'UPDATE juegos SET section_id = (SELECT id FROM juegos_sections WHERE slug = ?) WHERE section_id IS NULL AND category = ?',
+      [slug, category]
+    );
+    position += 1;
+  }
+
+  await cachedClient.execute(
+    'INSERT OR IGNORE INTO juegos_sections (slug, title, position) VALUES (?, ?, ?)',
+    ['general', 'General', position]
+  );
+  await cachedClient.execute(
+    "UPDATE juegos SET section_id = (SELECT id FROM juegos_sections WHERE slug = 'general') WHERE section_id IS NULL"
+  );
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -390,6 +470,7 @@ async function initializeSchema() {
     await ensureAgendaColumns();
     await ensureUsersColumns();
     await ensureThumbnailColumns();
+    await ensureJuegosSections();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');

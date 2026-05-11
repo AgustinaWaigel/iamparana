@@ -140,49 +140,63 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
 
   return (
     <>
-      <div className="w-full max-w-4xl mx-auto space-y-6">
-        
-        <SearchBar
-          value={busqueda}
-          onChange={setBusqueda}
-          placeholder="Buscar por título o artista..."
-        />
+      <section className="relative w-full max-w-5xl mx-auto">
+        <div className="pointer-events-none absolute -top-16 right-8 h-48 w-48 rounded-full bg-emerald-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 left-6 h-56 w-56 rounded-full bg-amber-200/40 blur-3xl" />
 
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-widest">
-            <Hash size={12}/> {songsState.length} canciones encontradas
-          </div>
-          {isAdmin && (
-            <AdminActionButton action="add" label="Nueva Canción" onClick={openCreateModal} />
-          )}
-        </div>
+        <div className="relative space-y-6">
+          <div className="rounded-3xl border border-emerald-100/80 bg-white/90 p-4 shadow-sm backdrop-blur md:p-6">
+            <SearchBar
+              value={busqueda}
+              onChange={setBusqueda}
+              placeholder="Buscar por título o artista..."
+            />
 
-        {/* LISTADO TIPO BENTO */}
-        <div className="grid grid-cols-1 gap-2">
-          {cancionesFiltradas.map((cancion) => (
-            <div key={cancion.slug} className="group flex items-center justify-between p-4 bg-white rounded-2xl border border-stone-100 hover:border-emerald-200 hover:shadow-md transition-all">
-              <Link href={`/animacion/canciones/${cancion.slug}`} className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-stone-50 rounded-lg text-stone-400 group-hover:text-emerald-700 group-hover:bg-emerald-50 transition-colors">
-                    <Music size={18} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-emerald-900 leading-none">{cancion.title}</h3>
-                    <p className="text-xs font-bold text-stone-400 mt-1 uppercase tracking-tighter">{cancion.artist || 'Artista desconocido'}</p>
-                  </div>
-                </div>
-              </Link>
-
+            <div className="mt-4 flex items-center justify-between">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                <Hash size={12} /> {songsState.length} canciones
+              </div>
               {isAdmin && (
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <AdminActionButton action="edit" compact onClick={() => openEditModal(cancion)} />
-                  <AdminActionButton action="delete" compact onClick={() => { setDeleteError(''); setDeleteDraft(cancion); }} />
-                </div>
+                <AdminActionButton action="add" label="Nueva Canción" onClick={openCreateModal} />
               )}
             </div>
-          ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {cancionesFiltradas.map((cancion) => (
+              <div
+                key={cancion.slug}
+                className="group relative flex items-center justify-between overflow-hidden rounded-3xl border border-emerald-100/70 bg-white/90 p-4 shadow-[0_18px_40px_-30px_rgba(16,185,129,0.6)] transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_22px_50px_-28px_rgba(16,185,129,0.75)] md:p-5"
+              >
+                <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-emerald-300 via-emerald-500 to-emerald-700 opacity-0 transition-opacity group-hover:opacity-100" />
+
+                <Link href={`/animacion/canciones/${cancion.slug}`} className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-700 group-hover:bg-emerald-100 transition-colors">
+                      <Music size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg md:text-xl font-black text-emerald-950 leading-tight line-clamp-2">
+                        {cancion.title}
+                      </h3>
+                      <p className="text-[11px] font-bold text-emerald-700/80 mt-1 uppercase tracking-widest">
+                        {cancion.artist || 'Artista desconocido'}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+
+                {isAdmin && (
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <AdminActionButton action="edit" compact onClick={() => openEditModal(cancion)} />
+                    <AdminActionButton action="delete" compact onClick={() => { setDeleteError(''); setDeleteDraft(cancion); }} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* MODAL EDITOR */}
       {isEditorOpen && (

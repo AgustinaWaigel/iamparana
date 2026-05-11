@@ -8,8 +8,11 @@ export interface Juego {
   title: string;
   description: string;
   youtubeId: string | null;
-  category: string;
   order: number;
+  sectionId: number | null;
+  sectionTitle: string;
+  sectionSlug: string;
+  sectionPosition: number;
 }
 
 export async function getAllJuegos(): Promise<Juego[]> {
@@ -18,7 +21,12 @@ export async function getAllJuegos(): Promise<Juego[]> {
 
   try {
     const result = await client.execute(
-      'SELECT id, slug, title, description, youtubeId, category, "order" FROM juegos ORDER BY "order" ASC'
+      `SELECT j.id, j.slug, j.title, j.description, j.youtubeId, j."order",
+              j.section_id, COALESCE(s.title, 'General') as section_title, COALESCE(s.slug, 'general') as section_slug,
+              COALESCE(s.position, 0) as section_position
+       FROM juegos j
+       LEFT JOIN juegos_sections s ON s.id = j.section_id
+       ORDER BY section_position ASC, j."order" ASC`
     );
 
     return result.rows.map((row: any) => ({
@@ -27,8 +35,11 @@ export async function getAllJuegos(): Promise<Juego[]> {
       title: row[2],
       description: row[3],
       youtubeId: row[4],
-      category: row[5],
-      order: row[6],
+      order: row[5],
+      sectionId: row[6] !== null && row[6] !== undefined ? Number(row[6]) : null,
+      sectionTitle: String(row[7] || 'General'),
+      sectionSlug: String(row[8] || 'general'),
+      sectionPosition: Number(row[9] ?? 0),
     }));
   } catch (error) {
     console.error('Error al obtener juegos:', error);

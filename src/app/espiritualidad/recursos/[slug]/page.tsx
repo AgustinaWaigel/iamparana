@@ -6,6 +6,24 @@ import { ResourcePageEditorFab } from "@/app/components/common/resource-page-edi
 import { getSessionUser } from "@/server/lib/api-utils";
 export const dynamic = "force-dynamic";
 
+function getCompactHeroTitle(title: string, maxLength = 18) {
+  const words = title.split(/\s+/).filter(Boolean);
+  if (title.length <= maxLength) return title;
+
+  let compact = "";
+  for (const word of words) {
+    const nextValue = compact ? `${compact} ${word}` : word;
+    if (nextValue.length > maxLength) break;
+    compact = nextValue;
+  }
+
+  if (!compact) {
+    return `${title.slice(0, maxLength - 1).trimEnd()}…`;
+  }
+
+  return compact === title ? title : `${compact}…`;
+}
+
 // --- TIPOS Y TEMAS ---
 const TEMPLATE_MAP: Record<string, any> = {
   gold: {
@@ -38,19 +56,22 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
   return (
     <main className="pb-24 bg-[#F9F9F8] min-h-screen font-sans">
       {/* Hero Section Minimalista */}
-      <div className={`relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden ${theme.banner}`}>
+      <div className={`relative min-h-[34vh] sm:min-h-[38vh] md:min-h-[50vh] flex items-center justify-center overflow-hidden py-12 ${theme.banner}`}>
         <div 
           className="absolute inset-0 opacity-40 mix-blend-overlay"
           style={{ backgroundImage: `url(${data.page.texture_url || "/assets/textures/espiritualidad.webp"})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
         />
         <div className="absolute inset-0 bg-black/10" />
         
-        <div className="relative z-10 max-w-4xl px-6 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 drop-shadow-md">
+        <div className="relative z-10 w-full max-w-4xl px-4 sm:px-6 text-center text-white">
+          <h1
+            className="mx-auto block w-full max-w-[calc(100vw-2rem)] text-[clamp(1.4rem,7.5vw,2rem)] sm:text-4xl md:text-7xl font-black uppercase tracking-normal sm:tracking-tighter leading-none sm:leading-tight mb-3 sm:mb-4 drop-shadow-md break-all"
+            style={{ overflowWrap: "anywhere" }}
+          >
             {data.page.title}
           </h1>
           {data.page.description && (
-            <p className="text-lg md:text-xl font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base md:text-xl font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">
               {data.page.description}
             </p>
           )}

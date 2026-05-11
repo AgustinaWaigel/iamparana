@@ -15,6 +15,11 @@ export default function LoginPage() {
   const checkSession = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me');
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
+        return;
+      }
+
       const data = await res.json();
       // Verificar que el endpoint devolvió un usuario válido (estructura plana)
       if (data && typeof data === 'object' && 'id' in data) {
@@ -42,6 +47,11 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('Respuesta inesperada del servidor');
+      }
 
       const data = await res.json();
 

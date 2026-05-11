@@ -33,7 +33,7 @@ export async function PUT(
   }
 
   const payload = body as Record<string, unknown>;
-  const { title, description, youtubeId, category, order } = payload;
+  const { title, description, youtubeId, category, order, sectionId } = payload;
 
   if (typeof title !== 'string' || typeof description !== 'string') {
     return badRequest('Campos requeridos faltantes');
@@ -45,10 +45,11 @@ export async function PUT(
     const youtubeIdValue = typeof youtubeId === 'string' ? youtubeId : null;
     const categoryValue = typeof category === 'string' ? category : 'general';
     const orderValue = typeof order === 'number' ? order : 999;
+    const sectionIdValue = typeof sectionId === 'number' ? sectionId : null;
     
     await client.execute(
-      'UPDATE juegos SET title = ?, description = ?, youtubeId = ?, category = ?, "order" = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [title, description, youtubeIdValue, categoryValue, orderValue, parsedId]
+      'UPDATE juegos SET title = ?, description = ?, youtubeId = ?, category = ?, section_id = ?, "order" = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [title, description, youtubeIdValue, categoryValue, sectionIdValue, orderValue, parsedId]
     );
     return NextResponse.json({ message: 'Juego actualizado' });
   } catch (error) {

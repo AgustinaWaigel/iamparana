@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS canciones (
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS juegos_sections (
+  id INTEGER PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  position INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_juegos_sections_position ON juegos_sections(position ASC);
+
 CREATE TABLE IF NOT EXISTS juegos (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -45,9 +56,11 @@ CREATE TABLE IF NOT EXISTS juegos (
   description TEXT NOT NULL,
   youtubeId TEXT,
   category TEXT DEFAULT 'general',
+  section_id INTEGER,
   "order" INTEGER DEFAULT 999,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (section_id) REFERENCES juegos_sections(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_juegos_order ON juegos("order");

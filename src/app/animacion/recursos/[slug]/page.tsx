@@ -42,7 +42,7 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
 
   return (
     <main className="pb-24 bg-[#F9F9F8] min-h-screen font-sans">
-      <div className={`relative h-[40vh] md:h-[50vh] flex items-center justify-center overflow-hidden ${theme.banner}`}>
+      <div className={`relative min-h-[34vh] sm:min-h-[38vh] md:min-h-[50vh] flex items-center justify-center overflow-hidden py-12 ${theme.banner}`}>
         <div
           className="absolute inset-0 opacity-40 mix-blend-overlay"
           style={{
@@ -53,12 +53,12 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
         />
         <div className="absolute inset-0 bg-black/10" />
 
-        <div className="relative z-10 max-w-4xl px-6 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 drop-shadow-md">
+        <div className="relative z-10 max-w-4xl px-4 sm:px-6 text-center text-white">
+          <h1 className="mx-auto block w-full text-[clamp(1.8rem,9vw,2.5rem)] sm:text-4xl md:text-7xl font-black uppercase tracking-normal sm:tracking-tighter leading-none sm:leading-tight mb-3 sm:mb-4 drop-shadow-md break-all sm:break-normal">
             {data.page.title}
           </h1>
           {data.page.description && (
-            <p className="text-lg md:text-xl font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base md:text-xl font-medium opacity-90 max-w-2xl mx-auto leading-relaxed">
               {data.page.description}
             </p>
           )}
