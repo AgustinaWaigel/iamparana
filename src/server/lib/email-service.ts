@@ -99,7 +99,7 @@ export async function sendPasswordResetEmail(
           <tr>
             <td style="padding:20px 40px;border-top:1px solid #f0ece8;text-align:center;">
               <p style="margin:0;font-size:11px;color:#c4b8b0;letter-spacing:0.15em;text-transform:uppercase;">
-                Oficina de Comunicación • Arquidiócesis de Paraná
+                Área de Comunicación • Arquidiócesis de Paraná
               </p>
             </td>
           </tr>
@@ -116,6 +116,6 @@ export async function sendPasswordResetEmail(
     to,
     subject: "Restablecer contraseña — Panel IAM",
     html,
-    text: `Hola ${nombre},\n\nRecibimos una solicitud para restablecer tu contraseña.\n\nHacé clic en este link (válido por 1 hora):\n${resetLink}\n\nSi no solicitaste este cambio, ignorá este email.\n\n— Oficina de Comunicación, Arquidiócesis de Paraná`,
+    text: `Hola ${nombre},\n\nRecibimos una solicitud para restablecer tu contraseña.\n\nHacé clic en este link (válido por 1 hora):\n${resetLink}\n\nSi no solicitaste este cambio, ignorá este email.\n\n— Área de Comunicación, Arquidiócesis de Paraná`,
   });
 }

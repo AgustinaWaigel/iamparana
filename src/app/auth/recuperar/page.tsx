@@ -129,7 +129,7 @@ export default function RecuperarPage() {
           {/* Footer */}
           <div className="p-4 bg-stone-50 border-t border-stone-100 text-center">
             <p className="text-stone-400 text-[9px] uppercase tracking-[0.2em]">
-              Oficina de Comunicación • Arquidiócesis de Paraná
+              Área de Comunicación • Arquidiócesis de Paraná
             </p>
           </div>
         </div>

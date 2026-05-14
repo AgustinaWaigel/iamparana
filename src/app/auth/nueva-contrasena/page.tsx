@@ -178,11 +178,10 @@ function NuevaContrasenaForm() {
                       value={confirm}
                       onChange={e => setConfirm(e.target.value)}
                       disabled={loading}
-                      className={`w-full pl-10 pr-10 py-3 bg-stone-50 border rounded-xl outline-none focus:bg-white focus:ring-4 transition-all text-stone-700 placeholder:text-stone-300 text-sm ${
-                        confirm && confirm !== password
+                      className={`w-full pl-10 pr-10 py-3 bg-stone-50 border rounded-xl outline-none focus:bg-white focus:ring-4 transition-all text-stone-700 placeholder:text-stone-300 text-sm ${confirm && confirm !== password
                           ? 'border-red-300 focus:border-red-400 focus:ring-red-500/10'
                           : 'border-stone-200 focus:border-amber-500 focus:ring-amber-500/10'
-                      }`}
+                        }`}
                     />
                     <button
                       type="button"
@@ -217,7 +216,7 @@ function NuevaContrasenaForm() {
 
           <div className="p-4 bg-stone-50 border-t border-stone-100 text-center">
             <p className="text-stone-400 text-[9px] uppercase tracking-[0.2em]">
-              Oficina de Comunicación • Arquidiócesis de Paraná
+              Área de Comunicación • Arquidiócesis de Paraná
             </p>
           </div>
         </div>
