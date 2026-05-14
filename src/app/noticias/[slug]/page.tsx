@@ -35,13 +35,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
   const { frontmatter } = noticia;
 
+  const imageUrl = getGoogleDriveImageUrl(frontmatter.image);
+
   return {
     title: frontmatter.title,
     description: frontmatter.description,
     openGraph: {
       title: frontmatter.title,
       description: frontmatter.description,
-      images: [getGoogleDriveImageUrl(frontmatter.image)],
+      images: imageUrl ? [imageUrl] : [],
       type: 'article',
     },
   };

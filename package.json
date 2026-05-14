@@ -47,6 +47,7 @@
     "@types/react-dom": "^19",
     "@types/react-redux": "^7.1.34",
     "@types/scheduler": "^0.26.0",
+    "@types/web-push": "^3.6.4",
     "@types/zen-observable": "^0.8.7",
     "autoprefixer": "^10.4.27",
     "eslint": "^9",
