@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Scroll animations ─────────────────────────────────────────── */
+.fade-section {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.fade-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
 @layer components {
   .upload-input-unified {
     @apply w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-600 outline-none transition-all file:mr-3 file:rounded-lg file:border-0 file:bg-stone-200 file:px-3 file:py-1.5 file:font-semibold file:text-stone-700 hover:border-stone-300 hover:bg-white hover:file:bg-stone-300;
