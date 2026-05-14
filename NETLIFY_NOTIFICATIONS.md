@@ -1,8 +1,23 @@
 # Configuración de Notificaciones Push en Netlify
 
-## Configuración de Netlify
+## Tipos de Notificaciones
 
-Tu aplicación ahora tiene una **Función Scheduled** que verifica y envía notificaciones automáticamente.
+Tu aplicación envía notificaciones push en dos casos:
+
+### 1. **Noticias Nuevas** (Automático)
+- Se envía **inmediatamente** cuando un admin publica una noticia
+- Título: "Nueva noticia: [título de la noticia]"
+- Descripción: La bajada o descripción de la noticia
+- El usuario puede clickear para ir a leerla
+
+### 2. **Eventos de Agenda** (Scheduled diariamente)
+- Se ejecuta **diariamente** a las 00:00 UTC
+- Notificación 7 días antes del evento
+- Notificación 1 día antes del evento
+- Notificación el día del evento
+- Respeta días festivos registrados
+
+## Configuración de Netlify
 
 ### Funciones Serverless Configuradas
 
@@ -11,6 +26,11 @@ Tu aplicación ahora tiene una **Función Scheduled** que verifica y envía noti
 - Verifica eventos con 7 días, 1 día y hoy
 - Verifica días festivos
 - Envía notificaciones a todos los usuarios suscritos
+
+**`src/app/api/admin/noticias/route.ts` (POST)**
+- Intercepta la creación de nuevas noticias
+- Envía notificación push a todos los suscriptos
+- No bloquea si falla la notificación (se crea la noticia igual)
 
 ### Variables de Entorno en Netlify
 
@@ -42,12 +62,6 @@ Formatos soportados en Netlify Scheduled Functions:
 - `@weekly` - Cada semana
 - `@monthly` - Cada mes
 - Cron: `"0 8 * * *"` (8:00 AM UTC todos los días)
-
-### Logs de Ejecución
-
-Para ver logs de la función scheduled:
-1. Ve a tu sitio en Netlify Dashboard
-2. Sitio → Funciones → Selecciona `check-notifications`
 3. Ve la pestaña "Invocations" para ver historial
 
 ### Verificación Manual

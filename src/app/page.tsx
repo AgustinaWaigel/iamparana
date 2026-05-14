@@ -84,7 +84,86 @@ export default async function HomePage() {
         </section>
 
         {/* ══════════════════════════════════════════
-            2. ACCESO RÁPIDO — Áreas del sitio
+            2. SEPARADOR visual
+        ══════════════════════════════════════════ */}
+        <div className="w-full h-1 bg-gradient-to-r from-transparent via-brand-brown/20 to-transparent" />
+
+        {/* ══════════════════════════════════════════
+            3. NOTICIAS + AGENDA
+        ══════════════════════════════════════════ */}
+        <section className="w-full max-w-6xl mx-auto px-4 py-12 md:py-16">
+          <div className="flex flex-col lg:flex-row gap-10 items-start">
+
+            {/* — Noticias — */}
+            <div className="w-full lg:flex-1 min-w-0">
+              <FadeInSection>
+                <div className="flex items-center justify-between mb-7">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-brand-brown flex items-center justify-center shadow-md shadow-brand-brown/25">
+                      <Newspaper size={17} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-stone-800 tracking-tight leading-none">
+                        Noticias
+                      </h2>
+                      <p className="text-xs text-stone-400 mt-0.5">Lo más reciente de la IAM</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/noticias"
+                    className="text-xs font-bold text-brand-brown/70 hover:text-brand-brown transition-colors uppercase tracking-wider flex items-center gap-1"
+                  >
+                    Ver todas
+                    <ChevronRight size={13} />
+                  </Link>
+                </div>
+              </FadeInSection>
+
+              <FadeInSection delay={100}>
+                <Novedades gridLayout limit={6} />
+              </FadeInSection>
+            </div>
+
+            {/* — Agenda — */}
+            <div className="w-full lg:w-[340px] shrink-0">
+              <FadeInSection>
+                <div className="flex items-center justify-between mb-7">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-brand-brown flex items-center justify-center shadow-md shadow-brand-brown/25">
+                      <CalendarDays size={17} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-stone-800 tracking-tight leading-none">
+                        Agenda
+                      </h2>
+                      <p className="text-xs text-stone-400 mt-0.5">Próximas actividades</p>
+                    </div>
+                  </div>
+                  <AgendaTitle isAdmin={isAdmin} compact />
+                </div>
+              </FadeInSection>
+
+              <FadeInSection delay={100}>
+                <div className="rounded-2xl bg-white border border-stone-100 shadow-sm overflow-hidden">
+                  <div className="p-4">
+                    <Agenda />
+                  </div>
+                  <Link
+                    href="/calendario"
+                    className="flex items-center justify-center gap-2 py-3 border-t border-stone-100 bg-stone-50/70 text-[11px] font-bold uppercase tracking-widest text-stone-400 hover:text-brand-brown transition-colors"
+                  >
+                    <CalendarDays size={12} />
+                    Ver calendario completo
+                  </Link>
+                </div>
+              </FadeInSection>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════
+            4. ACCESO RÁPIDO — Áreas del sitio
         ══════════════════════════════════════════ */}
         <section className="w-full bg-white border-b border-stone-100 py-12 md:py-16">
           <div className="max-w-6xl mx-auto px-4">
@@ -130,85 +209,6 @@ export default async function HomePage() {
                 </FadeInSection>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ══════════════════════════════════════════
-            3. SEPARADOR visual
-        ══════════════════════════════════════════ */}
-        <div className="w-full h-1 bg-gradient-to-r from-transparent via-brand-brown/20 to-transparent" />
-
-        {/* ══════════════════════════════════════════
-            4. NOTICIAS + AGENDA
-        ══════════════════════════════════════════ */}
-        <section className="w-full max-w-6xl mx-auto px-4 py-12 md:py-16">
-          <div className="flex flex-col lg:flex-row gap-10 items-start">
-
-            {/* — Noticias — */}
-            <div className="w-full lg:flex-1 min-w-0">
-              <FadeInSection>
-                <div className="flex items-center justify-between mb-7">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-brand-brown flex items-center justify-center shadow-md shadow-brand-brown/25">
-                      <Newspaper size={17} className="text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-black text-stone-800 tracking-tight leading-none">
-                        Noticias
-                      </h2>
-                      <p className="text-xs text-stone-400 mt-0.5">Lo más reciente de la IAM</p>
-                    </div>
-                  </div>
-                  <Link
-                    href="/noticias"
-                    className="text-xs font-bold text-brand-brown/70 hover:text-brand-brown transition-colors uppercase tracking-wider flex items-center gap-1"
-                  >
-                    Ver todas
-                    <ChevronRight size={13} />
-                  </Link>
-                </div>
-              </FadeInSection>
-
-              <FadeInSection delay={100}>
-                <Novedades gridLayout limit={5} />
-              </FadeInSection>
-            </div>
-
-            {/* — Agenda — */}
-            <div className="w-full lg:w-[340px] shrink-0">
-              <FadeInSection>
-                <div className="flex items-center justify-between mb-7">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-brand-brown flex items-center justify-center shadow-md shadow-brand-brown/25">
-                      <CalendarDays size={17} className="text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-black text-stone-800 tracking-tight leading-none">
-                        Agenda
-                      </h2>
-                      <p className="text-xs text-stone-400 mt-0.5">Próximas actividades</p>
-                    </div>
-                  </div>
-                  <AgendaTitle isAdmin={isAdmin} compact />
-                </div>
-              </FadeInSection>
-
-              <FadeInSection delay={100}>
-                <div className="rounded-2xl bg-white border border-stone-100 shadow-sm overflow-hidden">
-                  <div className="p-4">
-                    <Agenda />
-                  </div>
-                  <Link
-                    href="/calendario"
-                    className="flex items-center justify-center gap-2 py-3 border-t border-stone-100 bg-stone-50/70 text-[11px] font-bold uppercase tracking-widest text-stone-400 hover:text-brand-brown transition-colors"
-                  >
-                    <CalendarDays size={12} />
-                    Ver calendario completo
-                  </Link>
-                </div>
-              </FadeInSection>
-            </div>
-
           </div>
         </section>
 

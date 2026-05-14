@@ -18,6 +18,10 @@ export function usePushNotifications() {
         });
         console.log("Service Worker registered:", registration);
 
+        // Esperar a que el Service Worker esté activo
+        const activeWorker = await registration.ready;
+        console.log("Service Worker is active:", activeWorker);
+
         // Solicitar permiso
         requestNotificationPermission(registration);
       } catch (error) {
@@ -58,6 +62,12 @@ async function requestNotificationPermission(registration: ServiceWorkerRegistra
 
 async function subscribeToPushNotifications(registration: ServiceWorkerRegistration) {
   try {
+    // Verificar que pushManager está disponible
+    if (!registration.pushManager) {
+      console.error("Push Manager not available in Service Worker registration");
+      return;
+    }
+
     // Obtener clave VAPID
     const response = await fetch("/api/notifications/subscribe");
     const { publicKey } = await response.json();
@@ -76,6 +86,9 @@ async function subscribeToPushNotifications(registration: ServiceWorkerRegistrat
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
+      console.log("New push subscription created");
+    } else {
+      console.log("Existing push subscription found");
     }
 
     // Enviar suscripción al servidor
@@ -93,9 +106,14 @@ async function subscribeToPushNotifications(registration: ServiceWorkerRegistrat
     if (subscribeResponse.ok) {
       console.log("Successfully subscribed to push notifications");
       localStorage.setItem("pushNotificationsEnabled", "true");
+    } else {
+      console.error("Failed to send subscription to server:", subscribeResponse.status);
     }
   } catch (error) {
     console.error("Error subscribing to push notifications:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message);
+    }
   }
 }
 

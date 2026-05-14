@@ -71,6 +71,8 @@ CREATE TABLE IF NOT EXISTS carousel (
   imageDesktop TEXT NOT NULL,
   imageMobile TEXT NOT NULL,
   alt TEXT NOT NULL,
+  title TEXT,
+  description TEXT,
   link TEXT,
   buttonText TEXT,
   "order" INTEGER DEFAULT 999,

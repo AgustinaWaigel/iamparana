@@ -6,6 +6,7 @@ import {
   NoticiaInput,
 } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
+import { sendNotificationToAll } from "@/server/lib/push-notification-service";
 
 // Forzamos que el listado de noticias en el panel siempre sea fresco
 export const dynamic = 'force-dynamic';
@@ -55,6 +56,28 @@ export async function POST(req: NextRequest) {
 
   try {
     const slug = await createNoticiaAdmin(body);
+
+    // Enviar notificación push a todos los usuarios
+    try {
+      await sendNotificationToAll(
+        {
+          title: "Nueva noticia: " + body.title,
+          body: body.description || body.title,
+          icon: "/icon-192x192.png",
+          data: {
+            url: `/noticias/${slug}`,
+            type: "noticia",
+            slug: slug,
+          },
+        },
+        "noticia",
+        slug as any // Usamos el slug como ID
+      );
+      console.log("Notificación push enviada para nueva noticia:", slug);
+    } catch (notificationError) {
+      console.warn("Error enviando notificación push:", notificationError);
+      // No bloqueamos la creación si falla la notificación
+    }
 
     // REVALIDACIÓN: La clave para que aparezca en el sitio público
     revalidatePath("/");          // Actualiza el home si hay un feed de noticias

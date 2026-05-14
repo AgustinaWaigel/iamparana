@@ -9,6 +9,8 @@ export interface CarouselItem {
   imageDesktop: string;
   imageMobile?: string;
   alt: string;
+  title?: string;
+  description?: string;
   link?: string | null;
   buttonText?: string;
 }
@@ -33,6 +35,8 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
       imageMobile:
         item.imageMobile || item.imagemobile || item.imageDesktop || item.imagedesktop || "",
       alt: item.alt || "",
+      title: typeof item.title === "string" ? item.title.trim() : "",
+      description: typeof item.description === "string" ? item.description.trim() : "",
       link:
         typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
       buttonText:
@@ -138,16 +142,37 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
           {/* Gradiente inferior */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
 
-          {/* CTA */}
-          {item.link && i === active && (
-            <div className="absolute bottom-14 md:bottom-16 left-1/2 -translate-x-1/2 z-20 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-              <a
-                href={item.link}
-                className="group inline-flex items-center gap-2 rounded-full bg-white/95 px-7 py-3 text-sm md:text-base font-black text-brand-brown shadow-[0_6px_28px_rgba(0,0,0,0.35)] ring-1 ring-white/40 transition-all duration-200 hover:bg-white hover:shadow-[0_10px_36px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 focus:outline-none"
-              >
-                {item.buttonText || "Ver más"}
-                <ChevronRight size={17} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-              </a>
+          {/* Contenido: Título, Descripción y CTA a la izquierda */}
+          {i === active && (item.title || item.description || item.link) && (
+            <div className="absolute inset-0 flex items-center pointer-events-none z-20">
+              <div className="w-full md:w-1/2 px-6 md:px-12 flex flex-col justify-center pointer-events-auto">
+                {/* Título */}
+                {item.title && (
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 animate-in fade-in slide-in-from-left-4 duration-700 drop-shadow-lg">
+                    {item.title}
+                  </h1>
+                )}
+
+                {/* Descripción */}
+                {item.description && (
+                  <p className="text-lg md:text-xl text-white/90 mb-8 font-medium animate-in fade-in slide-in-from-left-4 duration-700 delay-100 drop-shadow-md max-w-md">
+                    {item.description}
+                  </p>
+                )}
+
+                {/* CTA */}
+                {item.link && (
+                  <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-200 w-fit">
+                    <a
+                      href={item.link}
+                      className="group inline-flex items-center gap-2 rounded-full bg-amber-400 hover:bg-amber-300 px-7 py-3 text-sm md:text-base font-black text-stone-900 shadow-[0_6px_28px_rgba(0,0,0,0.35)] transition-all duration-200 hover:shadow-[0_10px_36px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 focus:outline-none"
+                    >
+                      {item.buttonText || "Descubre Más"}
+                      <ChevronRight size={17} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
