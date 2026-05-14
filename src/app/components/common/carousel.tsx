@@ -1,150 +1,161 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import CarouselAdminTools from "@/app/components/common/CarouselAdminTools";
-import { Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-
-// 1. Definimos la interfaz exacta que espera el componente
 export interface CarouselItem {
   id?: number;
-  imageDesktop: string; 
+  imageDesktop: string;
   imageMobile?: string;
   alt: string;
   link?: string | null;
   buttonText?: string;
 }
 
-// 2. Tipamos las Props
 interface CarouselProps {
-  initialItems?: any[]; // Usamos any temporalmente para desestructurar con seguridad
+  initialItems?: any[];
   isAdmin?: boolean;
 }
 
 export default function Carousel({ initialItems = [], isAdmin = false }: CarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  // 3. Mapeo seguro: Si el objeto de la DB tiene nombres distintos, aquí los unificamos
-  const items: CarouselItem[] = initialItems.map(item => ({
-    id: item.id,
-    imageDesktop: item.imageDesktop || item.imagedesktop || "", // Soporte para diferentes cases
-    imageMobile: item.imageMobile || item.imagemobile || item.imageDesktop || item.imagedesktop || "",
-    alt: item.alt || "",
-    link: typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
-    buttonText: typeof item.buttonText === "string" ? item.buttonText.trim() : ""
-  })).filter(item => item.imageDesktop !== ""); // Filtramos los que no tengan imagen para que no rompa
+  const items: CarouselItem[] = initialItems
+    .map((item) => ({
+      id: item.id,
+      imageDesktop: item.imageDesktop || item.imagedesktop || "",
+      imageMobile: item.imageMobile || item.imagemobile || item.imageDesktop || item.imagedesktop || "",
+      alt: item.alt || "",
+      link: typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
+      buttonText: typeof item.buttonText === "string" ? item.buttonText.trim() : "",
+    }))
+    .filter((item) => item.imageDesktop !== "");
+
+  const goTo = useCallback(
+    (index: number) => {
+      if (isAnimating || index === activeIndex) return;
+      setPrevIndex(activeIndex);
+      setActiveIndex(index);
+      setIsAnimating(true);
+      setTimeout(() => {
+        setPrevIndex(null);
+        setIsAnimating(false);
+      }, 700);
+    },
+    [activeIndex, isAnimating]
+  );
+
+  const goNext = useCallback(() => goTo((activeIndex + 1) % items.length), [activeIndex, goTo, items.length]);
+  const goPrev = useCallback(() => goTo((activeIndex - 1 + items.length) % items.length), [activeIndex, goTo, items.length]);
 
   useEffect(() => {
     if (items.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, [items.length]);
-
-  useEffect(() => {
-    if (activeIndex >= items.length) {
-      setActiveIndex(0);
-    }
-  }, [activeIndex, items.length]);
-
-  const goToSlide = (index: number) => {
-    if (index < 0 || index >= items.length) return;
-    setActiveIndex(index);
-  };
-
-  const goNext = () => {
-    setActiveIndex((prev) => (prev + 1) % items.length);
-  };
-
-  const goPrev = () => {
-    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
+    const id = setInterval(goNext, 7000);
+    return () => clearInterval(id);
+  }, [goNext, items.length]);
 
   if (items.length === 0) {
-    return <div className="aspect-[12/5] bg-stone-100 flex items-center justify-center rounded-xl font-bold text-stone-400">SIN CONTENIDO</div>;
+    return (
+      <div className="aspect-[12/5] bg-stone-900 flex items-center justify-center">
+        <span className="text-stone-500 font-semibold">Sin imágenes cargadas</span>
+      </div>
+    );
   }
 
   return (
-    <div className="relative w-full aspect-[4/5] md:aspect-[12/5] overflow-hidden rounded-b-xl bg-stone-900 shadow-xl">
+    <div className="relative w-full aspect-[4/5] md:aspect-[21/8] overflow-hidden bg-stone-900 shadow-2xl">
+      {/* Admin tools */}
       {isAdmin && (
-        <div className="absolute top-3 right-3 z-30">
+        <div className="absolute top-4 right-4 z-30">
           <CarouselAdminTools compact />
         </div>
       )}
 
-      <div
-        className="flex h-full transition-transform duration-700 ease-out"
-        style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-      >
-        {items.map((item, i) => (
-          <div key={item.id || i} className="min-w-full h-full relative">
-            <picture>
-              <source media="(max-width: 767px)" srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)} />
-              <img
-                src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
-                alt={item.alt}
-                className="w-full h-full object-cover"
-                loading={i === 0 ? "eager" : "lazy"}
-              />
-            </picture>
+      {/* Slides */}
+      {items.map((item, i) => {
+        const isActive = i === activeIndex;
+        const isPrev = i === prevIndex;
+        return (
+          <div
+            key={item.id || i}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              isActive ? "opacity-100 z-10" : isPrev ? "opacity-0 z-0" : "opacity-0 z-0"
+            }`}
+          >
+            {/* Imagen con Ken Burns */}
+            <div
+              className={`absolute inset-0 transition-transform duration-[8000ms] ease-linear ${
+                isActive ? "scale-110" : "scale-100"
+              }`}
+            >
+              <picture>
+                <source media="(max-width: 767px)" srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)} />
+                <img
+                  src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
+                  alt={item.alt}
+                  className="w-full h-full object-cover"
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+              </picture>
+            </div>
 
-            {item.link && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-16 md:bottom-20 z-20">
+            {/* Gradiente inferior para el botón / texto */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
+
+            {/* Botón CTA */}
+            {item.link && isActive && (
+              <div className="absolute bottom-10 md:bottom-12 left-1/2 -translate-x-1/2 z-20 animate-in fade-in slide-in-from-bottom-3 duration-500">
                 <a
                   href={item.link}
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-orange-400 px-5 py-2.5 text-sm md:text-base font-black tracking-wide text-stone-900 shadow-[0_10px_30px_rgba(0,0,0,0.35)] ring-1 ring-white/40 transition-all duration-300 hover:scale-[1.03] hover:from-amber-200 hover:to-orange-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-sm md:text-base font-black tracking-wide text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.4)] ring-1 ring-white/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] focus:outline-none"
                 >
                   {item.buttonText || "Ver más"}
-                  <span className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">
-                    →
-                  </span>
+                  <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
               </div>
             )}
           </div>
-        ))}
-      </div>
+        );
+      })}
 
+      {/* Navegación flechas */}
       {items.length > 1 && (
         <>
           <button
             type="button"
             aria-label="Imagen anterior"
             onClick={goPrev}
-            className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-20 h-11 w-11 md:h-12 md:w-12 rounded-full border border-white/40 bg-white/15 text-white backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/30 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all hover:bg-black/50 hover:scale-105 focus:outline-none"
           >
-            <span className="text-2xl leading-none" aria-hidden="true">‹</span>
+            <ChevronLeft size={22} />
           </button>
-
           <button
             type="button"
             aria-label="Imagen siguiente"
             onClick={goNext}
-            className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-20 h-11 w-11 md:h-12 md:w-12 rounded-full border border-white/40 bg-white/15 text-white backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/30 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all hover:bg-black/50 hover:scale-105 focus:outline-none"
           >
-            <span className="text-2xl leading-none" aria-hidden="true">›</span>
+            <ChevronRight size={22} />
           </button>
 
-          <div className="absolute bottom-3 md:bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full border border-white/30 bg-black/35 px-3 py-2 backdrop-blur-md">
+          {/* Dots */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
             {items.map((_, i) => (
               <button
                 key={`dot-${i}`}
                 type="button"
                 aria-label={`Ir a imagen ${i + 1}`}
-                onClick={() => goToSlide(i)}
-                className={`h-2.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                onClick={() => goTo(i)}
+                className={`rounded-full transition-all duration-400 focus:outline-none ${
                   i === activeIndex
-                    ? "w-6 bg-white"
-                    : "w-2.5 bg-white/50 hover:bg-white/80"
+                    ? "w-7 h-2 bg-white"
+                    : "w-2 h-2 bg-white/40 hover:bg-white/70"
                 }`}
               />
             ))}
-            <span className="ml-1 text-[11px] font-semibold text-white/90 tabular-nums">
-              {activeIndex + 1}/{items.length}
-            </span>
           </div>
         </>
       )}

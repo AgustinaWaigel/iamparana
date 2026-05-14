@@ -287,18 +287,21 @@ export default function AgendaClient({
   const renderEvento = (item: Evento, i: number, esFuturo: boolean) => {
     const fechaInicio = parseLocalDate(item.fecha);
     const dia = fechaInicio.getDate();
-    const mes = getMesNombre(fechaInicio);
+    const mes = getMesNombre(fechaInicio).toUpperCase();
     const etiquetaRestante = formatDiasRestantes(item.fecha);
     const colorTheme = getThemeByColor(item.color);
-    
+
     let finStr = null;
     if (item.fecha_fin && item.fecha_fin !== item.fecha) {
       finStr = formatFechaCorta(parseLocalDate(item.fecha_fin));
     }
 
+    const esHoy = etiquetaRestante === "Hoy";
+    const esMañana = etiquetaRestante === "Mañana";
+
     return (
-      <li 
-        key={item.id || i} 
+      <li
+        key={item.id || i}
         onClick={() => openModal(item)}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -308,33 +311,51 @@ export default function AgendaClient({
         }}
         role="button"
         tabIndex={0}
-        className={`group relative overflow-hidden rounded-2xl transition-all duration-300 border
-          ${esFuturo 
-            ? "bg-white border-blue-100 opacity-80 hover:opacity-100" 
-            : "bg-gradient-to-r from-amber-50 to-white border-brand-gold/20 shadow-sm hover:shadow-md"
-          } py-5 px-5 sm:px-8 cursor-pointer`}
+        className={`group relative flex items-stretch gap-0 rounded-xl overflow-hidden cursor-pointer transition-all duration-200
+          border border-stone-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none
+          ${esFuturo ? "opacity-70 hover:opacity-100" : "bg-white"}`}
       >
-        <div className="flex gap-6 items-center">
-          <div className={`flex flex-col items-center justify-center rounded-xl p-2.5 text-white font-black min-w-[55px] shadow-inner ${colorTheme.badge}`}>
-            <span className="text-2xl leading-none">{dia}</span>
-            <span className="text-[10px] uppercase tracking-widest">{mes}</span>
-          </div>
+        {/* Barra lateral de color */}
+        <div className={`w-1.5 shrink-0 ${colorTheme.bar}`} />
 
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1.5">
-              <span className={`font-bold text-sm tracking-tight ${colorTheme.title}`}>
-                {formatFechaCorta(fechaInicio)}{finStr && ` — ${finStr}`}
-              </span>
-              <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${colorTheme.chip}`}>
-                {etiquetaRestante}
-              </span>
-            </div>
-            <p className={`font-semibold text-base sm:text-lg leading-tight ${colorTheme.title}`}>
-              {item.evento}
-            </p>
-          </div>
+        {/* Bloque de fecha */}
+        <div className={`flex flex-col items-center justify-center px-3 py-3 min-w-[52px] ${colorTheme.badge} bg-opacity-10`}>
+          <span className={`text-2xl font-black leading-none ${colorTheme.title}`}>{dia}</span>
+          <span className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${colorTheme.title} opacity-70`}>{mes}</span>
         </div>
-        <div className={`absolute left-0 top-0 h-full w-2 ${colorTheme.bar}`} />
+
+        {/* Contenido */}
+        <div className="flex flex-1 flex-col justify-center px-3 py-3 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span
+              className={`inline-block text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${
+                esHoy
+                  ? "bg-red-500 text-white"
+                  : esMañana
+                  ? "bg-amber-400 text-stone-900"
+                  : colorTheme.chip
+              }`}
+            >
+              {etiquetaRestante}
+            </span>
+            {finStr && (
+              <span className="text-[9px] text-stone-400 font-medium">hasta {finStr}</span>
+            )}
+          </div>
+          <p className={`font-semibold text-sm leading-tight line-clamp-2 ${colorTheme.title}`}>
+            {item.evento}
+          </p>
+          {item.todo_el_dia === false && (
+            <p className="text-[10px] text-stone-400 mt-0.5 font-medium">
+              {formatHorarioResumen(item)}
+            </p>
+          )}
+        </div>
+
+        {/* Flecha sutil al hover */}
+        <div className="flex items-center pr-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-stone-300 text-sm">›</span>
+        </div>
       </li>
     );
   };
@@ -343,25 +364,19 @@ export default function AgendaClient({
   const eventosOcultos = Math.max(0, eventosVisibles.length - eventosMostrados.length);
 
   return (
-    <div className="w-full rounded-2xl border border-brand-gold/20 bg-white/80 p-4 shadow-sm backdrop-blur-sm sm:p-6">
-
-      <ul className="space-y-4">
+    <div className="w-full">
+      <ul className="space-y-2">
         {eventosMostrados.map((item, idx) => renderEvento(item, idx, false))}
       </ul>
 
       {eventosOcultos > 0 && (
-        <div className="mt-8 border-t border-slate-200 pt-6">
-          <div className="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-            Eventos de más adelante
-          </div>
-          <div className="flex justify-center">
-            <Link
-              href="/calendario"
-              className="rounded-full bg-brand-brown px-8 py-3 text-xs font-black uppercase tracking-[0.2em] text-white shadow-md shadow-brand-brown/20 transition-all hover:bg-amber-900"
-            >
-              + Ver {eventosOcultos} más
-            </Link>
-          </div>
+        <div className="mt-4 pt-4 border-t border-stone-100">
+          <Link
+            href="/calendario"
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-brand-brown/20 bg-brand-brown/5 px-4 py-2.5 text-xs font-black uppercase tracking-[0.15em] text-brand-brown transition-all hover:bg-brand-brown hover:text-white"
+          >
+            + Ver {eventosOcultos} más
+          </Link>
         </div>
       )}
 
