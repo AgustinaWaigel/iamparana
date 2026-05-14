@@ -91,19 +91,21 @@ export default async function Novedades({
           aria-label={`Abrir noticia: ${featured.title}`}
         >
           {/* Imagen grande */}
-          <div className="relative h-56 sm:h-64 w-full overflow-hidden bg-gray-100">
-            <img
-              src={getGoogleDriveImageUrl(featured.image)}
-              alt={featured.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="eager"
-              decoding="async"
-            />
-            {/* Badge categoría */}
+          {getGoogleDriveImageUrl(featured.image) && (
+            <div className="relative h-56 sm:h-64 w-full overflow-hidden bg-gray-100">
+              <img
+                src={getGoogleDriveImageUrl(featured.image) || undefined}
+                alt={featured.title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                decoding="async"
+              />
+              {/* Badge categoría */}
             <span className="absolute top-3 left-3 bg-brand-brown text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow">
               {featured.cat || "Novedad"}
             </span>
-          </div>
+            </div>
+          )}
           {/* Texto */}
           <div className="p-4 sm:p-5">
             <h3 className="text-lg sm:text-xl font-bold text-[#4a2c14] leading-tight mb-2 line-clamp-2 group-hover:text-brand-brown transition-colors">
@@ -130,18 +132,20 @@ export default async function Novedades({
               aria-label={`Abrir noticia: ${item.title}`}
             >
               {/* Imagen */}
-              <div className="relative h-36 overflow-hidden bg-gray-100 flex-shrink-0">
-                <img
-                  src={getGoogleDriveImageUrl(item.image)}
-                  alt={item.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span className="absolute top-2 left-2 bg-brand-brown/90 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              {getGoogleDriveImageUrl(item.image) && (
+                <div className="relative h-36 overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img
+                    src={getGoogleDriveImageUrl(item.image) || undefined}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="absolute top-2 left-2 bg-brand-brown/90 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                   {item.cat || "Novedad"}
                 </span>
-              </div>
+                </div>
+              )}
               {/* Texto */}
               <div className="p-3 sm:p-4 flex flex-col flex-1">
                 <h3 className="text-sm font-bold text-[#4a2c14] leading-snug line-clamp-2 mb-1 group-hover:text-brand-brown transition-colors">

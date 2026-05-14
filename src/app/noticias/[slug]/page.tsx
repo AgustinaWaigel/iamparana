@@ -91,15 +91,17 @@ export default async function NoticiaPage(props: Props) {
         <hr className="w-full border-t border-gray-200 my-8" />
 
         {/* Imagen principal de la noticia. */}
-        <div className="w-full mb-10">
-          <img
-            src={getGoogleDriveImageUrl(image)}
-            alt={title}
-            className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
-            loading="eager"
-            decoding="async"
-          />
-        </div>
+        {getGoogleDriveImageUrl(image) && (
+          <div className="w-full mb-10">
+            <img
+              src={getGoogleDriveImageUrl(image) || undefined}
+              alt={title}
+              className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        )}
 
         {/* Contenido principal de la noticia: bloques de texto e imágenes. */}
         <div className="space-y-6 text-gray-800 w-full break-words text-base leading-7">
@@ -128,15 +130,18 @@ export default async function NoticiaPage(props: Props) {
                           {children}
                         </a>
                       ),
-                      img: ({ src, alt }) => (
-                        <img
-                          src={getGoogleDriveImageUrl(typeof src === 'string' ? src : '')}
-                          alt={alt || 'Imagen de la noticia'}
-                          className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100 my-6"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ),
+                      img: ({ src, alt }) => {
+                        const imageUrl = getGoogleDriveImageUrl(typeof src === 'string' ? src : '');
+                        return imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={alt || 'Imagen de la noticia'}
+                            className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100 my-6"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : null;
+                      },
                     }}
                   >
                     {bloque.value}
@@ -146,10 +151,12 @@ export default async function NoticiaPage(props: Props) {
             }
 
             if (bloque.type === 'image') {
+              const imageUrl = getGoogleDriveImageUrl(bloque.value);
+              if (!imageUrl) return null;
               return (
                 <div key={bloque.id} className="w-full my-8">
                   <img
-                    src={getGoogleDriveImageUrl(bloque.value)}
+                    src={imageUrl}
                     alt="Imagen de la noticia"
                     className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
                     loading="lazy"

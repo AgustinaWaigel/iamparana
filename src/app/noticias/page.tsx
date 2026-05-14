@@ -43,14 +43,16 @@ export default async function Noticias() {
                 <Link href={`/noticias/${item.slug}`} className="block h-full no-underline">
                   {/* Imagen principal de la noticia, usando fill para cubrir el bloque completo. */}
                   <div className="relative h-48 overflow-hidden bg-gray-200">
-                    <Image
-                      src={getGoogleDriveImageUrl(item.image)}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover hover:scale-110 transition-transform duration-300"
-                      priority={false}
-                    />
+                    {getGoogleDriveImageUrl(item.image) && (
+                      <Image
+                        src={getGoogleDriveImageUrl(item.image) || ''}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover hover:scale-110 transition-transform duration-300"
+                        priority={false}
+                      />
+                    )}
                   </div>
                   
                   <div className="p-4">

@@ -52,22 +52,26 @@ export function NoticiaGaleriaView({ slug }: NoticiaGaleriaViewProps) {
     <div className="mt-8 pt-8 border-t border-gray-200">
       <h3 className="text-2xl font-bold mb-6 text-gray-800">Galería</h3>
       <div className="grid grid-cols-1 gap-6">
-        {galeria.map((img) => (
-          <figure key={img.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-            <img
-              src={getGoogleDriveImageUrl(img.image_url)}
-              alt={img.alt_text || 'Galería de la noticia'}
-              className="w-full h-auto object-contain bg-black/5"
-              loading="lazy"
-              decoding="async"
-            />
-            {img.caption && (
-              <figcaption className="bg-gray-50 p-3 text-sm text-gray-700">
-                {img.caption}
-              </figcaption>
-            )}
-          </figure>
-        ))}
+        {galeria.map((img) => {
+          const imageUrl = getGoogleDriveImageUrl(img.image_url);
+          if (!imageUrl) return null;
+          return (
+            <figure key={img.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+              <img
+                src={imageUrl}
+                alt={img.alt_text || 'Galería de la noticia'}
+                className="w-full h-auto object-contain bg-black/5"
+                loading="lazy"
+                decoding="async"
+              />
+              {img.caption && (
+                <figcaption className="bg-gray-50 p-3 text-sm text-gray-700">
+                  {img.caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+        })}
       </div>
     </div>
   );
