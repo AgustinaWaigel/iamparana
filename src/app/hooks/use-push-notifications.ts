@@ -16,12 +16,12 @@ export function usePushNotifications() {
         const registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
-        console.log("Service Worker registered:", registration);
+        console.log("Service Worker registered");
 
-        // Esperar a que el Service Worker esté activo con timeout
+        // Esperar máximo 2 segundos a que el SW esté activo
         let activeWorker = registration.active;
         let attempts = 0;
-        const maxAttempts = 50; // 5 segundos máximo (50 * 100ms)
+        const maxAttempts = 10; // máximo 1 segundo (10 * 100ms)
 
         while (!activeWorker && attempts < maxAttempts) {
           await new Promise((resolve) => setTimeout(resolve, 100));
@@ -29,18 +29,13 @@ export function usePushNotifications() {
           attempts++;
         }
 
-        if (!activeWorker) {
-          console.warn(
-            "Service Worker did not become active after waiting. Attempting subscription anyway..."
-          );
+        if (activeWorker) {
+          console.log("Service Worker is active");
         } else {
-          console.log("Service Worker is now active");
+          console.log("Service Worker activating in background");
         }
 
-        // Esperar un poco más para asegurar que todo esté listo
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Solicitar permiso
+        // Solicitar permiso (sin espera extra)
         requestNotificationPermission(registration);
       } catch (error) {
         console.error("Service Worker registration failed:", error);
@@ -89,70 +84,61 @@ async function requestNotificationPermission(registration: ServiceWorkerRegistra
 
 async function subscribeToPushNotifications(registration: ServiceWorkerRegistration) {
   try {
-    // Verificar que pushManager está disponible
     if (!registration.pushManager) {
-      console.error("Push Manager not available in Service Worker registration");
+      console.error("Push Manager not available");
       return;
     }
 
-    // Obtener clave VAPID
-    const response = await fetch("/api/notifications/subscribe");
-    const data = await response.json();
-    const { publicKey } = data;
+    console.log("Attempting push subscription...");
 
-    if (!publicKey) {
-      console.error("VAPID public key not available");
-      return;
-    }
+    try {
+      // Obtener clave VAPID con timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    console.log("Attempting to get or create subscription...");
+      const response = await fetch("/api/notifications/subscribe", {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
 
-    // Verificar si ya existe suscripción
-    let subscription = await registration.pushManager.getSubscription();
-    console.log("Current subscription status:", subscription ? "exists" : "none");
+      const data = await response.json();
+      const { publicKey } = data;
 
-    if (!subscription) {
-      console.log("Creating new push subscription...");
-      // Crear nueva suscripción
-      try {
+      if (!publicKey) {
+        console.error("VAPID public key not available");
+        return;
+      }
+
+      // Intentar obtener suscripción existente
+      let subscription = await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        // Crear nueva suscripción
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
         });
-        console.log("✅ New push subscription created successfully");
-      } catch (subscribeError) {
-        console.error("Failed to subscribe:", subscribeError);
-        throw subscribeError;
+        console.log("✅ Push subscription created");
+      } else {
+        console.log("✅ Existing push subscription");
       }
-    } else {
-      console.log("✅ Existing push subscription found");
-    }
 
-    // Enviar suscripción al servidor
-    console.log("Sending subscription to server...");
-    const subscribeResponse = await fetch("/api/notifications/subscribe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "subscribe",
-        subscription: subscription.toJSON(),
-      }),
-    });
+      // Enviar al servidor (sin esperar)
+      fetch("/api/notifications/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "subscribe",
+          subscription: subscription.toJSON(),
+        }),
+      }).catch((err) => console.warn("Failed to send subscription:", err));
 
-    if (subscribeResponse.ok) {
-      console.log("✅ Successfully subscribed to push notifications");
       localStorage.setItem("pushNotificationsEnabled", "true");
-    } else {
-      console.error("Failed to send subscription to server:", subscribeResponse.status);
+    } catch (error) {
+      console.warn("Push subscription error:", error instanceof Error ? error.message : error);
     }
   } catch (error) {
-    console.error("❌ Error subscribing to push notifications:", error);
-    if (error instanceof Error) {
-      console.error("Error details:", error.message);
-      console.error("Error stack:", error.stack);
-    }
+    console.error("Push setup failed:", error);
   }
 }
 

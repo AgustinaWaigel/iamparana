@@ -117,7 +117,11 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
       )}
 
       {/* ── Slides (crossfade limpio) ── */}
-      {items.map((item, i) => (
+      {items.map((item, i) => {
+        const desktopUrl = getGoogleDriveProxyImageUrl(item.imageDesktop);
+        const mobileUrl = getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop);
+
+        return (
         <div
           key={item.id ?? i}
           aria-hidden={i !== active}
@@ -125,19 +129,23 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
             i === active ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
-          <picture>
-            <source
-              media="(max-width: 767px)"
-              srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)}
-            />
-            <img
-              src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
-              alt={item.alt}
-              className="w-full h-full object-cover"
-              loading={i === 0 ? "eager" : "lazy"}
-              draggable={false}
-            />
-          </picture>
+          {desktopUrl && (
+            <picture>
+              {mobileUrl && (
+                <source
+                  media="(max-width: 767px)"
+                  srcSet={mobileUrl}
+                />
+              )}
+              <img
+                src={desktopUrl}
+                alt={item.alt}
+                className="w-full h-full object-cover"
+                loading={i === 0 ? "eager" : "lazy"}
+                draggable={false}
+              />
+            </picture>
+          )}
 
           {/* Gradiente inferior */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
@@ -176,7 +184,8 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       {/* ── Controles (solo si hay más de 1 slide) ── */}
       {items.length > 1 && (
