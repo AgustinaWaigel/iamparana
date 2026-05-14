@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import CarouselAdminTools from "@/app/components/common/CarouselAdminTools";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -18,55 +18,93 @@ interface CarouselProps {
   isAdmin?: boolean;
 }
 
+const INTERVAL = 6500; // ms por slide
+
 export default function Carousel({ initialItems = [], isAdmin = false }: CarouselProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [active, setActive] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const items: CarouselItem[] = initialItems
     .map((item) => ({
       id: item.id,
       imageDesktop: item.imageDesktop || item.imagedesktop || "",
-      imageMobile: item.imageMobile || item.imagemobile || item.imageDesktop || item.imagedesktop || "",
+      imageMobile:
+        item.imageMobile || item.imagemobile || item.imageDesktop || item.imagedesktop || "",
       alt: item.alt || "",
-      link: typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
-      buttonText: typeof item.buttonText === "string" ? item.buttonText.trim() : "",
+      link:
+        typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
+      buttonText:
+        typeof item.buttonText === "string" ? item.buttonText.trim() : "",
     }))
     .filter((item) => item.imageDesktop !== "");
 
+  const startProgress = useCallback(() => {
+    setProgress(0);
+    if (progressRef.current) clearInterval(progressRef.current);
+    const step = 100 / (INTERVAL / 50); // actualiza cada 50ms
+    progressRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(progressRef.current!);
+          return 100;
+        }
+        return p + step;
+      });
+    }, 50);
+  }, []);
+
   const goTo = useCallback(
     (index: number) => {
-      if (isAnimating || index === activeIndex) return;
-      setPrevIndex(activeIndex);
-      setActiveIndex(index);
-      setIsAnimating(true);
-      setTimeout(() => {
-        setPrevIndex(null);
-        setIsAnimating(false);
-      }, 700);
+      setActive(index);
+      startProgress();
     },
-    [activeIndex, isAnimating]
+    [startProgress]
   );
 
-  const goNext = useCallback(() => goTo((activeIndex + 1) % items.length), [activeIndex, goTo, items.length]);
-  const goPrev = useCallback(() => goTo((activeIndex - 1 + items.length) % items.length), [activeIndex, goTo, items.length]);
+  const goNext = useCallback(
+    () => goTo((active + 1) % items.length),
+    [active, goTo, items.length]
+  );
+  const goPrev = useCallback(
+    () => goTo((active - 1 + items.length) % items.length),
+    [active, goTo, items.length]
+  );
 
+  // Auto-advance
   useEffect(() => {
     if (items.length <= 1) return;
-    const id = setInterval(goNext, 7000);
-    return () => clearInterval(id);
-  }, [goNext, items.length]);
+    startProgress();
+    intervalRef.current = setInterval(goNext, INTERVAL);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (progressRef.current) clearInterval(progressRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length]);
+
+  // Reiniciar timer cuando el usuario navega manualmente
+  const handleManual = useCallback(
+    (fn: () => void) => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (progressRef.current) clearInterval(progressRef.current);
+      fn();
+      intervalRef.current = setInterval(goNext, INTERVAL);
+    },
+    [goNext]
+  );
 
   if (items.length === 0) {
     return (
-      <div className="aspect-[12/5] bg-stone-900 flex items-center justify-center">
-        <span className="text-stone-500 font-semibold">Sin imágenes cargadas</span>
+      <div className="aspect-[21/8] bg-stone-900 flex items-center justify-center">
+        <span className="text-stone-500 font-semibold text-sm">Sin imágenes cargadas</span>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full aspect-[4/5] md:aspect-[21/8] overflow-hidden bg-stone-900 shadow-2xl">
+    <div className="relative w-full aspect-[4/5] md:aspect-[21/8] overflow-hidden bg-stone-900 select-none">
       {/* Admin tools */}
       {isAdmin && (
         <div className="absolute top-4 right-4 z-30">
@@ -74,88 +112,96 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         </div>
       )}
 
-      {/* Slides */}
-      {items.map((item, i) => {
-        const isActive = i === activeIndex;
-        const isPrev = i === prevIndex;
-        return (
-          <div
-            key={item.id || i}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              isActive ? "opacity-100 z-10" : isPrev ? "opacity-0 z-0" : "opacity-0 z-0"
-            }`}
-          >
-            {/* Imagen con Ken Burns */}
-            <div
-              className={`absolute inset-0 transition-transform duration-[8000ms] ease-linear ${
-                isActive ? "scale-110" : "scale-100"
-              }`}
-            >
-              <picture>
-                <source media="(max-width: 767px)" srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)} />
-                <img
-                  src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
-                  alt={item.alt}
-                  className="w-full h-full object-cover"
-                  loading={i === 0 ? "eager" : "lazy"}
-                />
-              </picture>
+      {/* ── Slides (crossfade limpio) ── */}
+      {items.map((item, i) => (
+        <div
+          key={item.id ?? i}
+          aria-hidden={i !== active}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            i === active ? "opacity-100 z-10" : "opacity-0 z-0"
+          }`}
+        >
+          <picture>
+            <source
+              media="(max-width: 767px)"
+              srcSet={getGoogleDriveProxyImageUrl(item.imageMobile || item.imageDesktop)}
+            />
+            <img
+              src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
+              alt={item.alt}
+              className="w-full h-full object-cover"
+              loading={i === 0 ? "eager" : "lazy"}
+              draggable={false}
+            />
+          </picture>
+
+          {/* Gradiente inferior */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+
+          {/* CTA */}
+          {item.link && i === active && (
+            <div className="absolute bottom-14 md:bottom-16 left-1/2 -translate-x-1/2 z-20 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+              <a
+                href={item.link}
+                className="group inline-flex items-center gap-2 rounded-full bg-white/95 px-7 py-3 text-sm md:text-base font-black text-brand-brown shadow-[0_6px_28px_rgba(0,0,0,0.35)] ring-1 ring-white/40 transition-all duration-200 hover:bg-white hover:shadow-[0_10px_36px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 focus:outline-none"
+              >
+                {item.buttonText || "Ver más"}
+                <ChevronRight size={17} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              </a>
             </div>
+          )}
+        </div>
+      ))}
 
-            {/* Gradiente inferior para el botón / texto */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
-
-            {/* Botón CTA */}
-            {item.link && isActive && (
-              <div className="absolute bottom-10 md:bottom-12 left-1/2 -translate-x-1/2 z-20 animate-in fade-in slide-in-from-bottom-3 duration-500">
-                <a
-                  href={item.link}
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-sm md:text-base font-black tracking-wide text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.4)] ring-1 ring-white/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] focus:outline-none"
-                >
-                  {item.buttonText || "Ver más"}
-                  <ChevronRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {/* Navegación flechas */}
+      {/* ── Controles (solo si hay más de 1 slide) ── */}
       {items.length > 1 && (
         <>
+          {/* Flecha izquierda */}
           <button
             type="button"
             aria-label="Imagen anterior"
-            onClick={goPrev}
-            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/30 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all hover:bg-black/50 hover:scale-105 focus:outline-none"
+            onClick={() => handleManual(goPrev)}
+            className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-11 md:w-11 rounded-full bg-black/25 text-white backdrop-blur-[2px] border border-white/15 flex items-center justify-center transition-all duration-200 hover:bg-black/45 hover:border-white/30 hover:scale-105 focus:outline-none"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </button>
+
+          {/* Flecha derecha */}
           <button
             type="button"
             aria-label="Imagen siguiente"
-            onClick={goNext}
-            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full bg-black/30 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center transition-all hover:bg-black/50 hover:scale-105 focus:outline-none"
+            onClick={() => handleManual(goNext)}
+            className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-11 md:w-11 rounded-full bg-black/25 text-white backdrop-blur-[2px] border border-white/15 flex items-center justify-center transition-all duration-200 hover:bg-black/45 hover:border-white/30 hover:scale-105 focus:outline-none"
           >
-            <ChevronRight size={22} />
+            <ChevronRight size={20} />
           </button>
 
-          {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
-            {items.map((_, i) => (
-              <button
-                key={`dot-${i}`}
-                type="button"
-                aria-label={`Ir a imagen ${i + 1}`}
-                onClick={() => goTo(i)}
-                className={`rounded-full transition-all duration-400 focus:outline-none ${
-                  i === activeIndex
-                    ? "w-7 h-2 bg-white"
-                    : "w-2 h-2 bg-white/40 hover:bg-white/70"
-                }`}
+          {/* ── Indicador inferior: número + barra de progreso + dots ── */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+            {/* Dots + número */}
+            <div className="flex items-center gap-2">
+              {items.map((_, i) => (
+                <button
+                  key={`dot-${i}`}
+                  type="button"
+                  aria-label={`Ir a imagen ${i + 1}`}
+                  onClick={() => handleManual(() => goTo(i))}
+                  className={`rounded-full transition-all duration-300 focus:outline-none ${
+                    i === active
+                      ? "w-6 h-[5px] bg-white"
+                      : "w-[5px] h-[5px] bg-white/40 hover:bg-white/65"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Barra de progreso del slide activo */}
+            <div className="w-28 md:w-36 h-[2px] rounded-full bg-white/20 overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full transition-none"
+                style={{ width: `${progress}%` }}
               />
-            ))}
+            </div>
           </div>
         </>
       )}

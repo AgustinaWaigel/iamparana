@@ -16,6 +16,9 @@ import {
   Building2,
   Music2,
   ChevronRight,
+  Instagram,
+  Youtube,
+  Facebook,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +28,7 @@ const AREAS = [
   {
     href: "/formacion",
     label: "Formación",
-    emoji: "📚",
     Icon: BookOpen,
-    desc: "Materiales y recursos para crecer en la fe",
     bg: "from-amber-400 to-yellow-500",
     shadow: "shadow-amber-200",
     text: "text-amber-900",
@@ -35,9 +36,7 @@ const AREAS = [
   {
     href: "/espiritualidad",
     label: "Espiritualidad",
-    emoji: "🕊️",
     Icon: Sparkles,
-    desc: "Vivir el Evangelio en el día a día",
     bg: "from-stone-600 to-stone-800",
     shadow: "shadow-stone-300",
     text: "text-white",
@@ -45,9 +44,7 @@ const AREAS = [
   {
     href: "/animacion",
     label: "Animación",
-    emoji: "🎭",
     Icon: Music2,
-    desc: "Canciones, juegos y dinámicas para grupos",
     bg: "from-emerald-500 to-green-600",
     shadow: "shadow-emerald-200",
     text: "text-white",
@@ -55,9 +52,7 @@ const AREAS = [
   {
     href: "/comunicacion",
     label: "Comunicación",
-    emoji: "📢",
     Icon: Megaphone,
-    desc: "Materiales y recursos comunicacionales",
     bg: "from-blue-600 to-indigo-700",
     shadow: "shadow-blue-200",
     text: "text-white",
@@ -65,21 +60,9 @@ const AREAS = [
   {
     href: "/logistica",
     label: "Logística",
-    emoji: "📋",
     Icon: Package,
-    desc: "Organización y gestión de actividades",
     bg: "from-red-600 to-rose-700",
     shadow: "shadow-red-200",
-    text: "text-white",
-  },
-  {
-    href: "/institucional",
-    label: "Institucional",
-    emoji: "🏛️",
-    Icon: Building2,
-    desc: "Información y documentos oficiales",
-    bg: "from-brand-brown to-stone-900",
-    shadow: "shadow-amber-900/30",
     text: "text-white",
   },
 ];
@@ -119,7 +102,7 @@ export default async function HomePage() {
               </div>
             </FadeInSection>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
               {AREAS.map((area, i) => (
                 <FadeInSection key={area.href} delay={i * 70}>
                   <Link
@@ -128,18 +111,20 @@ export default async function HomePage() {
                   >
                     {/* Gloss overlay */}
                     <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent pointer-events-none rounded-2xl" />
-                    {/* Emoji */}
-                    <span className="text-3xl md:text-4xl drop-shadow leading-none" aria-hidden>
-                      {area.emoji}
-                    </span>
+                    {/* Icono */}
+                    <area.Icon
+                      size={30}
+                      className={`drop-shadow ${area.text} transition-transform duration-300 group-hover:scale-110`}
+                      aria-hidden
+                    />
                     {/* Label */}
                     <span className={`font-black text-sm md:text-base text-center leading-tight ${area.text} drop-shadow`}>
                       {area.label}
                     </span>
                     {/* Arrow on hover */}
                     <ChevronRight
-                      size={16}
-                      className={`absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-70 transition-all duration-200 group-hover:translate-x-0.5 ${area.text}`}
+                      size={14}
+                      className={`absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-60 transition-all duration-200 group-hover:translate-x-0.5 ${area.text}`}
                     />
                   </Link>
                 </FadeInSection>
@@ -249,14 +234,14 @@ export default async function HomePage() {
               <p className="text-amber-100/70 text-sm max-w-md mx-auto mb-8">
                 Noticias, fotos y novedades de la Infancia y Adolescencia Misionera de la Arquidiócesis de Paraná
               </p>
-              <div className="flex items-center justify-center gap-5 flex-wrap">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
                 <a
                   href="https://www.instagram.com/iamarqparana/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center gap-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 text-white text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
                 >
-                  <span className="text-xl">📸</span>
+                  <Instagram size={17} className="shrink-0" />
                   Instagram
                 </a>
                 <a
@@ -265,7 +250,7 @@ export default async function HomePage() {
                   rel="noopener noreferrer"
                   className="group flex items-center gap-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 text-white text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
                 >
-                  <span className="text-xl">👥</span>
+                  <Facebook size={17} className="shrink-0" />
                   Facebook
                 </a>
                 <a
@@ -274,7 +259,7 @@ export default async function HomePage() {
                   rel="noopener noreferrer"
                   className="group flex items-center gap-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 text-white text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
                 >
-                  <span className="text-xl">▶️</span>
+                  <Youtube size={17} className="shrink-0" />
                   YouTube
                 </a>
               </div>

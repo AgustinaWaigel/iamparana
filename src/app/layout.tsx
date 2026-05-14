@@ -4,6 +4,7 @@ import ClientLayout from "./clientlayout";
 import AnalyticsProvider from '@/app/components/providers/analyticsprovider';
 import { ServiceWorkerRegistration } from '@/app/components/common/service-worker-registration';
 import { BackButton } from '@/app/components/common/back-button';
+import { PushNotificationsProvider } from '@/app/components/providers/push-notifications-provider';
 
 // Este layout envuelve toda la aplicación: carga fuentes globales, estilos base,
 // métricas, y el service worker para que el sitio funcione como una PWA.
@@ -59,6 +60,7 @@ export default function RootLayout({
         <ClientLayout>{children}</ClientLayout>
         <AnalyticsProvider />
         <ServiceWorkerRegistration />
+        <PushNotificationsProvider />
       </body>
     </html>
   );

@@ -271,6 +271,45 @@ CREATE TABLE IF NOT EXISTS resource_page_styles (
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (page_id) REFERENCES resource_pages(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER,
+  endpoint TEXT NOT NULL UNIQUE,
+  auth TEXT NOT NULL,
+  p256dh TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
+
+CREATE TABLE IF NOT EXISTS notifications_sent (
+  id INTEGER PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  event_id INTEGER,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_sent_type ON notifications_sent(event_type);
+CREATE INDEX IF NOT EXISTS idx_notifications_sent_created_at ON notifications_sent(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS holiday_dates (
+  id INTEGER PRIMARY KEY,
+  date TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  is_fixed INTEGER DEFAULT 1,
+  month INTEGER,
+  day INTEGER,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_holiday_dates_date ON holiday_dates(date);
 `;
 
 // Ejecutar inserts de datos iniciales
@@ -289,6 +328,24 @@ INSERT OR IGNORE INTO google_drive_config (section, folder_id, folder_name) VALU
   ('espiritualidad', '', 'Espiritualidad'),
   ('institucional', '', 'Institucional'),
   ('logistica', '', 'Logística');
+
+INSERT OR IGNORE INTO holiday_dates (date, name, is_fixed, month, day) VALUES
+  ('2026-01-01', 'Año Nuevo', 1, 1, 1),
+  ('2026-02-13', 'Carnaval', 0, NULL, NULL),
+  ('2026-02-14', 'Carnaval', 0, NULL, NULL),
+  ('2026-04-02', 'Jueves Santo', 0, NULL, NULL),
+  ('2026-04-03', 'Viernes Santo', 0, NULL, NULL),
+  ('2026-04-04', 'Sábado de Gloria', 0, NULL, NULL),
+  ('2026-05-01', 'Día del Trabajador', 1, 5, 1),
+  ('2026-05-25', 'Día de la Nación', 1, 5, 25),
+  ('2026-06-17', 'Guemes', 1, 6, 17),
+  ('2026-06-20', 'Día de la Bandera', 1, 6, 20),
+  ('2026-07-09', 'Independencia', 1, 7, 9),
+  ('2026-08-17', 'Muerte del General San Martín', 1, 8, 17),
+  ('2026-10-12', 'Día de la Raza', 1, 10, 12),
+  ('2026-11-02', 'Día de Difuntos', 1, 11, 2),
+  ('2026-12-08', 'Inmaculada Concepción', 1, 12, 8),
+  ('2026-12-25', 'Navidad', 1, 12, 25);
 `;
 
 async function ensureAgendaColumns() {
