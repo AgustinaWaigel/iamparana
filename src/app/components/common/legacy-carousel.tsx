@@ -108,13 +108,15 @@ export default function CarouselClient() {
       <div className="carousel">
         <div id="carousel-slide" className="carousel-slide">
           {carouselItems.map((item, index) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={index}
-              src={item.image as string}
-              alt={`Slide ${index}`}
-              className={index === 0 ? "active" : ""}
-            />
+            item.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={index}
+                src={item.image as string}
+                alt={`Slide ${index}`}
+                className={index === 0 ? "active" : ""}
+              />
+            )
           ))}
         </div>
         <button onClick={() => moveSlide(-1)}>Anterior</button>

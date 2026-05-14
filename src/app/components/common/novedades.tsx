@@ -46,15 +46,17 @@ export default async function Novedades({
               className="group relative flex items-center gap-4 md:gap-5 rounded-2xl border border-[#eadfd5] bg-gradient-to-br from-white to-[#fff8f2] p-4 md:p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-brown/40 no-underline"
               aria-label={`Abrir noticia: ${item.title}`}
             >
-              <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl border border-[#e8ddd2] bg-gray-100 md:h-48 md:w-48">
-                <img
-                  src={getGoogleDriveImageUrl(item.image)}
-                  alt={item.title}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
+              {getGoogleDriveImageUrl(item.image) && (
+                <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl border border-[#e8ddd2] bg-gray-100 md:h-48 md:w-48">
+                  <img
+                    src={getGoogleDriveImageUrl(item.image) || undefined}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-brown/70">
                   {item.cat || "Novedad"}

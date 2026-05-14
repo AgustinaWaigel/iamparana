@@ -1,22 +1,25 @@
-export function getGoogleDriveImageUrl(urlOrPath: string | undefined | null): string {
-  if (!urlOrPath) return '';
+export function getGoogleDriveImageUrl(urlOrPath: string | undefined | null): string | null {
+  if (!urlOrPath) return null;
 
-  if (urlOrPath.startsWith('/')) {
-    return urlOrPath;
+  const value = String(urlOrPath).trim();
+  if (!value) return null;
+
+  if (value.startsWith('/')) {
+    return value;
   }
 
   // URL externa normal (incluye googleusercontent directo)
-  if (urlOrPath.startsWith('http') && !urlOrPath.includes('drive.google.com') && !urlOrPath.includes('docs.google.com')) {
-    return urlOrPath;
+  if (value.startsWith('http') && !value.includes('drive.google.com') && !value.includes('docs.google.com')) {
+    return value;
   }
 
-  let fileId = urlOrPath;
+  let fileId = value;
 
-  if (urlOrPath.includes('drive.google.com') || urlOrPath.includes('docs.google.com')) {
+  if (value.includes('drive.google.com') || value.includes('docs.google.com')) {
     const match =
-      urlOrPath.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
-      urlOrPath.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
-      urlOrPath.match(/\/uc\?.*?[?&]id=([a-zA-Z0-9_-]+)/);
+      value.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+      value.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+      value.match(/\/uc\?.*?[?&]id=([a-zA-Z0-9_-]+)/);
 
     if (match && match[1]) {
       fileId = match[1];
@@ -28,7 +31,7 @@ export function getGoogleDriveImageUrl(urlOrPath: string | undefined | null): st
     return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
   }
 
-  return urlOrPath;
+  return value;
 }
 
 export function extractGoogleDriveFileId(urlOrPath: string | undefined | null): string {
@@ -55,11 +58,11 @@ export function extractGoogleDriveFileId(urlOrPath: string | undefined | null): 
   return '';
 }
 
-export function getGoogleDriveProxyImageUrl(urlOrPath: string | undefined | null): string {
-  if (!urlOrPath) return '';
+export function getGoogleDriveProxyImageUrl(urlOrPath: string | undefined | null): string | null {
+  if (!urlOrPath) return null;
 
   const raw = String(urlOrPath).trim();
-  if (!raw) return '';
+  if (!raw) return null;
   if (raw.startsWith('/')) return raw;
 
   const fileId = extractGoogleDriveFileId(raw);

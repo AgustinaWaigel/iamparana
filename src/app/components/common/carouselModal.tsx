@@ -215,11 +215,13 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
                       className={`rounded-2xl border p-3 ${isSelected ? "border-orange-400 bg-orange-50/70" : "border-stone-200 bg-white"}`}
                     >
                       <div className="flex gap-3">
-                        <img
-                          src={getGoogleDriveProxyImageUrl(item.imageDesktop)}
-                          alt={item.alt || "Slide"}
-                          className="h-16 w-24 rounded-lg object-cover bg-stone-100"
-                        />
+                        {getGoogleDriveProxyImageUrl(item.imageDesktop) && (
+                          <img
+                            src={getGoogleDriveProxyImageUrl(item.imageDesktop) || undefined}
+                            alt={item.alt || "Slide"}
+                            className="h-16 w-24 rounded-lg object-cover bg-stone-100"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-stone-800 truncate">{item.alt || "Sin alt"}</p>
                           <p className="text-xs text-stone-500">Orden: {Number(item.order ?? 0)}</p>
