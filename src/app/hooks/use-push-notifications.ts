@@ -19,7 +19,8 @@ export function usePushNotifications() {
         console.log("Service Worker registered:", registration);
 
         // Esperar a que el Service Worker esté activo
-        const activeWorker = await registration.ready;
+        // Usar 'ready' que resuelve cuando hay un active service worker
+        const activeWorker = await (registration as any).ready;
         console.log("Service Worker is active:", activeWorker);
 
         // Solicitar permiso
