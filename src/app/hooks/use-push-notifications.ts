@@ -85,7 +85,7 @@ async function subscribeToPushNotifications(registration: ServiceWorkerRegistrat
       // Crear nueva suscripción
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
       });
       console.log("New push subscription created");
     } else {
