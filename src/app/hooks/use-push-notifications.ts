@@ -16,9 +16,19 @@ export function usePushNotifications() {
         const registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
         });
-        console.log("Service Worker registered");
+        console.log("✅ Service Worker registered (workbox)");
 
-        // Esperar máximo 2 segundos a que el SW esté activo
+        // Registrar el handler custom de push
+        try {
+          await navigator.serviceWorker.register("/sw-custom.js", {
+            scope: "/",
+          });
+          console.log("✅ Custom push handler registered");
+        } catch (customError) {
+          console.warn("⚠️ Custom push handler registration failed:", customError);
+        }
+
+        // Esperar máximo 1 segundo a que el SW esté activo
         let activeWorker = registration.active;
         let attempts = 0;
         const maxAttempts = 10; // máximo 1 segundo (10 * 100ms)
@@ -30,15 +40,15 @@ export function usePushNotifications() {
         }
 
         if (activeWorker) {
-          console.log("Service Worker is active");
+          console.log("✅ Service Worker is active");
         } else {
-          console.log("Service Worker activating in background");
+          console.log("⚠️ Service Worker activating in background");
         }
 
         // Solicitar permiso (sin espera extra)
         requestNotificationPermission(registration);
       } catch (error) {
-        console.error("Service Worker registration failed:", error);
+        console.error("❌ Service Worker registration failed:", error);
       }
     };
 

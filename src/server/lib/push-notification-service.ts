@@ -1,5 +1,6 @@
 import "server-only";
 
+import webpush from "web-push";
 import { getAllPushSubscriptions, recordNotificationSent } from "@/server/db/notifications-repository";
 
 interface PushSubscriptionJSON {
@@ -19,45 +20,84 @@ interface PushNotificationPayload {
   data?: Record<string, string>;
 }
 
+// Configurar web-push con claves VAPID
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (vapidPublicKey && vapidPrivateKey) {
+  webpush.setVapidDetails(
+    "mailto:admin@iamparana.org", // Contacto
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+  console.log("✅ Web Push configured with VAPID keys");
+} else {
+  console.warn("⚠️ VAPID keys not configured - push notifications will not work");
+  console.warn("Missing keys:", {
+    publicKey: !!vapidPublicKey,
+    privateKey: !!vapidPrivateKey,
+  });
+}
+
 async function sendPushNotification(
   subscription: { endpoint: string; auth: string; p256dh: string },
   payload: PushNotificationPayload
 ): Promise<boolean> {
   try {
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!vapidPublicKey) {
-      console.warn("VAPID public key not configured");
+    if (!vapidPrivateKey) {
+      console.warn("⚠️ VAPID private key not configured");
       return false;
     }
 
-    const response = await fetch("https://fcm.googleapis.com/fcm/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `key=${process.env.FCM_SERVER_KEY}`,
-      },
-      body: JSON.stringify({
-        to: subscription.endpoint,
-        notification: {
-          title: payload.title,
-          body: payload.body,
-          icon: payload.icon || "/icon-192x192.png",
-          badge: payload.badge || "/icon-192x192.png",
-        },
-        data: payload.data || {},
-      }),
+    // Preparar el payload para web-push
+    const pushPayload = JSON.stringify({
+      title: payload.title,
+      body: payload.body,
+      icon: payload.icon || "/icon-192x192.png",
+      badge: payload.badge || "/icon-192x192.png",
+      tag: payload.tag || "default",
+      data: payload.data || {},
     });
 
-    return response.ok;
+    // Enviar usando web-push
+    await webpush.sendNotification(
+      {
+        endpoint: subscription.endpoint,
+        keys: {
+          auth: subscription.auth,
+          p256dh: subscription.p256dh,
+        },
+      },
+      pushPayload
+    );
+
+    console.log("✅ Push notification sent to:", subscription.endpoint.substring(0, 30) + "...");
+    return true;
   } catch (error) {
-    console.error("Error sending push notification:", error);
+    if (error instanceof Error) {
+      // Si la suscripción no es válida, registrar pero continuar
+      if (error.message.includes("410") || error.message.includes("404")) {
+        console.warn("⚠️ Subscription no longer valid (410/404):", subscription.endpoint.substring(0, 30) + "...");
+        return false;
+      }
+      console.error("❌ Error sending push notification:", error.message);
+    } else {
+      console.error("❌ Error sending push notification:", error);
+    }
     return false;
   }
 }
 
 export async function sendNotificationToAll(payload: PushNotificationPayload, eventType?: string, eventId?: number): Promise<number> {
   try {
+    if (!vapidPrivateKey) {
+      console.warn("⚠️ Cannot send notifications: VAPID private key not configured");
+      return 0;
+    }
+
     const subscriptions = await getAllPushSubscriptions();
+    console.log(`📢 Sending notification to ${subscriptions.length} subscribers...`);
+    
     let successCount = 0;
 
     for (const sub of subscriptions) {
@@ -75,9 +115,10 @@ export async function sendNotificationToAll(payload: PushNotificationPayload, ev
       }
     }
 
+    console.log(`✅ Notifications sent: ${successCount}/${subscriptions.length}`);
     return successCount;
   } catch (error) {
-    console.error("Error sending notifications to all:", error);
+    console.error("❌ Error sending notifications to all:", error);
     return 0;
   }
 }
