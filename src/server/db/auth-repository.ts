@@ -256,3 +256,60 @@ export async function deleteAllSessionsByUserId(userId: number) {
     args: [userId],
   });
 }
+
+// ── Password Reset ──────────────────────────────────────────────────────────
+
+export type PasswordReset = {
+  id: number;
+  userId: number;
+  expiresAt: string;
+};
+
+export async function createPasswordReset(
+  userId: number,
+  tokenHash: string,
+  expiresAt: string
+) {
+  const client = await clientOrThrow();
+  // Eliminar resets previos del mismo usuario
+  await client.execute({
+    sql: "DELETE FROM password_resets WHERE user_id = ?",
+    args: [userId],
+  });
+  await client.execute({
+    sql: "INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+    args: [userId, tokenHash, expiresAt],
+  });
+}
+
+export async function findPasswordReset(
+  tokenHash: string
+): Promise<PasswordReset | null> {
+  const client = await clientOrThrow();
+  const result = await client.execute({
+    sql: "SELECT id, user_id, expires_at FROM password_resets WHERE token_hash = ? AND expires_at > CURRENT_TIMESTAMP LIMIT 1",
+    args: [tokenHash],
+  });
+  if (result.rows.length === 0) return null;
+  const row = result.rows[0];
+  return {
+    id: toNumber(row.id),
+    userId: toNumber(row.user_id),
+    expiresAt: String(row.expires_at ?? ""),
+  };
+}
+
+export async function deletePasswordReset(tokenHash: string) {
+  const client = await clientOrThrow();
+  await client.execute({
+    sql: "DELETE FROM password_resets WHERE token_hash = ?",
+    args: [tokenHash],
+  });
+}
+
+export async function deleteExpiredPasswordResets() {
+  const client = await clientOrThrow();
+  await client.execute(
+    "DELETE FROM password_resets WHERE expires_at <= CURRENT_TIMESTAMP"
+  );
+}

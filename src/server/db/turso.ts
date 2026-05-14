@@ -168,6 +168,18 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_token ON auth_sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at);
 
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  token_hash TEXT UNIQUE NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
+CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets(expires_at);
+
 CREATE TABLE IF NOT EXISTS documents (
   id INTEGER PRIMARY KEY,
   section TEXT NOT NULL,
@@ -445,6 +457,30 @@ async function ensureJuegosSections() {
   );
 }
 
+async function ensurePasswordResetsTable() {
+  if (!cachedClient) return;
+  try {
+    await cachedClient.execute(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        token_hash TEXT UNIQUE NOT NULL,
+        expires_at TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    await cachedClient.execute(
+      'CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash)'
+    );
+    await cachedClient.execute(
+      'CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets(expires_at)'
+    );
+  } catch (error) {
+    console.error('Error creando tabla password_resets:', error);
+  }
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -471,6 +507,7 @@ async function initializeSchema() {
     await ensureUsersColumns();
     await ensureThumbnailColumns();
     await ensureJuegosSections();
+    await ensurePasswordResetsTable();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');
