@@ -237,8 +237,8 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                   </div>
 
                   <div className="flex gap-3 pt-4 border-t border-stone-100">
-                    <button type="button" onClick={resetForm} className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors">Cancelar</button>
-                    <button type="submit" disabled={isSubmitting} className="flex-[2] bg-brand-brown text-white py-3 rounded-xl font-black uppercase tracking-widest hover:bg-amber-900 transition-all shadow-md flex items-center justify-center gap-2">
+                    <button type="button" onClick={resetForm} className="btn-secondary flex-1 py-3">Cancelar</button>
+                    <button type="submit" disabled={isSubmitting} className="btn-primary flex-[2] py-3 uppercase tracking-widest">
                       {isSubmitting ? <Loader2 className="animate-spin" size={18}/> : 'Guardar Evento'}
                     </button>
                   </div>

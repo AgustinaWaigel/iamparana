@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inicio · IAM Paraná (rediseño)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            brown: "#622d0d",
+            deep: "#3a1508",
+            wood: "#7a3a13",
+            gold: "#e3a92c",
+            goldsoft: "#f4cd74",
+            cream: "#f6f1ea",
+            paper: "#fbf8f3",
+            ink: "#2c1d11",
+          },
+        },
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', "system-ui", "sans-serif"],
+          sans: ['"Hanken Grotesk"', "system-ui", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #f6f1ea; -webkit-font-smoothing: antialiased; }
+  ::selection { background: #e3a92c; color: #3a1508; }
+
+  @keyframes kb {
+    from { transform: scale(1.02) translate(0,0); }
+    to   { transform: scale(1.13) translate(-1.5%, -1.5%); }
+  }
+  .kenburns { animation: kb 8s ease-out forwards; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fadeup { animation: fadeUp .7s cubic-bezier(.2,.7,.2,1) both; }
+
+  @keyframes revIn {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { opacity: 0; }
+  .reveal.in { animation: revIn .7s cubic-bezier(.2,.7,.2,1) forwards; }
+
+  .no-scrollbar::-webkit-scrollbar { height: 0; width: 0; }
+  .no-scrollbar { scrollbar-width: none; }
+
+  /* texto con borde fino para títulos sobre foto */
+  .titlewrap { text-wrap: balance; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

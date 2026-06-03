@@ -42,7 +42,7 @@ export function DeleteConfirmModal({
             <button type="button" onClick={onCancel} disabled={busy} className="modal-btn-secondary-unified">
               Cancelar
             </button>
-            <button type="button" onClick={onConfirm} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-2.5 text-sm font-black text-white shadow-md transition-all hover:bg-red-700 disabled:opacity-50 active:scale-95">
+            <button type="button" onClick={onConfirm} disabled={busy} className="btn-danger">
               {busy ? busyLabel : confirmLabel}
             </button>
           </div>

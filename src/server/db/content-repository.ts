@@ -3,7 +3,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getTursoClient } from "@/server/db/turso";
+import { getTursoClient, ensureCarouselColumns } from "@/server/db/turso";
 import { isTursoReadEnabled } from "@/app/lib/feature-flags";
 
 export interface NoticiaPreview {
@@ -470,15 +470,20 @@ export async function deleteAgendaEvento(id: number): Promise<void> {
 export async function listCarouselItems(): Promise<CarouselItem[]> {
   const client = getTursoClient();
   if (isTursoReadEnabled && client) {
+    await ensureCarouselColumns();
     try {
       const result = await client.execute(
-        "SELECT imageDesktop, imageMobile, alt, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
+        "SELECT id, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
       );
 
       return result.rows.map((row) => ({
+        id: asNumber(row.id),
         imageDesktop: normalizeCarouselImagePath(row.imageDesktop),
         imageMobile: normalizeCarouselImagePath(row.imageMobile),
         alt: asString(row.alt),
+        title: asOptionalString(row.title) ?? "",
+        description: asOptionalString(row.description) ?? "",
+        tag: asOptionalString(row.tag) ?? "",
         link: asOptionalString(row.link),
         buttonText: asOptionalString(row.buttonText),
         order: asNumber(row.order),

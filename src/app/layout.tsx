@@ -1,10 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import ClientLayout from "./clientlayout"; 
+import ClientLayout from "./clientlayout";
 import AnalyticsProvider from '@/app/components/providers/analyticsprovider';
 import { ServiceWorkerRegistration } from '@/app/components/common/service-worker-registration';
 import { BackButton } from '@/app/components/common/back-button';
 import { PushNotificationsProvider } from '@/app/components/providers/push-notifications-provider';
+import { Bricolage_Grotesque, Hanken_Grotesk } from 'next/font/google';
+
+const displayFont = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const bodyFont = Hanken_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 // Este layout envuelve toda la aplicación: carga fuentes globales, estilos base,
 // métricas, y el service worker para que el sitio funcione como una PWA.
@@ -52,10 +65,8 @@ export default function RootLayout({
 }>) {
   return (
     // El HTML raíz define el idioma del sitio y monta los proveedores globales.
-    <html lang="es">
-      <body
-        className="antialiased"
-      >
+    <html lang="es" className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <body className="antialiased font-sans">
         <BackButton />
         <ClientLayout>{children}</ClientLayout>
         <AnalyticsProvider />

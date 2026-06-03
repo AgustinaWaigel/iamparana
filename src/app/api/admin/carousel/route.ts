@@ -32,6 +32,9 @@ export async function POST(req: Request) {
     const fileMobile = formData.get("fileMobile") as File | null;
     const legacyFile = formData.get("file") as File | null;
     const alt = formData.get("alt") as string;
+    const title = (formData.get("title") as string) || null;
+    const description = (formData.get("description") as string) || null;
+    const tag = (formData.get("tag") as string) || null;
     const link = formData.get("link") as string;
     const buttonText = formData.get("buttonText") as string;
     const orderStr = formData.get("order") as string;
@@ -78,6 +81,9 @@ export async function POST(req: Request) {
       imageDesktop: imageDesktopId,
       imageMobile: imageMobileId,
       alt: alt.trim(),
+      title: title?.trim() || null,
+      description: description?.trim() || null,
+      tag: tag?.trim() || null,
       link: link && link.trim() !== "" ? link.trim() : null,
       buttonText: buttonText && buttonText.trim() !== "" ? buttonText.trim() : null,
       order: isNaN(order) ? 0 : order

@@ -52,7 +52,7 @@ const formatDiasRestantes = (dateStr: string) => {
   hoy.setHours(0, 0, 0, 0);
   const fecha = parseLocalDate(dateStr);
   const diff = Math.ceil((fecha.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   if (diff <= 0) return "Hoy";
   if (diff === 1) return "Mañana";
   return `En ${diff} días`;
@@ -115,9 +115,9 @@ const getThemeByColor = (color?: string) =>
     title: "text-amber-950",
   };
 
-export default function AgendaClient({ 
-  eventosVisibles: initialVisibles, 
-  eventosFuturos: initialFuturos 
+export default function AgendaClient({
+  eventosVisibles: initialVisibles,
+  eventosFuturos: initialFuturos
 }: AgendaClientProps) {
   const { isAdmin } = useSession();
   const [isMounted, setIsMounted] = useState(false);
@@ -328,13 +328,12 @@ export default function AgendaClient({
         <div className="flex flex-1 flex-col justify-center px-3 py-3 min-w-0">
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <span
-              className={`inline-block text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${
-                esHoy
+              className={`inline-block text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${esHoy
                   ? "bg-red-500 text-white"
                   : esMañana
-                  ? "bg-amber-400 text-stone-900"
-                  : colorTheme.chip
-              }`}
+                    ? "bg-amber-400 text-stone-900"
+                    : colorTheme.chip
+                }`}
             >
               {etiquetaRestante}
             </span>

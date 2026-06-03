@@ -77,12 +77,34 @@ const Header: React.FC = () => {
     }`;
 
   return (
-    <header className="fixed top-0 z-[60] h-20 w-full border-b border-white/10 bg-brand-brown bg-[url('/assets/header/headerbg.webp')] bg-cover bg-center bg-no-repeat px-4 text-white shadow-lg md:px-8">
-      <div className="relative mx-auto flex h-full w-full max-w-7xl items-center justify-between">
+    <header
+      className="fixed top-0 z-[60] h-20 w-full text-white shadow-lg"
+      style={{ backgroundColor: "#4d220c", backgroundImage: "url('/assets/header/headerbg.webp')", backgroundSize: "520px", backgroundBlendMode: "soft-light" }}
+    >
+      {/* Overlay de gradiente lateral */}
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/85 via-brand-brown/70 to-brand-deep/85" />
+      {/* Línea de acento dorada */}
+      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-brand-gold via-brand-goldsoft to-brand-gold" />
+
+      <div className="relative mx-auto flex h-full w-full max-w-[1180px] items-center justify-between px-6">
 
         <div className="relative z-[70] flex items-center">
-          <Link href="/">
-            <Image src="/assets/header/LOGOIAMPNA.svg" alt="Logo" width={140} height={45} priority className="drop-shadow-sm" />
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/assets/multimedia/logo%20iam%20nuevo%20redondo.png"
+              alt="IAM Paraná"
+              width={44} height={44}
+              priority
+              className="h-11 w-11 object-contain drop-shadow"
+            />
+            <span className="hidden sm:flex flex-col leading-none">
+              <span className="font-display text-[19px] font-extrabold tracking-tight text-white">
+                IAM <span className="text-brand-gold">Paraná</span>
+              </span>
+              <span className="text-[10.5px] font-medium uppercase tracking-[0.22em] text-white/55">
+                Infancia y Adolescencia Misionera
+              </span>
+            </span>
           </Link>
         </div>
 
@@ -198,12 +220,14 @@ const Header: React.FC = () => {
                     </ul>
                   </li>
                 ) : (
-                  /*<li className="mt-4 w-full md:mt-0 md:w-auto">
-                    <Link href="/auth/login" className="block w-full rounded-full bg-brand-gold px-6 py-3 text-center font-black text-brand-brown shadow-lg transition-all hover:bg-yellow-400 md:py-2">
-                      Ingresar
+                  <li className="mt-2 w-full md:mt-0 md:w-auto">
+                    <Link
+                      href="/auth/login"
+                      className="block w-full rounded-full bg-brand-gold px-5 py-2 text-center text-[13.5px] font-bold text-brand-deep shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brand-goldsoft md:w-auto"
+                    >
+                      Sumate
                     </Link>
-                  </li>*/
-                  null // Retornamos null para que no rompa la estructura del fragmento si el usuario no existe
+                  </li>
                 )}
               </>
             )}

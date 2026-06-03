@@ -11,7 +11,6 @@ export interface CarouselItem {
   alt: string;
   title?: string;
   description?: string;
-  tag?: string;
   link?: string | null;
   buttonText?: string;
 }
@@ -37,7 +36,6 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
       alt: item.alt || "",
       title: typeof item.title === "string" ? item.title.trim() : "",
       description: typeof item.description === "string" ? item.description.trim() : "",
-      tag: typeof item.tag === "string" ? item.tag.trim() : "",
       link: typeof item.link === "string" && item.link.trim() !== "" ? item.link.trim() : null,
       buttonText: typeof item.buttonText === "string" ? item.buttonText.trim() : "",
     }))
@@ -92,8 +90,10 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
 
   if (items.length === 0) {
     return (
-      <div className="aspect-[21/9] bg-stone-900 flex items-center justify-center">
-        <span className="text-stone-500 font-semibold text-sm">Sin imágenes cargadas</span>
+      <div className="mx-auto max-w-6xl px-4 mt-6">
+        <div className="rounded-[26px] aspect-[21/9] bg-stone-900 flex items-center justify-center">
+          <span className="text-stone-500 font-semibold text-sm">Sin imágenes cargadas</span>
+        </div>
       </div>
     );
   }
@@ -101,7 +101,10 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
   const activeItem = items[active];
 
   return (
-    <div className="group relative rounded-[20px] h-[120vw] sm:h-[33vw] overflow-hidden bg-stone-900 select-none">
+    // ⬇️ CAMBIO CLAVE: banda CONTENIDA (max-w-6xl + px) y más baja (aspect 21/9)
+    //    para que las Noticias asomen sin scrollear.
+    <div className="mx-auto max-w-6xl px-4 mt-6">
+      <div className="group relative rounded-[26px] aspect-[5/6] sm:aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-stone-900 select-none shadow-[0_24px_60px_-20px_rgba(58,21,8,0.5)] ring-1 ring-black/5">
         {isAdmin && (
           <div className="absolute top-4 right-4 z-30">
             <CarouselAdminTools compact />
@@ -137,8 +140,8 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               )}
 
               {/* Degradado más prolijo, en tono de marca */}
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-deep via-brand-deep/45 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#3a1508] via-[#3a1508]/45 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#3a1508]/70 via-transparent to-transparent" />
             </div>
           );
         })}
@@ -151,14 +154,8 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
             className="absolute inset-x-0 bottom-0 z-20 p-6 sm:p-8 md:p-11 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700"
           >
             <div className="max-w-2xl pointer-events-auto">
-              {activeItem.tag && (
-                <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-brand-gold" />
-                  {activeItem.tag}
-                </span>
-              )}
               {activeItem.title && (
-                <h1 className="font-display text-[26px] sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.04] mb-3 drop-shadow-sm text-balance">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[1.04] mb-3 drop-shadow-sm text-balance">
                   {activeItem.title}
                 </h1>
               )}
@@ -170,7 +167,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               {activeItem.link && (
                 <a
                   href={activeItem.link}
-                  className="group/btn inline-flex items-center gap-2 rounded-full bg-white text-brand-deep hover:bg-white/90 px-6 py-2.5 text-sm font-black shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none"
+                  className="group/btn inline-flex items-center gap-2 rounded-full bg-white text-[#3a1508] hover:bg-white/90 px-6 py-2.5 text-sm font-black shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none"
                 >
                   {activeItem.buttonText || "Ver más"}
                   <ChevronRight size={15} className="transition-transform duration-200 group-hover/btn:translate-x-0.5" />
@@ -213,7 +210,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
                 >
                   {i === active && (
                     <div
-                      className="absolute inset-y-0 left-0 bg-brand-gold rounded-full"
+                      className="absolute inset-y-0 left-0 bg-[#e3a92c] rounded-full"
                       style={{ width: `${progress}%`, transition: "width 50ms linear" }}
                     />
                   )}
@@ -224,5 +221,6 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
           </>
         )}
       </div>
+    </div>
   );
 }

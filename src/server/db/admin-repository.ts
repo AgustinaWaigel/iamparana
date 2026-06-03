@@ -39,6 +39,9 @@ export type CarouselInput = {
   imageDesktop: string;
   imageMobile: string;
   alt: string;
+  title?: string | null;
+  description?: string | null;
+  tag?: string | null;
   link?: string | null;
   buttonText?: string | null;
   order?: number;
@@ -272,7 +275,7 @@ export async function listCarouselItems() {
 export async function getCarouselAdmin(id: number) {
   const client = clientOrThrow();
   const result = await client.execute({
-    sql: "SELECT id, slug, imageDesktop, imageMobile, alt, link, buttonText, \"order\" FROM carousel WHERE id = ? LIMIT 1",
+    sql: "SELECT id, slug, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\" FROM carousel WHERE id = ? LIMIT 1",
     args: [id],
   });
   return result.rows[0] ?? null;
@@ -281,16 +284,16 @@ export async function getCarouselAdmin(id: number) {
 export async function createCarouselAdmin(data: CarouselInput) {
   const client = clientOrThrow();
   await client.execute({
-    sql: "INSERT INTO carousel (slug, imageDesktop, imageMobile, alt, link, buttonText, \"order\") VALUES (?, ?, ?, ?, ?, ?, ?)",
-    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0],
+    sql: "INSERT INTO carousel (slug, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.title ?? null, data.description ?? null, data.tag ?? null, data.link ?? null, data.buttonText ?? null, data.order ?? 0],
   });
 }
 
 export async function updateCarouselAdmin(id: number, data: CarouselInput) {
   const client = clientOrThrow();
   await client.execute({
-    sql: "UPDATE carousel SET slug = ?, imageDesktop = ?, imageMobile = ?, alt = ?, link = ?, buttonText = ?, \"order\" = ? WHERE id = ?",
-    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.link ?? null, data.buttonText ?? null, data.order ?? 0, id],
+    sql: "UPDATE carousel SET slug = ?, imageDesktop = ?, imageMobile = ?, alt = ?, title = ?, description = ?, tag = ?, link = ?, buttonText = ?, \"order\" = ? WHERE id = ?",
+    args: [data.slug ?? null, normalizeCarouselImagePath(data.imageDesktop), normalizeCarouselImagePath(data.imageMobile), data.alt, data.title ?? null, data.description ?? null, data.tag ?? null, data.link ?? null, data.buttonText ?? null, data.order ?? 0, id],
   });
 }
 

@@ -5,6 +5,7 @@ import { createClient } from "@libsql/client";
 let cachedClient: ReturnType<typeof createClient> | null = null;
 const globalForTurso = globalThis as typeof globalThis & {
   __iamparanaSchemaInitialized?: boolean;
+  __iamparanaCarouselColumnsMigrated?: boolean;
 };
 
 const SCHEMA_SQL = `
@@ -54,6 +55,9 @@ CREATE TABLE IF NOT EXISTS carousel (
   imageDesktop TEXT NOT NULL,
   imageMobile TEXT NOT NULL,
   alt TEXT NOT NULL,
+  title TEXT,
+  description TEXT,
+  tag TEXT,
   link TEXT,
   buttonText TEXT,
   "order" INTEGER DEFAULT 999,
@@ -514,6 +518,19 @@ async function ensureJuegosSections() {
   );
 }
 
+export async function ensureCarouselColumns() {
+  if (!cachedClient || globalForTurso.__iamparanaCarouselColumnsMigrated) return;
+  for (const col of ['title TEXT', 'description TEXT', 'tag TEXT']) {
+    try {
+      await cachedClient.execute(`ALTER TABLE carousel ADD COLUMN ${col}`);
+    } catch (error) {
+      const msg = String(error instanceof Error ? error.message : error || '').toLowerCase();
+      if (!msg.includes('duplicate column') && !msg.includes('no such column')) throw error;
+    }
+  }
+  globalForTurso.__iamparanaCarouselColumnsMigrated = true;
+}
+
 async function ensurePasswordResetsTable() {
   if (!cachedClient) return;
   try {
@@ -565,6 +582,7 @@ async function initializeSchema() {
     await ensureThumbnailColumns();
     await ensureJuegosSections();
     await ensurePasswordResetsTable();
+    await ensureCarouselColumns();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
     console.log('✓ Schema de base de datos inicializado');
@@ -595,4 +613,5 @@ export function getTursoClient() {
 export async function ensureSchemaInitialized() {
   getTursoClient(); // Asegurar que el cliente existe
   await initializeSchema();
+  await ensureCarouselColumns(); // migración independiente del flag principal
 }

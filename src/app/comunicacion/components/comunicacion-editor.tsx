@@ -482,10 +482,10 @@ export function ComunicacionEditor({ isAdmin, onRefresh }: ComunicacionEditorPro
                 )}
 
                 <div className="flex gap-3 pt-6 mt-4 border-t border-stone-100">
-                  <button type="button" onClick={() => setIsOpen(false)} disabled={isLoading} className="flex-1 px-4 py-3 rounded-xl border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors disabled:opacity-50">
+                  <button type="button" onClick={() => setIsOpen(false)} disabled={isLoading} className="btn-secondary flex-1 py-3">
                     Cancelar
                   </button>
-                  <button type="submit" disabled={isLoading} className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-black hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-md">
+                  <button type="submit" disabled={isLoading} className="btn-primary flex-1 py-3">
                     {isLoading ? (
                       <><Loader2 size={18} className="animate-spin" /> Guardando...</>
                     ) : (

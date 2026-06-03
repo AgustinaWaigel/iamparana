@@ -50,6 +50,9 @@ async function handleUpdate(req: Request, params: Promise<{ id: string }>) {
       const formData = await req.formData();
 
       const alt = String(formData.get("alt") ?? current.alt ?? "").trim();
+      const titleRaw = String(formData.get("title") ?? current.title ?? "").trim();
+      const descriptionRaw = String(formData.get("description") ?? current.description ?? "").trim();
+      const tagRaw = String(formData.get("tag") ?? current.tag ?? "").trim();
       const linkRaw = String(formData.get("link") ?? current.link ?? "").trim();
       const buttonTextRaw = String(formData.get("buttonText") ?? current.buttonText ?? "").trim();
       const orderRaw = String(formData.get("order") ?? current.order ?? "0").trim();
@@ -102,6 +105,9 @@ async function handleUpdate(req: Request, params: Promise<{ id: string }>) {
         imageDesktop,
         imageMobile,
         alt,
+        title: titleRaw !== "" ? titleRaw : null,
+        description: descriptionRaw !== "" ? descriptionRaw : null,
+        tag: tagRaw !== "" ? tagRaw : null,
         link: linkRaw !== "" ? linkRaw : null,
         buttonText: buttonTextRaw !== "" ? buttonTextRaw : null,
         order: Number.isNaN(Number(orderRaw)) ? 0 : Number(orderRaw),

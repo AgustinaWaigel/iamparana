@@ -167,7 +167,7 @@ export default function UsuariosPage() {
         
         <Link 
           href="/admin/usuarios/nuevo"
-          className="inline-flex items-center gap-2 bg-brand-brown text-white px-5 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95"
+          className="btn-primary"
         >
           <Plus size={20} />
           Nuevo Usuario

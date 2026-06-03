@@ -69,7 +69,7 @@ export default function RecuperarPage() {
                 <p className="text-amber-700/70 text-xs">El link expira en 1 hora.</p>
                 <button
                   onClick={() => router.push('/auth/login')}
-                  className="w-full bg-brand-brown text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-stone-800 transition-colors mt-2"
+                  className="btn-primary w-full mt-2"
                 >
                   Volver al login
                 </button>
@@ -109,7 +109,7 @@ export default function RecuperarPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-brand-brown text-white py-3 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-[0_10px_20px_rgba(98,45,13,0.15)] hover:shadow-[0_15px_25px_rgba(98,45,13,0.25)] disabled:opacity-50 active:scale-[0.98] text-sm"
+                  className="btn-primary w-full py-3"
                 >
                   <div className="flex items-center justify-center gap-2">
                     {loading ? <Loader2 className="animate-spin" size={18} /> : <span>Enviar link de recuperación</span>}

@@ -19,6 +19,9 @@ interface CarouselAdminItem {
   imageDesktop: string;
   imageMobile?: string;
   alt: string;
+  title?: string | null;
+  description?: string | null;
+  tag?: string | null;
   link?: string | null;
   buttonText?: string | null;
   order?: number | null;
@@ -31,6 +34,9 @@ interface DeleteDraft {
 
 const EMPTY_FORM = {
   alt: "",
+  title: "",
+  description: "",
+  tag: "",
   link: "",
   buttonText: "",
   order: 0,
@@ -98,6 +104,9 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
     setEditingId(item.id);
     setFormData({
       alt: item.alt || "",
+      title: item.title || "",
+      description: item.description || "",
+      tag: item.tag || "",
       link: item.link || "",
       buttonText: item.buttonText || "",
       order: Number(item.order ?? 0),
@@ -144,6 +153,9 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
     if (fileDesktop) body.append("fileDesktop", fileDesktop);
     if (fileMobile) body.append("fileMobile", fileMobile);
     body.append("alt", formData.alt);
+    body.append("title", formData.title);
+    body.append("description", formData.description);
+    body.append("tag", formData.tag);
     body.append("link", formData.link);
     body.append("buttonText", formData.buttonText);
     body.append("order", formData.order.toString());
@@ -314,6 +326,39 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
                 value={formData.alt}
                 onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
                 required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Título del slide</label>
+              <input
+                type="text"
+                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Ej: Jornada diocesana de la infancia misionera"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Bajada (descripción)</label>
+              <textarea
+                rows={2}
+                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                placeholder="Breve descripción del slide"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-stone-500 ml-1">Chip / Categoría</label>
+              <input
+                type="text"
+                className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Ej: Encuentros, Formación, Novedades"
+                value={formData.tag}
+                onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
               />
             </div>
 

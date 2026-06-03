@@ -9,7 +9,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "brand-brown": "#622d0d", // Aseguramos que este color exista
+        brand: {
+          brown:    "#622d0d",
+          deep:     "#3a1508",
+          wood:     "#7a3a13",
+          gold:     "#e3a92c",
+          goldsoft: "#f4cd74",
+          cream:    "#f6f1ea",
+          paper:    "#fbf8f3",
+          ink:      "#2c1d11",
+        },
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        sans:    ["var(--font-sans)", "system-ui", "sans-serif"],
       },
     },
   },

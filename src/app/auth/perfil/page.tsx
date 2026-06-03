@@ -213,7 +213,7 @@ export default function PerfilPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand-brown px-8 py-4 font-black text-white transition-all hover:scale-[1.02] hover:bg-[#5b311b] active:scale-95 disabled:opacity-50"
+              className="btn-primary w-full py-4"
             >
               <Save size={20} />
               {isSubmitting ? 'Procesando...' : 'Actualizar Perfil'}
