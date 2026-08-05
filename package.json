@@ -12,12 +12,16 @@
     "migrate:turso": "node scripts/migrate-to-turso.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.33",
+    "@ai-sdk/groq": "^4.0.22",
+    "@ai-sdk/react": "^4.0.55",
     "@hello-pangea/dnd": "^18.0.1",
     "@libsql/client": "^0.17.2",
     "@tombatossals/react-chords": "^0.2.10",
     "@types/nodemailer": "^8.0.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
+    "ai": "^7.0.52",
     "argon2": "^0.44.0",
     "googleapis": "^171.4.0",
     "gray-matter": "^4.0.3",
@@ -34,7 +38,8 @@
     "sharp": "^0.34.1",
     "tailwindcss-animate": "^1.0.7",
     "upstash": "^0.0.1",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

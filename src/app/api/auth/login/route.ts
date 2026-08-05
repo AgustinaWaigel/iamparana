@@ -26,8 +26,17 @@ const DUMMY_HASH = "$2b$10$Z9M3.8QxG1K7S8R9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
-    const { success: limitOk } = await ratelimit.limit(ip);
-    
+    let limitOk = true;
+    try {
+      const { success } = await ratelimit.limit(ip);
+      limitOk = success;
+    } catch (rlErr) {
+      console.warn("⚠️ Rate limit check failed:", rlErr);
+      // Si falla la comprobación de rate limit por problemas de red/DNS,
+      // permitimos la solicitud en lugar de devolver 500 para no romper la UX.
+      limitOk = true;
+    }
+
     if (!limitOk) {
       return NextResponse.json(
         { error: "Demasiados intentos. Intente nuevamente en un minuto." }, 

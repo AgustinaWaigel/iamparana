@@ -12,7 +12,14 @@ const ratelimit = new Ratelimit({
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
-    const { success: limitOk } = await ratelimit.limit(`reset:${ip}`);
+    let limitOk = true;
+    try {
+      const { success } = await ratelimit.limit(`reset:${ip}`);
+      limitOk = success;
+    } catch (rlErr) {
+      console.warn("⚠️ Rate limit check failed:", rlErr);
+      limitOk = true;
+    }
 
     if (!limitOk) {
       return NextResponse.json(
