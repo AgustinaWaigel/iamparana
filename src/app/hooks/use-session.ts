@@ -38,11 +38,20 @@ async function loadSession(): Promise<SessionState> {
           } satisfies SessionState;
         }
 
-        const user: User = await response.json();
+        const user: User | null = await response.json().catch(() => null);
+        if (!user) {
+          return {
+            user: null,
+            isLoading: false,
+            isAdmin: false,
+          } satisfies SessionState;
+        }
+
+        const normalizedRole = typeof user.role === 'string' ? user.role.toLowerCase() : '';
         return {
           user,
           isLoading: false,
-          isAdmin: user.role === 'admin',
+          isAdmin: normalizedRole === 'admin' || normalizedRole === 'equipo' || normalizedRole === 'coordinador',
         } satisfies SessionState;
       })
       .catch((error) => {
