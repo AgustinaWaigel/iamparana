@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const AUTH_COOKIE_NAME = "auth_session";
+const AUTH_COOKIE_NAME = "iam_auth";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

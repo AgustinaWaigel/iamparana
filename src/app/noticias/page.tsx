@@ -7,6 +7,24 @@ import { listNoticiasPreview } from "@/server/db/content-repository";
 import { Search } from "lucide-react";
 export const dynamic = "force-dynamic";
 
+function parseDate(dateStr: string): Date {
+  if (!dateStr) return new Date(0);
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) return d;
+  return new Date(0);
+}
+
+function formatDate(dateStr: string): string {
+  const d = parseDate(dateStr);
+  if (d.getTime() === 0) return dateStr;
+  return d.toLocaleDateString('es-AR');
+}
+
 interface Noticia {
   slug: string;
   title: string;
@@ -17,7 +35,10 @@ interface Noticia {
 }
 
 export default async function Noticias() {
-  const noticias = await listNoticiasPreview() as Noticia[];
+  let noticias = await listNoticiasPreview() as Noticia[];
+  
+  // Sort by date descending
+  noticias = noticias.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
 
   // Contar noticias por categoría
   const categorias = [
@@ -35,26 +56,37 @@ export default async function Noticias() {
       <section
         className="relative overflow-hidden px-6 sm:px-12 py-20 sm:py-28"
         style={{
-          backgroundColor: '#5a3a24',
-          backgroundImage: `linear-gradient(135deg, rgba(58, 34, 20, 0.98) 0%, rgba(90, 58, 36, 0.95) 100%), url('/assets/textures/areasg.webp')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundColor: "#5a3a24",
+          backgroundImage: `
+            linear-gradient(
+              135deg,
+              rgba(58, 34, 20, 0.98) 0%,
+              rgba(90, 58, 36, 0.95) 100%
+            ),
+            url('/assets/textures/areasg.webp')
+          `,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_70%)]" />
-        
-        <div className="relative max-w-7xl mx-auto">
+
+        <div className="relative max-w-7xl mx-auto text-left">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+            
             {/* Contenido izquierdo */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 text-left">
               <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-gold block mb-4">
                 Sala de Prensa
               </span>
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black leading-none mb-6 text-white drop-shadow-lg">
+
+              <h1 className="m-0 text-6xl sm:text-7xl lg:text-8xl font-black leading-none mb-6 text-white drop-shadow-lg">
                 Noticias
               </h1>
-              <p className="text-lg sm:text-xl leading-relaxed text-amber-100 max-w-lg">
-                Entérate de las últimas novedades, encuentros y propuestas de la Infancia y Adolescencia Misionera de Paraná.
+
+              <p className="m-0 max-w-lg text-lg sm:text-xl leading-relaxed text-amber-100">
+                Entérate de las últimas novedades, encuentros y propuestas de la
+                Infancia y Adolescencia Misionera de Paraná.
               </p>
             </div>
 
@@ -66,9 +98,14 @@ export default async function Noticias() {
                   placeholder="Buscar noticias..."
                   className="w-full px-6 py-3.5 pr-12 rounded-full bg-white text-brand-brown placeholder-brand-brown/40 border-0 focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all shadow-2xl"
                 />
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-brown/50 pointer-events-none" size={18} />
+
+                <Search
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-brown/50 pointer-events-none"
+                  size={18}
+                />
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -116,7 +153,7 @@ export default async function Noticias() {
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                         <p className="text-xs text-gray-500 font-semibold">
-                          {new Date(noticias[0].date).toLocaleDateString('es-AR')}
+                          {formatDate(noticias[0].date)}
                         </p>
                         <span className="text-sm font-bold text-brand-brown group-hover:translate-x-1 transition-transform">
                           Leer más →
@@ -157,7 +194,7 @@ export default async function Noticias() {
                               {item.title}
                             </h3>
                             <p className="text-[11px] text-gray-500 font-semibold mt-2">
-                              {new Date(item.date).toLocaleDateString('es-AR')}
+                              {formatDate(item.date)}
                             </p>
                           </div>
                         </Link>
@@ -205,7 +242,7 @@ export default async function Noticias() {
                           {item.description}
                         </p>
                         <p className="text-xs text-gray-500 font-semibold">
-                          {new Date(item.date).toLocaleDateString('es-AR')}
+                          {formatDate(item.date)}
                         </p>
                       </div>
                     </Link>

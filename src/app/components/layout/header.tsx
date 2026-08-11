@@ -222,7 +222,7 @@ const Header: React.FC = () => {
                 ) : (
                   <li className="mt-2 w-full md:mt-0 md:w-auto">
                     <Link
-                      href="/auth/login"
+                      href="/auth/registro"
                       className="block w-full rounded-full bg-brand-gold px-5 py-2 text-center text-[13.5px] font-bold text-brand-deep shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brand-goldsoft md:w-auto"
                     >
                       Sumate

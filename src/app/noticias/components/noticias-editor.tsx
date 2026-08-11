@@ -53,10 +53,32 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
   const textareasRef = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   useEffect(() => {
-    if (isAdmin && isOpen && !showList && noticiasExistentes.length === 0) {
+    if (isAdmin && isOpen && showList && noticiasExistentes.length === 0) {
       cargarNoticiasExistentes();
     }
-  }, [isAdmin, isOpen, showList]);
+  }, [isAdmin, isOpen, showList, noticiasExistentes.length]);
+
+  useEffect(() => {
+    if (editingNoticia && editingNoticia.slug) {
+      const fetchFullNoticia = async () => {
+        setIsLoading(true);
+        setIsOpen(true);
+        setError('');
+        try {
+          const res = await fetch(`/api/admin/noticias/${editingNoticia.slug}`, { credentials: 'include' });
+          if (!res.ok) throw new Error('Error cargando noticia completa');
+          const fullNoticia = await res.json();
+          handleEditarNoticia(fullNoticia);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchFullNoticia();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingNoticia]);
 
   const cargarNoticiasExistentes = async () => {
     setCargandoNoticias(true);

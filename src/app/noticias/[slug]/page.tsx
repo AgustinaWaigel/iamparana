@@ -6,6 +6,8 @@ import Novedades from '@/app/components/common/novedades';
 import { NoticiaGaleriaView } from '@/app/noticias/components/noticia-galeria-view';
 import { notFound } from 'next/navigation';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
+import { NoticiasClient } from '@/app/noticias/components/noticias-client';
+import { NoticiasAdminButtons } from '@/app/noticias/components/noticias-admin-buttons';
 
 type Props = {
   params: Promise<{
@@ -71,10 +73,22 @@ export default async function NoticiaPage(props: Props) {
   }
 
   return (
-    <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-16">
-      <article className="w-full bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-5 md:p-10">
+    <NoticiasClient>
+      <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-16">
+        <article className="relative w-full bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-5 md:p-10">
+          
+          <NoticiasAdminButtons 
+            noticia={{
+              slug: params.slug,
+              title: title,
+              description: description,
+              image: image,
+              date: date
+            }} 
+            alwaysVisible={true} 
+          />
 
-        <span className="inline-flex rounded-full bg-brand-brown/10 px-3 py-1 text-brand-brown font-bold text-xs uppercase tracking-wider mb-3">
+          <span className="inline-flex rounded-full bg-brand-brown/10 px-3 py-1 text-brand-brown font-bold text-xs uppercase tracking-wider mb-3">
           {categoryLabel}
         </span>
 
@@ -224,6 +238,7 @@ export default async function NoticiaPage(props: Props) {
           <Novedades currentSlug={params.slug} />
         </section>
       </article>
-    </main>
+      </main>
+    </NoticiasClient>
   );
 }

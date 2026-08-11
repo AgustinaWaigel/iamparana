@@ -16,9 +16,10 @@ interface Noticia {
 
 interface NoticiasAdminButtonsProps {
   noticia: Noticia;
+  alwaysVisible?: boolean;
 }
 
-export function NoticiasAdminButtons({ noticia }: NoticiasAdminButtonsProps) {
+export function NoticiasAdminButtons({ noticia, alwaysVisible = false }: NoticiasAdminButtonsProps) {
   const { isAdmin } = useSession();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -44,7 +45,7 @@ export function NoticiasAdminButtons({ noticia }: NoticiasAdminButtonsProps) {
   };
 
   return (
-    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+    <div className={`absolute top-2 right-2 flex gap-2 transition-opacity z-20 ${alwaysVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
       <AdminActionButton
         action="edit"
         onClick={handleEdit}

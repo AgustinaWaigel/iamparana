@@ -31,9 +31,11 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      // Verificar que el endpoint devolvió un usuario válido (estructura plana)
+      // Si ya hay una sesión activa, el usuario puede volver al inicio.
+      // No lo redirigimos al admin automáticamente para permitir que usuarios
+      // normales entren al sitio con permisos básicos.
       if (data && typeof data === 'object' && 'id' in data) {
-        router.replace('/admin');
+        router.replace('/');
       }
     } catch (err) {
       console.error('Auth check failed', err);
@@ -70,7 +72,9 @@ export default function LoginPage() {
       setStatus({ message: '¡Bienvenido! Redirigiendo...', isError: false });
 
       // Pequeño delay para que el usuario vea el mensaje de éxito
-      setTimeout(() => router.replace('/'), 800);
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 800);
     } catch (err: any) {
       setStatus({ message: err.message, isError: true });
       setLoading(false);
@@ -142,7 +146,12 @@ export default function LoginPage() {
             {/* Cabecera */}
             <div className="px-7 pt-7 pb-5 border-b border-stone-50">
               <h2 className="text-stone-800 text-lg font-bold tracking-tight">Iniciar sesión</h2>
-              <p className="text-stone-400 text-xs mt-0.5">Ingresá tus credenciales para acceder al panel</p>
+              <p className="text-stone-400 text-xs mt-0.5">Ingresá tus credenciales para acceder al sitio</p>
+            </div>
+
+            <div className="px-7 pt-4 text-sm text-stone-500">
+              ¿No tenés cuenta?{' '}
+              <Link href="/auth/registro" className="font-semibold text-amber-700 hover:text-amber-900">Creá una cuenta</Link>
             </div>
 
             <form onSubmit={handleLogin} className="p-7 space-y-4">

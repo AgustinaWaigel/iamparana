@@ -8,6 +8,8 @@ import { getSessionUserByTokenHash } from '@/server/db/auth-repository';
 import { AUTH_COOKIE_NAME, hashSessionToken } from '@/server/lib/auth-security';
 
 // Este componente protege las rutas /admin/* y valida que el usuario sea admin
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
@@ -20,6 +22,7 @@ export default async function AdminLayout({
   // 2. Validación de seguridad nivel servidor
   // Si no hay cookie de sesión, redirigimos al login
   if (!sessionCookie?.value) {
+    console.log("[ADMIN_LAYOUT] No session cookie! Redirecting to login");
     redirect('/auth/login');
   }
 
@@ -30,11 +33,13 @@ export default async function AdminLayout({
 
   // 4. Si la sesión no es válida o el usuario no está activo, redirigimos al login
   if (!sessionUser || !sessionUser.isActive) {
+    console.log("[ADMIN_LAYOUT] Session invalid or inactive! Redirecting to login");
     redirect('/auth/login');
   }
 
   // 5. Validación del rol: solo administradores pueden acceder a /admin
   if (sessionUser.role !== 'admin') {
+    console.log("[ADMIN_LAYOUT] Role is not admin! Redirecting to /");
     redirect('/');
   }
 
