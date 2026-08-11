@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { badRequest, requireAreaWrite, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
 import { createSpiritualPrayer, deleteSpiritualPrayer, getSpiritualPrayer, listSpiritualPrayers, updateSpiritualPrayer } from "@/server/db/spiritual-prayers-repository";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 function validPayload(value: unknown): value is { title: string; description?: string; content: string; thumbnailUrl?: string | null } {
   if (!value || typeof value !== "object") return false;
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     if (!validPayload(body) || !auth.user?.id) return badRequest("La oración necesita título y texto");
     const id = await createSpiritualPrayer({ ...body, title: body.title.trim(), content: body.content.trim(), createdByUserId: Number(auth.user.id) });
+    await recordAuditEvent({ actor: auth.user, action: "create", entityType: "oracion", entityId: id, area: "espiritualidad", metadata: { title: body.title.trim() } });
     refresh();
     return NextResponse.json({ id }, { status: 201 });
   } catch (error) {
@@ -47,6 +49,7 @@ export async function PUT(req: Request) {
     const id = Number(body.id || 0);
     if (!id || !validPayload(body) || !(await getSpiritualPrayer(id))) return badRequest("Oración inválida o inexistente");
     await updateSpiritualPrayer(id, { ...body, title: body.title.trim(), content: body.content.trim() });
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "oracion", entityId: id, area: "espiritualidad", metadata: { title: body.title.trim(), changedFields: ["title", "description", "content", "thumbnailUrl"] } });
     refresh();
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -61,7 +64,10 @@ export async function DELETE(req: Request) {
   try {
     const id = Number(new URL(req.url).searchParams.get("id") || 0);
     if (!id || !(await getSpiritualPrayer(id))) return badRequest("Oración inexistente");
+    const prayer = await getSpiritualPrayer(id);
+    const title = prayer?.title;
     await deleteSpiritualPrayer(id);
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "oracion", entityId: id, area: "espiritualidad", metadata: { title } });
     refresh();
     return NextResponse.json({ success: true });
   } catch (error) {

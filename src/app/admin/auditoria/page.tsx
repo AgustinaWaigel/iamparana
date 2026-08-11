@@ -1,0 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { FileClock, Loader2, RefreshCw } from "lucide-react";
+
+type AuditRow = { id: number; actor_email: string; action: string; entity_type: string; entity_id: string | null; area: string | null; metadata: Record<string, unknown> | null; created_at: string };
+
+export default function AuditoriaPage() {
+  const [rows, setRows] = useState<AuditRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const load = async () => { setLoading(true); setError(""); try { const response = await fetch("/api/admin/auditoria?limit=200", { credentials: "include" }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "No se pudo cargar la bitácora"); setRows(data); } catch (cause) { setError(cause instanceof Error ? cause.message : "No se pudo cargar la bitácora"); } finally { setLoading(false); } };
+  useEffect(() => { load(); }, []);
+  return <main className="min-h-screen bg-[#F8F9FA] pt-20 pb-10"><div className="mx-auto max-w-6xl px-6"><div className="mb-8 flex flex-wrap items-center justify-between gap-4"><div><h1 className="flex items-center gap-3 text-3xl font-black text-brand-brown"><FileClock className="text-amber-600" /> Bitácora de auditoría</h1><p className="mt-2 text-stone-500">Últimas 200 modificaciones administrativas. Los registros no se pueden editar ni eliminar.</p></div><button onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-brand-brown px-4 py-2.5 font-bold text-white disabled:opacity-60"><RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Actualizar</button></div>{error && <p className="mb-4 rounded-xl bg-red-50 p-4 font-medium text-red-700">{error}</p>}<div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white shadow-sm"><table className="min-w-full text-left text-sm"><thead className="bg-stone-50 text-xs uppercase tracking-wider text-stone-500"><tr><th className="p-4">Fecha y hora</th><th className="p-4">Usuario</th><th className="p-4">Acción</th><th className="p-4">Recurso</th><th className="p-4">Detalle</th></tr></thead><tbody className="divide-y divide-stone-100">{loading ? <tr><td colSpan={5} className="p-12 text-center text-stone-500"><Loader2 className="mx-auto mb-2 animate-spin" />Cargando…</td></tr> : rows.length === 0 ? <tr><td colSpan={5} className="p-12 text-center text-stone-500">Todavía no hay acciones registradas.</td></tr> : rows.map((row) => <tr key={row.id} className="align-top text-stone-700"><td className="whitespace-nowrap p-4">{new Date(`${row.created_at}Z`).toLocaleString("es-AR")}</td><td className="p-4 font-semibold">{row.actor_email}</td><td className="p-4 capitalize">{row.action}</td><td className="p-4">{row.entity_type}{row.entity_id ? ` #${row.entity_id}` : ""}{row.area ? ` · ${row.area}` : ""}</td><td className="max-w-sm p-4 text-xs text-stone-500">{row.metadata ? JSON.stringify(row.metadata) : "—"}</td></tr>)}</tbody></table></div></div></main>;
+}

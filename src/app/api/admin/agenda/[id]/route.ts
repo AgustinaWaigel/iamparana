@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AgendaInput, deleteAgendaAdmin, getAgendaAdmin, updateAgendaAdmin } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, parseId, serverError } from "@/app/api/admin/_shared/auth";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 function isValidAgendaPayload(value: unknown): value is AgendaInput {
   if (typeof value !== "object" || value === null) return false;
@@ -53,6 +54,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       ...body,
       evento: body.evento.trim()
     });
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "evento_agenda", entityId: id, area: "administracion", metadata: { evento: body.evento.trim(), fecha: body.fecha } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -76,6 +78,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
     // 2. Ejecutamos el delete
     await deleteAgendaAdmin(id);
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "evento_agenda", entityId: id, area: "administracion", metadata: { evento: existing.evento, fecha: existing.fecha } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

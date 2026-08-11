@@ -228,18 +228,25 @@ export async function updateUser(
     args.push(params.displayName.trim() || null);
   }
 
-  if (sets.length === 0) {
+  // Puede cambiar únicamente sus áreas; en ese caso no hay columnas de users que actualizar.
+  if (sets.length === 0 && !params.areas) {
     return;
   }
 
-  sets.push("updated_at = CURRENT_TIMESTAMP");
-  args.push(id);
+  if (sets.length > 0) {
+    sets.push("updated_at = CURRENT_TIMESTAMP");
+    args.push(id);
+  }
 
   try {
+    if (sets.length === 0) {
+      // Solo se reemplazan las áreas debajo.
+    } else {
     await client.execute({
       sql: `UPDATE users SET ${sets.join(", ")} WHERE id = ?`,
       args,
     });
+    }
   } catch (error) {
     if (!isMissingDisplayNameColumnError(error)) {
       throw error;
@@ -247,7 +254,7 @@ export async function updateUser(
 
     const fallbackSets = sets.filter((entry) => !entry.startsWith("display_name"));
     if (fallbackSets.length === 0) {
-      return;
+      if (!params.areas) return;
     }
 
     const fallbackArgs = args.filter((_, index) => {
@@ -255,10 +262,12 @@ export async function updateUser(
       return entry ? !entry.startsWith("display_name") : true;
     });
 
-    await client.execute({
-      sql: `UPDATE users SET ${fallbackSets.join(", ")} WHERE id = ?`,
-      args: fallbackArgs,
-    });
+    if (fallbackSets.length > 0) {
+      await client.execute({
+        sql: `UPDATE users SET ${fallbackSets.join(", ")} WHERE id = ?`,
+        args: fallbackArgs,
+      });
+    }
   }
 
   if (params.areas) {

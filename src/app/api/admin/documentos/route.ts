@@ -11,6 +11,7 @@ import {
   updateGoogleDriveConfig,
 } from "@/server/db/admin-repository";
 import { uploadFileToDrive, getOrCreateFolder, deleteFileFromDrive } from "@/lib/google-drive-service";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 // Forzamos que la API no cachee los resultados y siempre consulte a la DB
 export const dynamic = 'force-dynamic';
@@ -109,6 +110,7 @@ export async function POST(req: NextRequest) {
         fileType: uploadResult.mimeType,
         uploadedByUserId: Number(userId),
       });
+      await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "documento", area: section, metadata: { title } });
 
     } else {
       const body = await req.json();
@@ -132,6 +134,7 @@ export async function POST(req: NextRequest) {
         fileType: "application/pdf",
         uploadedByUserId: Number(auth.user?.id),
       });
+      await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "documento", area: tipo || "formacion", metadata: { title: titulo } });
     }
 
     // Limpieza de cache para reflejar cambios en la sección correspondiente.
@@ -169,6 +172,7 @@ export async function PUT(req: NextRequest) {
       googleDriveUrl: googleDriveUrl || String(document.google_drive_url),
       thumbnailUrl: finalThumbnail,
     });
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "documento", entityId: id, area: String(document.section), metadata: { title: title || String(document.title), changedFields: ["title", "description", "googleDriveUrl", "thumbnailUrl"] } });
 
     revalidateContentSection(document.section);
 
@@ -199,6 +203,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     await deleteDocument(parseInt(id));
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "documento", entityId: id, area: String(document.section), metadata: { title: String(document.title) } });
 
     revalidateContentSection((document as { section?: unknown }).section);
 

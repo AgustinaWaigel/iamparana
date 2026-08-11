@@ -3,13 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createUser, listUsers } from "@/server/db/auth-repository";
 import { hashPassword } from "@/server/lib/auth-security";
 import { requirePermission, badRequest, serverError } from "@/server/lib/api-utils";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 /**
  * GET: Lista todos los usuarios.
  * Solo accesible para usuarios con permiso 'users.manage' (Admin).
  */
 export async function GET() {
-  const { errorResponse } = await requirePermission("users.manage");
+  const { errorResponse, user } = await requirePermission("users.manage");
   if (errorResponse) return errorResponse;
 
   try {
@@ -26,7 +27,7 @@ export async function GET() {
  * POST: Crea un nuevo usuario.
  */
 export async function POST(req: NextRequest) {
-  const { errorResponse } = await requirePermission("users.manage");
+  const { errorResponse, user } = await requirePermission("users.manage");
   if (errorResponse) return errorResponse;
 
   try {
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
     const normalizedDisplayName = String(displayName || nombre || normalizedEmail.split("@")[0]).trim();
 
     await createUser(normalizedEmail, hashedPassword, role, normalizedDisplayName);
+    if (user) await recordAuditEvent({ actor: user, action: "create", entityType: "usuario", area: "administracion", metadata: { email: normalizedEmail, role, displayName: normalizedDisplayName } });
 
     return NextResponse.json({ success: true }, { status: 201 });
 

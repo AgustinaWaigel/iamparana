@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAgendaAdmin, listAgendaAdmin } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 // GET: /api/admin/agenda (Lista completa)
 export async function GET() {
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     await createAgendaAdmin(body);
+    await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "evento_agenda", area: "administracion", metadata: { evento: body.evento, fecha: body.fecha } });
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     return serverError();

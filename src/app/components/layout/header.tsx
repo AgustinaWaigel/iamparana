@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, LogOut, Users, Settings } from 'lucide-react';
+import { ChevronDown, FileClock, LogOut, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -207,6 +207,7 @@ const Header: React.FC = () => {
                       {user.role === 'admin' && (
                         <>
                           <li><Link href="/admin/usuarios" className="flex items-center justify-center md:justify-start gap-3 rounded-xl px-4 py-3 text-[15px] md:py-2.5 font-semibold transition-colors hover:bg-white/15 hover:text-brand-gold" onClick={() => isMobile && setUserMenuOpen(false)}><Users size={16} /> Gestión Usuarios</Link></li>
+                          <li><Link href="/admin/auditoria" className="flex items-center justify-center md:justify-start gap-3 rounded-xl px-4 py-3 text-[15px] md:py-2.5 font-semibold transition-colors hover:bg-white/15 hover:text-brand-gold" onClick={() => isMobile && setUserMenuOpen(false)}><FileClock size={16} /> Bitácora de auditoría</Link></li>
                           <li><Link href="/admin/settings" className="flex items-center justify-center md:justify-start gap-3 rounded-xl px-4 py-3 text-[15px] md:py-2.5 font-semibold transition-colors hover:bg-white/15 hover:text-brand-gold" onClick={() => isMobile && setUserMenuOpen(false)}><Settings size={16} /> Configuración</Link></li>
                           <div className="mx-3 my-1 h-px bg-white/15" />
                         </>

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateUser } from "@/server/db/auth-repository";
 import { hashPassword } from "@/server/lib/auth-security";
 import { requirePermission, badRequest, serverError, parseId } from "@/app/api/admin/_shared/auth";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 /**
  * PUT: Actualiza un usuario específico.
@@ -12,7 +13,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // 1. Validar permisos (Solo Admin puede gestionar usuarios)
-  const { errorResponse } = await requirePermission("users.manage");
+  const { errorResponse, user } = await requirePermission("users.manage");
   if (errorResponse) return errorResponse;
 
   // 2. Validar ID
@@ -55,6 +56,7 @@ export async function PUT(
       isAnimator: typeof isAnimator === 'boolean' ? isAnimator : undefined,
       areas: Array.isArray(areas) ? areas : undefined,
     });
+    if (user) await recordAuditEvent({ actor: user, action: "update", entityType: "usuario", entityId: id, area: "administracion", metadata: { changedFields: [role !== undefined && "role", normalizedIsActive !== undefined && "isActive", password !== undefined && "password", displayName !== undefined || nombre !== undefined ? "displayName" : false, isAnimator !== undefined && "isAnimator", areas !== undefined && "areas"].filter(Boolean) } });
 
     return NextResponse.json({ success: true, message: "Usuario actualizado" });
 
@@ -71,7 +73,7 @@ export async function DELETE(
   req: NextRequest, 
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { errorResponse } = await requirePermission("users.manage");
+  const { errorResponse, user } = await requirePermission("users.manage");
   if (errorResponse) return errorResponse;
 
   const { id: rawId } = await params;
@@ -82,6 +84,7 @@ export async function DELETE(
     // Nota: En tu implementación anterior DELETE solo desactivaba. 
     // Si quieres borrarlo de la DB físicamente, deberías llamar a una función deleteUser(id).
     await updateUser(id, { isActive: false });
+    if (user) await recordAuditEvent({ actor: user, action: "deactivate", entityType: "usuario", entityId: id, area: "administracion" });
     
     return NextResponse.json({ 
       success: true, 

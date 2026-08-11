@@ -8,6 +8,7 @@ import {
   updateLink,
   deleteLink,
 } from "@/server/db/admin-repository";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 function revalidateLinkedSection(sectionValue: unknown) {
   const section = String(sectionValue || '').trim().toLowerCase();
@@ -95,6 +96,7 @@ export async function POST(req: Request) {
     });
 
     const newLink = await getLink(Number(linkId));
+    await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "link", entityId: Number(linkId), area: section, metadata: { title } });
     revalidateLinkedSection(section);
     return NextResponse.json(newLink, { status: 201 });
   } catch (error) {
@@ -141,6 +143,7 @@ export async function PUT(req: Request) {
     });
 
     const updated = await getLink(parseInt(id));
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "link", entityId: id, area: String(currentLink.section), metadata: { title: title || String(currentLink.title), changedFields: ["title", "description", "url", "icon", "thumbnailUrl"] } });
     revalidateLinkedSection((currentLink as { section?: unknown }).section);
     return NextResponse.json(updated);
   } catch (error) {
@@ -168,6 +171,7 @@ export async function DELETE(req: Request) {
     }
 
     await deleteLink(parseInt(id));
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "link", entityId: id, area: String(currentLink.section), metadata: { title: String(currentLink.title) } });
     revalidateLinkedSection((currentLink as { section?: unknown }).section);
     return NextResponse.json({ success: true });
   } catch (error) {

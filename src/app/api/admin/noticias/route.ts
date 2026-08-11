@@ -7,6 +7,7 @@ import {
 } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 import { sendNotificationToAll } from "@/server/lib/push-notification-service";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 // Forzamos que el listado de noticias en el panel siempre sea fresco
 export const dynamic = 'force-dynamic';
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const slug = await createNoticiaAdmin(body);
+    await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "noticia", entityId: slug, area: "comunicacion", metadata: { title: body.title, slug } });
 
     // Enviar notificación push a todos los usuarios
     try {

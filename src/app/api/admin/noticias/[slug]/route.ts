@@ -7,6 +7,7 @@ import {
   updateNoticiaAdmin,
 } from "@/server/db/admin-repository";
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 type UpdateNoticiaInput = Omit<NoticiaInput, "slug">;
 
@@ -72,6 +73,7 @@ export async function PUT(req: NextRequest, context: Context) {
 
   try {
     await updateNoticiaAdmin(slug, body);
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "noticia", entityId: slug, area: "comunicacion", metadata: { title: body.title, changedFields: ["title", "date", "description", "image", "content"] } });
 
     // REVALIDACIÓN: Actualiza la lista de noticias y la noticia individual
     revalidatePath("/noticias");
@@ -96,7 +98,9 @@ export async function DELETE(req: NextRequest, context: Context) {
   }
 
   try {
+    const existing = await getNoticiaAdmin(slug);
     await deleteNoticiaAdmin(slug);
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "noticia", entityId: slug, area: "comunicacion", metadata: { title: existing?.title } });
 
     // REVALIDACIÓN: Limpia la lista después de borrar
     revalidatePath("/noticias");

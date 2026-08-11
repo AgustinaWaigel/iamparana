@@ -8,6 +8,7 @@ import {
   listResourcePages,
   updateResourcePage,
 } from "@/server/db/resource-pages-repository";
+import { recordAuditEvent } from "@/server/db/audit-repository";
 
 function revalidateResourcePages() {
   revalidatePath('/animacion');
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
       template: template || "gold",
       createdByUserId: Number(userId),
     });
+    await recordAuditEvent({ actor: auth.user!, action: "create", entityType: "pagina_recurso", entityId: id, area: section, metadata: { title, slug } });
 
     revalidateResourcePages();
 
@@ -108,6 +110,7 @@ export async function PUT(req: Request) {
       textureUrl: textureUrl || "",
       template: template || "gold",
     });
+    await recordAuditEvent({ actor: auth.user!, action: "update", entityType: "pagina_recurso", entityId: id, area: page.section, metadata: { title: title || page.title, changedFields: ["title", "description", "thumbnailUrl", "textureUrl", "template"] } });
 
     revalidateResourcePages();
 
@@ -130,7 +133,10 @@ export async function DELETE(req: Request) {
       return badRequest("id is required");
     }
 
+    const page = await getResourcePageById(id);
+    if (!page) return badRequest("Page not found");
     await deleteResourcePage(id);
+    await recordAuditEvent({ actor: auth.user!, action: "delete", entityType: "pagina_recurso", entityId: id, area: page.section, metadata: { title: page.title, slug: page.slug } });
     revalidateResourcePages();
     return NextResponse.json({ success: true });
   } catch (error) {

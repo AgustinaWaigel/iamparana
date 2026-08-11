@@ -247,6 +247,24 @@ CREATE TABLE IF NOT EXISTS spiritual_prayers (
 
 CREATE INDEX IF NOT EXISTS idx_spiritual_prayers_created_at ON spiritual_prayers(created_at DESC);
 
+-- Bitácora append-only de operaciones administrativas. Nunca guarda contraseñas ni tokens.
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INTEGER PRIMARY KEY,
+  actor_user_id INTEGER,
+  actor_email TEXT NOT NULL,
+  action TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT,
+  area TEXT,
+  metadata_json TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS resource_pages (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
