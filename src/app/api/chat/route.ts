@@ -22,7 +22,7 @@ async function getContextData() {
     const newsList = newsItems.slice(0, 5).map((item) => ({
       title: item.title,
       summary: item.description,
-      url: `https://iamparana.org/noticias/${item.slug}`,
+      url: `/noticias/${item.slug}`,
     }));
 
     const today = new Date();
@@ -43,7 +43,7 @@ async function getContextData() {
         title: item.evento,
         description: item.descripcion ?? "",
         date: item.fecha,
-        url: "https://iamparana.org/calendario",
+        url: "/calendario",
       }));
 
     const eventsList = upcomingEvents;
@@ -212,7 +212,7 @@ REGLAS STRICTAS DE RESPUESTA:
 2. NO inventes, completes, reformules ni agregues datos que no aparezcan textualmente en el contexto. Si no aparece un dato, no lo deduzcas.
 3. NO cambies fechas, títulos, descripciones ni detalles. Mantén exactitud literal cuando sea posible.
 4. Si la respuesta a la pregunta del usuario NO se encuentra en el contexto, responde exactamente: "Lo siento, no dispongo de esa información en la página web oficial por el momento."
-5. Cuando hables sobre una noticia o evento, incluye el enlace directo (URL) provisto en el contexto.
+5. Cuando hables sobre una noticia o evento, incluye su enlace usando formato Markdown: [texto del enlace](/ruta).
 6. Si el usuario pregunta por un evento concreto y el contexto solo menciona el título y la fecha, responde solo con lo que se sabe, sin agregar información adicional.
 
 INFORMACIÓN DE LA PÁGINA WEB:

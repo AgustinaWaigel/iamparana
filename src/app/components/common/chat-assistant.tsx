@@ -148,8 +148,20 @@ export function ChatAssistant() {
                       : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 rounded-tl-sm border border-slate-200 dark:border-slate-700 shadow-sm"
                   }`}
                 >
-                  {m.content.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
-                    if (part.match(/(https?:\/\/[^\s]+)/)) {
+                  {m.content.split(/(\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s]+)/g).map((part, i) => {
+                    const mdLinkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+                    if (mdLinkMatch) {
+                      return (
+                        <a 
+                          key={i} 
+                          href={mdLinkMatch[2]} 
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        >
+                          {mdLinkMatch[1]}
+                        </a>
+                      );
+                    }
+                    if (part.match(/^(https?:\/\/[^\s]+)$/)) {
                       return (
                         <a 
                           key={i} 
