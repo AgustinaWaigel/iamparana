@@ -19,10 +19,6 @@ export function ChatAssistant() {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  if (pathname !== '/') {
-    return null;
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanInput = input.trim();
@@ -87,6 +83,10 @@ export function ChatAssistant() {
       inputRef.current?.focus();
     }
   }, [isOpen]);
+
+  if (pathname !== '/') {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
