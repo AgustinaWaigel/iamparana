@@ -109,7 +109,7 @@ export default function LoginPage() {
             IAM Paraná
           </h2>
           <p className="text-amber-200/70 text-sm leading-relaxed max-w-[260px] mx-auto">
-            Panel de gestión de contenidos de la Infancia y adolescencia misionera de la Arquidiócesis de Paraná
+            Panel de inicio de sesion de la página de la Infancia y adolescencia misionera de la Arquidiócesis de Paraná
           </p>
 
           {/* Divisor decorativo */}

@@ -1,5 +1,6 @@
 // Administración de una canción puntual: consulta, edición y borrado por slug.
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   deleteCancionAdmin,
   getCancionAdmin,
@@ -59,6 +60,8 @@ export async function PUT(req: Request, context: { params: Promise<{ slug: strin
 
   try {
     await updateCancionAdmin(slug, body);
+    revalidatePath("/animacion/canciones");
+    revalidatePath(`/animacion/canciones/${slug}`);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -77,6 +80,8 @@ export async function DELETE(req: Request, context: { params: Promise<{ slug: st
 
   try {
     await deleteCancionAdmin(slug);
+    revalidatePath("/animacion/canciones");
+    revalidatePath(`/animacion/canciones/${slug}`);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

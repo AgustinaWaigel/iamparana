@@ -1,5 +1,6 @@
 // Administración del cancionero: alta y listado de canciones desde el panel.
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   CancionInput,
   createCancionAdmin,
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
 
   try {
     await createCancionAdmin(body);
+    revalidatePath("/animacion/canciones");
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error(error);

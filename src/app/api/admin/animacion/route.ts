@@ -11,6 +11,9 @@ function clientOrThrow() {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requirePermission('content.read');
+  if ('errorResponse' in auth) return auth.errorResponse;
+
   try {
     const client = clientOrThrow();
     const result = await client.execute(

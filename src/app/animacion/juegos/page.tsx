@@ -3,6 +3,9 @@ import { Metadata } from 'next';
 import { getAllJuegos } from '@/server/content/juegos';
 import { JuegosClientContent } from '@/app/components/common/juegos-client-content';
 import { HeroSection } from '@/app/components/common/hero-section';
+import { getDocumentsBySection } from '@/server/db/admin-repository';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Juegos',
@@ -28,7 +31,11 @@ export const metadata: Metadata = {
 };
 
 export default async function juegosPage() {
-  const juegos = await getAllJuegos();
+  const [juegos, gameDocumentsRaw] = await Promise.all([
+    getAllJuegos(),
+    getDocumentsBySection('juegos'),
+  ]);
+  const gameDocuments = JSON.parse(JSON.stringify(gameDocumentsRaw)) as Array<{ id: number; title: string; description: string | null; google_drive_url: string | null }>;
 
   return (
     <>
@@ -64,18 +71,17 @@ export default async function juegosPage() {
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {[
-                ['700 dinamicas grupales', '1gsCxSr22fyU-71TrGtsb3y7_wTYzyp-X'],
-                ['Fichero de Juegos', '1h46jXEvx0zhryjhoAypyTyjB51HNaZ1U'],
-              ].map(([title, id]) => (
+              {gameDocuments.length === 0 ? (
+                <p className="text-sm text-stone-500">Todavía no hay documentos de juegos cargados.</p>
+              ) : gameDocuments.map((document) => (
                 <a
-                  key={id}
-                  href={`https://drive.google.com/file/d/${id}/view?usp=sharing`}
+                  key={document.id}
+                  href={document.google_drive_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-between rounded-2xl border border-emerald-100/70 bg-emerald-50/60 px-5 py-4 font-bold text-emerald-900 transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100"
                 >
-                  <span>{title}</span>
+                  <span>{document.title}</span>
                   <span className="text-xs font-black uppercase tracking-[0.25em] text-emerald-700/60">Abrir</span>
                 </a>
               ))}

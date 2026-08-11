@@ -25,6 +25,12 @@ function revalidateContentSection(sectionValue: unknown) {
     juegos: ['/animacion', '/animacion/juegos'],
     canciones: ['/animacion', '/animacion/canciones'],
     recursos: ['/animacion', '/animacion/recursos'],
+    espiritualidad: ['/espiritualidad'],
+    oraciones: ['/espiritualidad'],
+    guiones: ['/espiritualidad'],
+    presupuestos: ['/logistica'],
+    rendiciones: ['/logistica'],
+    inventario: ['/logistica'],
   };
 
   const routes = routesBySection[section] || [`/${section}`];

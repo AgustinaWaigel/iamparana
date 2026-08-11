@@ -2,21 +2,22 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, FileText, GraduationCap, Link as LinkIcon, Pencil, Trash2, SearchX } from 'lucide-react';
+import { ExternalLink, FileText, GraduationCap, Heart, Link as LinkIcon, Pencil, Trash2, SearchX } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 // --- TYPES ---
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; section: string; };
 type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
 type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; template: string; };
+type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; };
 
 // Eliminamos el tipo 'static'
 type CardItem = {
   id: string;
-  kind: 'document' | 'link' | 'resource-page';
+  kind: 'document' | 'link' | 'resource-page' | 'text-prayer';
   title: string;
   description: string;
   href: string;
@@ -26,6 +27,7 @@ type CardItem = {
   googleDriveUrl?: string | null;
   linkUrl?: string;
   thumbnailUrl?: string | null;
+  content?: string;
 };
 
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
@@ -35,6 +37,7 @@ interface EspiritualidadCardsGridProps {
   uploadedDocuments: UploadedDocument[];
   uploadedLinks: UploadedLink[];
   resourcePages: ResourcePageCard[];
+  textPrayers: TextPrayer[];
 }
 
 function isValidImageSource(value?: string | null): boolean {
@@ -45,14 +48,22 @@ function isValidImageSource(value?: string | null): boolean {
   return src.startsWith('http://') || src.startsWith('https://');
 }
 
+function documentBadge(section: string): string {
+  if (section === 'oraciones') return 'Oración';
+  if (section === 'guiones') return 'Guion de oración';
+  return 'Recurso espiritual';
+}
+
 // --- MAIN COMPONENT ---
-export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages }: EspiritualidadCardsGridProps) {
+export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages, textPrayers }: EspiritualidadCardsGridProps) {
   const { isAdmin } = useSession();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [documentsState, setDocumentsState] = useState(uploadedDocuments);
   const [linksState, setLinksState] = useState(uploadedLinks);
   const [resourcePagesState, setResourcePagesState] = useState(resourcePages);
+  const [textPrayersState, setTextPrayersState] = useState(textPrayers);
+  const [readingPrayer, setReadingPrayer] = useState<CardItem | null>(null);
   
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [editBusy, setEditBusy] = useState(false);
@@ -67,6 +78,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
   useEffect(() => setDocumentsState(uploadedDocuments), [uploadedDocuments]);
   useEffect(() => setLinksState(uploadedLinks), [uploadedLinks]);
   useEffect(() => setResourcePagesState(resourcePages), [resourcePages]);
+  useEffect(() => setTextPrayersState(textPrayers), [textPrayers]);
 
   // --- HANDLERS ---
   const openEditModal = (card: CardItem) => {
@@ -79,7 +91,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
       resourceId: card.resourceId,
       title: card.title,
       description: card.description,
-      url: card.kind === 'link' ? card.linkUrl || card.href : '',
+      url: card.kind === 'link' ? card.linkUrl || card.href : card.content || '',
     });
   };
 
@@ -187,6 +199,15 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
         });
         if (!response.ok) throw new Error('No se pudo actualizar la página');
         setResourcePagesState((prev) => prev.map((item) => (item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, thumbnail_url: nextThumbnailUrl || null } : item)));
+      } else if (editDraft.kind === 'text-prayer') {
+        const content = editDraft.url.trim();
+        if (!content) throw new Error('El texto de la oración es obligatorio');
+        const response = await fetch('/api/admin/oraciones', {
+          method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editDraft.resourceId, title: nextTitle, description: nextDescription, content, thumbnailUrl: nextThumbnailUrl }),
+        });
+        if (!response.ok) throw new Error('No se pudo actualizar la oración');
+        setTextPrayersState((prev) => prev.map((item) => item.id === editDraft.resourceId ? { ...item, title: nextTitle, description: nextDescription, content, thumbnail_url: nextThumbnailUrl } : item));
       }
       closeEditModal();
     } catch (err) {
@@ -203,7 +224,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
 
     try {
       const endpoint = deleteDraft.kind === 'document' ? '/api/admin/documentos' :
-                       deleteDraft.kind === 'link' ? '/api/admin/links' : '/api/admin/resource-pages';
+                       deleteDraft.kind === 'link' ? '/api/admin/links' : deleteDraft.kind === 'text-prayer' ? '/api/admin/oraciones' : '/api/admin/resource-pages';
 
       const response = await fetch(`${endpoint}?id=${deleteDraft.resourceId}`, { method: 'DELETE', credentials: 'include' });
       if (!response.ok) throw new Error(`No se pudo eliminar el ${deleteDraft.kind}`);
@@ -211,6 +232,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
       if (deleteDraft.kind === 'document') setDocumentsState((prev) => prev.filter((item) => item.id !== deleteDraft.resourceId));
       if (deleteDraft.kind === 'link') setLinksState((prev) => prev.filter((item) => item.id !== deleteDraft.resourceId));
       if (deleteDraft.kind === 'resource-page') setResourcePagesState((prev) => prev.filter((item) => item.id !== deleteDraft.resourceId));
+      if (deleteDraft.kind === 'text-prayer') setTextPrayersState((prev) => prev.filter((item) => item.id !== deleteDraft.resourceId));
       
       setDeleteDraft(null);
     } catch (err) {
@@ -222,14 +244,19 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
 
   // --- DATA TRANSFORMATION ---
   const cards = useMemo<CardItem[]>(() => {
+  const prayerCards: CardItem[] = textPrayersState.map((prayer) => ({
+    id: `text-prayer-${prayer.id}`, kind: 'text-prayer', title: prayer.title,
+    description: prayer.description || 'Oración para rezar en comunidad o de manera personal.', href: '', badge: 'Oración', accent: 'blue',
+    resourceId: prayer.id, thumbnailUrl: prayer.thumbnail_url, content: prayer.content,
+  }));
   // 1. Filtrar y mapear documentos
   const documentCards: CardItem[] = documentsState.map((doc) => ({
     id: `doc-${doc.id}`,
     kind: 'document',
     title: doc.title,
-    description: doc.description || 'Documento de espiritualidad',
+    description: doc.description || 'Oración para compartir y rezar en comunidad.',
     href: doc.google_drive_url || '#',
-    badge: doc.file_type || 'Documento',
+    badge: documentBadge(doc.section),
     accent: 'blue', // Color representativo para documentos
     resourceId: doc.id,
     thumbnailUrl: doc.thumbnail_url || null,
@@ -264,8 +291,8 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
       thumbnailUrl: page.thumbnail_url || page.texture_url || '/assets/textures/espiritualidad.webp',
     }));
 
-  return [...resourcePageCards, ...documentCards, ...linkCards];
-}, [documentsState, linksState, resourcePagesState]);
+  return [...prayerCards, ...resourcePageCards, ...documentCards, ...linkCards];
+}, [documentsState, linksState, resourcePagesState, textPrayersState]);
 
   const filteredCards = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -281,7 +308,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
         <SearchBar
           value={searchTerm}
           onChange={setSearchTerm}
-          placeholder="Buscar recursos, temarios o enlaces..."
+          placeholder="Buscar oraciones, guiones o recursos..."
         />
         <div className="mt-3 text-center text-xs font-semibold text-stone-500">
           Mostrando {filteredCards.length} {filteredCards.length === 1 ? 'resultado' : 'resultados'}
@@ -297,6 +324,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
               isAdmin={isAdmin} 
               onEdit={() => openEditModal(card)} 
               onDelete={() => openDeleteModal(card)} 
+              onOpen={() => card.kind === 'text-prayer' && setReadingPrayer(card)}
             />
           ))}
         </div>
@@ -324,7 +352,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
             <div className="modal-header-unified">
               <h3 className="modal-title-unified">Editar recurso</h3>
               <p className="modal-subtitle-unified">
-                {editDraft.kind === 'document' ? 'Documento' : editDraft.kind === 'link' ? 'Enlace' : 'Página de espiritualidad'}
+                {editDraft.kind === 'text-prayer' ? 'Oración escrita' : editDraft.kind === 'document' ? 'Documento' : editDraft.kind === 'link' ? 'Enlace' : 'Página de espiritualidad'}
               </p>
             </div>
             <form className="modal-body-unified" onSubmit={(e) => { e.preventDefault(); submitEdit().catch(() => undefined); }}>
@@ -340,6 +368,12 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
                 <div className="space-y-1">
                   <label className="modal-label-unified">URL</label>
                   <input value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} placeholder="https://..." className="modal-input-unified" required />
+                </div>
+              )}
+              {editDraft.kind === 'text-prayer' && (
+                <div className="space-y-1">
+                  <label className="modal-label-unified">Texto de la oración</label>
+                  <textarea value={editDraft.url} onChange={(e) => setEditDraft((prev) => (prev ? { ...prev, url: e.target.value } : prev))} rows={9} className="modal-input-unified resize-y" required />
                 </div>
               )}
               <div className="space-y-1">
@@ -374,6 +408,15 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
           deleteCard().catch(() => undefined);
         }}
       />
+
+      {readingPrayer && (
+        <div className="modal-overlay-unified" onClick={() => setReadingPrayer(null)}>
+          <article className="modal-panel-unified max-w-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header-unified"><h3 className="modal-title-unified">{readingPrayer.title}</h3><p className="modal-subtitle-unified">Oración</p></div>
+            <div className="modal-body-unified"><p className="whitespace-pre-wrap text-base leading-8 text-stone-700">{readingPrayer.content}</p><div className="modal-actions-unified"><button type="button" onClick={() => setReadingPrayer(null)} className="modal-btn-primary-unified">Cerrar</button></div></div>
+          </article>
+        </div>
+      )}
     </>
   );
 }
@@ -384,13 +427,14 @@ function getCardIcon(card: CardItem, size = 60, className = '') {
   const iconClass = `text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10 ${className}`;
   // Ahora asignamos el ícono basado solo en el tipo de recurso
   if (card.kind === 'resource-page') return <GraduationCap size={size} className={iconClass} strokeWidth={1.5} />;
+  if ((card.kind === 'document' || card.kind === 'text-prayer') && card.badge === 'Oración') return <Heart size={size} className={iconClass} strokeWidth={1.5} />;
   if (card.kind === 'document') return <FileText size={size} className={iconClass} strokeWidth={1.5} />;
   if (card.kind === 'link') return <LinkIcon size={size} className={iconClass} strokeWidth={1.5} />;
   return null;
 }
 
 // Dentro de la función ResourceCard en espiritualidad-cards-grid.tsx
-function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isAdmin: boolean; onEdit: () => void; onDelete: () => void; }) {
+function ResourceCard({ card, isAdmin, onEdit, onDelete, onOpen }: { card: CardItem; isAdmin: boolean; onEdit: () => void; onDelete: () => void; onOpen: () => void; }) {
   const headerBg = 'bg-gradient-to-br from-gray-400 to-gray-600';
   const actionBtnClass = 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-md border-gray-200';
 
@@ -445,14 +489,18 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
         <h3 className="text-xl font-black text-brand-brown mb-2 line-clamp-2 leading-tight">{card.title}</h3>
         <p className="text-stone-500 mb-8 flex-1 text-sm leading-relaxed line-clamp-3">{card.description}</p>
         
-        <ActionWrapper 
+        {card.kind === 'text-prayer' ? (
+          <button type="button" onClick={onOpen} className={`group/btn flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 font-bold rounded-xl border transition-all ${actionBtnClass}`}>
+            Leer oración <Heart size={16} className="opacity-70" />
+          </button>
+        ) : <ActionWrapper
           href={card.href} 
           {...externalProps} 
           className={`group/btn flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 font-bold rounded-xl border transition-all no-underline ${actionBtnClass}`}
         >
           {card.kind === 'link' ? 'Abrir enlace' : 'Ver recurso'}
           <ExternalLink size={16} className="opacity-70 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-        </ActionWrapper>
+        </ActionWrapper>}
       </div>
     </article>
   );

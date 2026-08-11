@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getTursoClient } from '@/server/db/turso';
 import { badRequest, isValidSlug, parseId, requirePermission, serverError } from '@/app/api/admin/_shared/auth';
 
@@ -65,6 +66,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       args: [title || null, slug || null, Number.isFinite(position) ? position : null, parsedId],
     });
 
+    revalidatePath('/animacion/juegos');
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -104,6 +107,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       sql: 'DELETE FROM juegos_sections WHERE id = ?',
       args: [parsedId],
     });
+
+    revalidatePath('/animacion/juegos');
 
     return NextResponse.json({ success: true });
   } catch (error) {

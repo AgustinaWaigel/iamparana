@@ -16,6 +16,8 @@ function revalidateResourcePages() {
   revalidatePath('/formacion/recursos');
   revalidatePath('/espiritualidad');
   revalidatePath('/espiritualidad/recursos');
+  revalidatePath('/logistica');
+  revalidatePath('/logistica/recursos');
 }
 
 export async function GET() {

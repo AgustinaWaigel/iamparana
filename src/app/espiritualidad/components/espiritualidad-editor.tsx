@@ -10,20 +10,20 @@ interface EspiritualidadEditorProps {
 
 export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEditorProps) {
   const documentTypeOptions = [
-    { value: 'espiritualidad', label: 'Presentación' },
-    { value: 'temario', label: 'Temario' },
-    { value: 'carta', label: 'Carta' },
-    { value: 'otro', label: 'Otro' },
+    { value: 'oraciones', label: 'Oración' },
+    { value: 'guiones', label: 'Guion de oración' },
+    { value: 'espiritualidad', label: 'Otro recurso espiritual' },
   ] as const;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<'document' | 'link' | 'page'>('document');
+  const [mode, setMode] = useState<'document' | 'text-prayer' | 'link' | 'page'>('document');
   const [isLoading, setIsLoading] = useState(false);
 
   // Estados de formularios
-  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'espiritualidad' });
+  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'oraciones' });
   const [file, setFile] = useState<File | null>(null);
   const [docThumbnailFile, setDocThumbnailFile] = useState<File | null>(null);
+  const [textPrayerData, setTextPrayerData] = useState({ title: '', description: '', content: '' });
 
   const [linkData, setLinkData] = useState({ title: '', description: '', url: '', icon: 'link' });
   const [pageData, setPageData] = useState({ title: '', slug: '', description: '', textureUrl: '/assets/textures/espiritualidad.webp' });
@@ -44,7 +44,7 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
     onRefresh?.();
   };
 
-  const changeMode = (newMode: 'document' | 'link' | 'page') => {
+  const changeMode = (newMode: 'document' | 'text-prayer' | 'link' | 'page') => {
     setMode(newMode);
     setError('');
     setSuccess('');
@@ -112,10 +112,10 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
         throw new Error(data.error || 'Error al guardar documento');
       }
 
-      setDocData({ titulo: '', descripcion: '', tipo: 'espiritualidad' });
+      setDocData({ titulo: '', descripcion: '', tipo: 'oraciones' });
       setFile(null);
       setDocThumbnailFile(null);
-      done('Documento subido correctamente');
+      done('Oración publicada correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -151,6 +151,25 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
       setLinkData({ title: '', description: '', url: '', icon: 'link' });
       setLinkThumbnailFile(null);
       done('Enlace agregado correctamente');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmitTextPrayer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setSuccess(''); setIsLoading(true);
+    try {
+      const response = await fetch('/api/admin/oraciones', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(textPrayerData),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'No se pudo publicar la oración');
+      setTextPrayerData({ title: '', description: '', content: '' });
+      done('Oración publicada correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -200,7 +219,7 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
     }
   };
 
-  const handleSubmit = mode === 'document' ? handleSubmitDocument : mode === 'link' ? handleSubmitLink : handleSubmitPage;
+  const handleSubmit = mode === 'document' ? handleSubmitDocument : mode === 'text-prayer' ? handleSubmitTextPrayer : mode === 'link' ? handleSubmitLink : handleSubmitPage;
 
   // Clases compartidas para inputs
   const inputClass = "w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 outline-none transition-all";
@@ -226,10 +245,10 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
             <div className="flex justify-between items-center p-6 border-b border-stone-100 bg-stone-50/50 shrink-0">
               <div className="flex items-center gap-3 text-brand-brown">
                 <div className="p-2 bg-white rounded-xl shadow-sm border border-stone-100">
-                  {mode === 'document' ? <FileText size={22} /> : mode === 'link' ? <LinkIcon size={22} /> : <LayoutPanelTop size={22} />}
+                  {mode === 'document' ? <FileText size={22} /> : mode === 'text-prayer' ? <FileText size={22} /> : mode === 'link' ? <LinkIcon size={22} /> : <LayoutPanelTop size={22} />}
                 </div>
                 <h2 className="text-xl font-black">
-                  {mode === 'document' ? 'Agregar Documento' : mode === 'link' ? 'Agregar Enlace' : 'Crear Página'}
+                  {mode === 'document' ? 'Subir recurso' : mode === 'text-prayer' ? 'Escribir oración' : mode === 'link' ? 'Agregar enlace' : 'Crear página'}
                 </h2>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors">
@@ -241,9 +260,12 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
             <div className="p-6 overflow-y-auto custom-scrollbar">
 
               {/* Selector de modo (Pestañas) */}
-              <div className="flex p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
+              <div className="grid grid-cols-2 sm:grid-cols-4 p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
                 <button onClick={() => changeMode('document')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'document' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
-                  <FileUp size={16} /> Documento
+                  <FileUp size={16} /> Recurso
+                </button>
+                <button type="button" onClick={() => changeMode('text-prayer')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'text-prayer' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
+                  <FileText size={16} /> Oración
                 </button>
                 <button onClick={() => changeMode('link')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'link' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
                   <LinkIcon size={16} /> Enlace
@@ -273,17 +295,17 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
                 {mode === 'document' && (
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
-                      <label className={labelClass}>Título del Documento *</label>
-                      <input type="text" required value={docData.titulo} onChange={(e) => setDocData({ ...docData, titulo: e.target.value })} className={inputClass} placeholder="Ej: Presentación Módulo 1" />
+                      <label className={labelClass}>Título*</label>
+                      <input type="text" required value={docData.titulo} onChange={(e) => setDocData({ ...docData, titulo: e.target.value })} className={inputClass} placeholder="Ej: Oración por los niños del mundo" />
                     </div>
 
                     <div>
                       <label className={labelClass}>Descripción</label>
-                      <textarea value={docData.descripcion} onChange={(e) => setDocData({ ...docData, descripcion: e.target.value })} className={`${inputClass} resize-none`} rows={3} placeholder="Breve descripción del material..." />
+                      <textarea value={docData.descripcion} onChange={(e) => setDocData({ ...docData, descripcion: e.target.value })} className={`${inputClass} resize-none`} rows={3} placeholder="¿Para qué momento o intención es esta oración?" />
                     </div>
 
                     <div>
-                      <label className={labelClass}>Clasificación</label>
+                      <label className={labelClass}>Tipo de contenido</label>
                       <div className="relative group">
                         <select value={docData.tipo} onChange={(e) => setDocData({ ...docData, tipo: e.target.value })} className={`${inputClass} appearance-none pr-12 cursor-pointer`}>
                           {documentTypeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -293,7 +315,7 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
                     </div>
 
                     <div>
-                      <label className={labelClass}>Archivo *</label>
+                      <label className={labelClass}>Archivo de la oración *</label>
                       <div className="relative overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 transition-colors rounded-2xl p-6 flex flex-col items-center justify-center gap-3 text-center group cursor-pointer">
                         {file ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
@@ -347,6 +369,14 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
                         )}
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {mode === 'text-prayer' && (
+                  <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                    <div><label className={labelClass}>Título de la oración *</label><input type="text" required value={textPrayerData.title} onChange={(e) => setTextPrayerData({ ...textPrayerData, title: e.target.value })} className={inputClass} placeholder="Ej: Oración por las misiones" /></div>
+                    <div><label className={labelClass}>Descripción breve</label><input value={textPrayerData.description} onChange={(e) => setTextPrayerData({ ...textPrayerData, description: e.target.value })} className={inputClass} placeholder="Ej: Para iniciar un encuentro" /></div>
+                    <div><label className={labelClass}>Texto de la oración *</label><textarea required value={textPrayerData.content} onChange={(e) => setTextPrayerData({ ...textPrayerData, content: e.target.value })} className={`${inputClass} resize-y`} rows={10} placeholder="Escribí o pegá aquí la oración..." /></div>
                   </div>
                 )}
 
@@ -478,7 +508,7 @@ export function EspiritualidadEditor({ isAdmin, onRefresh }: EspiritualidadEdito
                     {isLoading ? (
                       <><Loader2 size={18} className="animate-spin" /> Guardando...</>
                     ) : (
-                      <>{mode === 'document' ? 'Subir Documento' : mode === 'link' ? 'Guardar Enlace' : 'Crear Página'}</>
+                      <>{mode === 'document' ? 'Publicar recurso' : mode === 'text-prayer' ? 'Publicar oración' : mode === 'link' ? 'Guardar enlace' : 'Crear página'}</>
                     )}
                   </button>
                 </div>

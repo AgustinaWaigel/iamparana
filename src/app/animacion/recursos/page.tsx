@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Download, ExternalLink, FolderOpen, Music2, Sparkles } from "lucide-react";
 import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Recursos de Animación | IAM Paraná",
   description: "Material y enlaces para animar encuentros, celebraciones y actividades de IAM.",
@@ -26,7 +28,7 @@ type UploadedLink = {
 
 export default async function AnimacionRecursosPage() {
   const [uploadedDocumentsRaw, uploadedLinksRaw] = await Promise.all([
-    getDocumentsBySections(["animacion", "recursos", "canciones", "juegos"]),
+    getDocumentsBySections(["animacion", "recursos"]),
     getLinksBySection("animacion"),
   ]);
 

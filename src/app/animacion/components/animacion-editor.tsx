@@ -6,26 +6,31 @@ import { Plus, X, Loader2, Link as LinkIcon, FileUp, ChevronDown, AlertCircle, C
 interface AnimacionEditorProps {
   isAdmin: boolean;
   onRefresh?: () => void;
+  section?: string;
+  documentTypes?: ReadonlyArray<{ value: string; label: string }>;
+  textureUrl?: string;
+  template?: string;
+  buttonLabel?: string;
 }
 
-export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
+export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', documentTypes, textureUrl = '/assets/textures/areasg.webp', template = 'earth', buttonLabel = 'Añadir recurso' }: AnimacionEditorProps) {
   const documentTypeOptions = [
     { value: 'animacion', label: 'Animación General' },
     { value: 'juegos', label: 'Juegos' },
-    { value: 'canciones', label: 'Canciones' },
     { value: 'recursos', label: 'Recursos' },
-  ] as const;
+  ];
+  const availableDocumentTypes = documentTypes || documentTypeOptions;
 
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'document' | 'link' | 'page'>('document');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: 'animacion' });
+  const [docData, setDocData] = useState({ titulo: '', descripcion: '', tipo: section });
   const [file, setFile] = useState<File | null>(null);
   const [docThumbnailFile, setDocThumbnailFile] = useState<File | null>(null);
 
   const [linkData, setLinkData] = useState({ title: '', description: '', url: '', icon: 'link' });
-  const [pageData, setPageData] = useState({ title: '', slug: '', description: '', textureUrl: '/assets/textures/areasg.webp' });
+  const [pageData, setPageData] = useState({ title: '', slug: '', description: '', textureUrl });
   const [linkThumbnailFile, setLinkThumbnailFile] = useState<File | null>(null);
   const [pageThumbnailFile, setPageThumbnailFile] = useState<File | null>(null);
 
@@ -121,7 +126,7 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
         throw new Error(data.error || 'Error al guardar documento');
       }
 
-      setDocData({ titulo: '', descripcion: '', tipo: 'animacion' });
+      setDocData({ titulo: '', descripcion: '', tipo: section });
       setFile(null);
       setDocThumbnailFile(null);
       done('Documento subido correctamente');
@@ -152,7 +157,7 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          section: 'animacion',
+          section,
           title: linkData.title,
           description: linkData.description || null,
           url: linkData.url,
@@ -200,7 +205,8 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
           description: pageData.description,
           textureUrl: pageData.textureUrl,
           thumbnailUrl: pageThumbnailUrl,
-          template: 'earth',
+          template,
+          section,
         }),
       });
 
@@ -209,7 +215,7 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
         throw new Error(data.error || 'Error al crear página');
       }
 
-      setPageData({ title: '', slug: '', description: '', textureUrl: '/assets/textures/areasg.webp' });
+      setPageData({ title: '', slug: '', description: '', textureUrl });
       setPageThumbnailFile(null);
       done('Página creada correctamente');
     } catch (err) {
@@ -235,7 +241,7 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
         className="fixed bottom-8 right-8 bg-brand-brown hover:bg-amber-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-40 flex items-center gap-2 group"
       >
         <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-        <span className="hidden md:inline text-sm font-bold pr-2">Añadir recurso</span>
+        <span className="hidden md:inline text-sm font-bold pr-2">{buttonLabel}</span>
       </button>
 
       {isOpen && (
@@ -298,7 +304,7 @@ export function AnimacionEditor({ isAdmin, onRefresh }: AnimacionEditorProps) {
                       <label className={labelClass}>Clasificación</label>
                       <div className="relative group">
                         <select value={docData.tipo} onChange={(e) => setDocData({ ...docData, tipo: e.target.value })} className={`${inputClass} appearance-none pr-12 cursor-pointer`}>
-                          {documentTypeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                          {availableDocumentTypes.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                         </select>
                         <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 group-hover:text-stone-600 transition-colors" />
                       </div>

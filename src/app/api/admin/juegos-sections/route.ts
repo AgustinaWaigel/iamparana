@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getTursoClient } from '@/server/db/turso';
 import { badRequest, isValidSlug, requirePermission, serverError } from '@/app/api/admin/_shared/auth';
 
@@ -106,6 +107,8 @@ export async function POST(req: Request) {
       sql: 'INSERT INTO juegos_sections (slug, title, position) VALUES (?, ?, ?)',
       args: [slug, title, nextPosition],
     });
+
+    revalidatePath('/animacion/juegos');
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {

@@ -239,10 +239,25 @@ CREATE TABLE IF NOT EXISTS links (
 CREATE INDEX IF NOT EXISTS idx_links_section ON links(section);
 CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at DESC);
 
+CREATE TABLE IF NOT EXISTS spiritual_prayers (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  content TEXT NOT NULL,
+  thumbnail_url TEXT,
+  created_by_user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_spiritual_prayers_created_at ON spiritual_prayers(created_at DESC);
+
 CREATE TABLE IF NOT EXISTS resource_pages (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
+  section TEXT NOT NULL DEFAULT 'animacion',
   description TEXT,
   thumbnail_url TEXT,
   texture_url TEXT,
@@ -555,6 +570,39 @@ async function ensurePasswordResetsTable() {
   }
 }
 
+// Esta migración también corre cuando el esquema principal ya estaba inicializado.
+async function ensureSpiritualPrayersTable() {
+  if (!cachedClient) return;
+
+  await cachedClient.execute(`
+    CREATE TABLE IF NOT EXISTS spiritual_prayers (
+      id INTEGER PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      content TEXT NOT NULL,
+      thumbnail_url TEXT,
+      created_by_user_id INTEGER NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+  await cachedClient.execute(
+    "CREATE INDEX IF NOT EXISTS idx_spiritual_prayers_created_at ON spiritual_prayers(created_at DESC)"
+  );
+}
+
+async function ensureResourcePageSectionColumn() {
+  if (!cachedClient) return;
+
+  try {
+    await cachedClient.execute("ALTER TABLE resource_pages ADD COLUMN section TEXT NOT NULL DEFAULT 'animacion'");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || '').toLowerCase();
+    if (!message.includes('duplicate column')) throw error;
+  }
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -582,6 +630,8 @@ async function initializeSchema() {
     await ensureThumbnailColumns();
     await ensureJuegosSections();
     await ensurePasswordResetsTable();
+    await ensureSpiritualPrayersTable();
+    await ensureResourcePageSectionColumn();
     await ensureCarouselColumns();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
@@ -613,5 +663,7 @@ export function getTursoClient() {
 export async function ensureSchemaInitialized() {
   getTursoClient(); // Asegurar que el cliente existe
   await initializeSchema();
+  await ensureSpiritualPrayersTable();
+  await ensureResourcePageSectionColumn();
   await ensureCarouselColumns(); // migración independiente del flag principal
 }

@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getTursoClient } from '@/server/db/turso';
 import { requirePermission, badRequest, serverError } from '@/app/api/admin/_shared/auth';
 
@@ -11,10 +12,17 @@ function clientOrThrow() {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requirePermission('content.read');
+  if ('errorResponse' in auth) return auth.errorResponse;
+
   try {
     const client = clientOrThrow();
     const result = await client.execute(
-      'SELECT id, slug, title, description, youtubeId, category, section_id, "order" FROM juegos ORDER BY "order" ASC'
+      `SELECT j.id, j.slug, j.title, j.description, j.youtubeId, j.category, j.section_id, j."order",
+              COALESCE(s.title, 'General') AS section_title
+       FROM juegos j
+       LEFT JOIN juegos_sections s ON s.id = j.section_id
+       ORDER BY j."order" ASC`
     );
 
     return NextResponse.json(
@@ -27,6 +35,7 @@ export async function GET(req: NextRequest) {
         category: row[5],
         sectionId: row[6] !== null && row[6] !== undefined ? Number(row[6]) : null,
         order: row[7],
+        sectionTitle: String(row[8] || 'General'),
       }))
     );
   } catch (error) {
@@ -69,6 +78,7 @@ export async function POST(req: NextRequest) {
       'INSERT INTO juegos (slug, title, description, youtubeId, category, section_id, "order") VALUES (?, ?, ?, ?, ?, ?, ?)',
       [slug, title, description, youtubeIdValue, categoryValue, sectionIdValue, orderValue]
     );
+    revalidatePath('/animacion/juegos');
     return NextResponse.json({ message: 'Juego creado' });
   } catch (error) {
     console.error('Error:', error);

@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getTursoClient } from '@/server/db/turso';
 import { requirePermission, badRequest, serverError, parseId } from '@/app/api/admin/_shared/auth';
 
@@ -51,6 +52,7 @@ export async function PUT(
       'UPDATE juegos SET title = ?, description = ?, youtubeId = ?, category = ?, section_id = ?, "order" = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [title, description, youtubeIdValue, categoryValue, sectionIdValue, orderValue, parsedId]
     );
+    revalidatePath('/animacion/juegos');
     return NextResponse.json({ message: 'Juego actualizado' });
   } catch (error) {
     console.error('Error:', error);
@@ -72,6 +74,7 @@ export async function DELETE(
   try {
     const client = clientOrThrow();
     await client.execute('DELETE FROM juegos WHERE id = ?', [parsedId]);
+    revalidatePath('/animacion/juegos');
     return NextResponse.json({ message: 'Juego eliminado' });
   } catch (error) {
     console.error('Error:', error);

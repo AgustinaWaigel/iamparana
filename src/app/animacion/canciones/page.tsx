@@ -3,6 +3,8 @@ import CancionesLista from "@/app/components/common/cancioneslista";
 import { HeroSection } from "@/app/components/common/hero-section";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Canciones | IAM Paraná",
   description: "Explorá el cancionero oficial de la Infancia y Adolescencia Misionera de Paraná.",

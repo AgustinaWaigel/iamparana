@@ -223,10 +223,25 @@ CREATE TABLE IF NOT EXISTS links (
 CREATE INDEX IF NOT EXISTS idx_links_section ON links(section);
 CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at DESC);
 
+CREATE TABLE IF NOT EXISTS spiritual_prayers (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  content TEXT NOT NULL,
+  thumbnail_url TEXT,
+  created_by_user_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_spiritual_prayers_created_at ON spiritual_prayers(created_at DESC);
+
 CREATE TABLE IF NOT EXISTS resource_pages (
   id INTEGER PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
+  section TEXT NOT NULL DEFAULT 'animacion',
   description TEXT,
   thumbnail_url TEXT,
   texture_url TEXT,

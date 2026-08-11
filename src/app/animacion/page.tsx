@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Quote } from 'lucide-react';
-import { BookOpenText, Gamepad2, Music2 } from 'lucide-react';
+import { Gamepad2, Music2 } from 'lucide-react';
 import { HeroSection } from '@/app/components/common/hero-section';
 import { AnimacionClient } from '@/app/animacion/components/animacion-client';
 import { AnimacionCardsGrid } from '@/app/animacion/components/animacion-cards-grid';
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
 type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
+type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
 
 function isValidHttpUrl(value: string): boolean {
   try {
@@ -35,7 +35,7 @@ function isValidHttpUrl(value: string): boolean {
 
 export default async function AnimacionPage() {
   const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['animacion', 'juegos', 'canciones', 'recursos']),
+    getDocumentsBySections(['animacion', 'recursos']),
     getLinksBySection('animacion'),
     listResourcePages(),
   ]);
@@ -71,12 +71,13 @@ export default async function AnimacionPage() {
       id: Number(item.id),
       slug: String(item.slug || ''),
       title: String(item.title || ''),
+      section: String(item.section || ''),
       description: item.description ? String(item.description) : null,
       template: String(item.template || 'gold'),
       thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       texture_url: item.texture_url ? String(item.texture_url) : null,
     }))
-    .filter((item) => item.template === 'earth' && Boolean(item.slug));
+    .filter((item) => item.section === 'animacion' && Boolean(item.slug));
 
   return (
     <AnimacionClient>

@@ -9,6 +9,7 @@ import { EspiritualidadCardsGrid } from "./components/espiritualidad-cards-grid"
 // Base de Datos
 import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
 import { listResourcePages } from "@/server/db/resource-pages-repository";
+import { listSpiritualPrayers } from "@/server/db/spiritual-prayers-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -43,15 +44,17 @@ export const metadata: Metadata = {
   },
 };
 
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; section: string; };
 type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
 type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
+type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; };
 
 export default async function Espiritualidad() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
+  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw, textPrayers] = await Promise.all([
     getDocumentsBySections(['espiritualidad', 'recursos', 'oraciones', 'guiones']),
     getLinksBySection('espiritualidad'),
     listResourcePages(),
+    listSpiritualPrayers(),
   ]);
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
@@ -66,6 +69,7 @@ export default async function Espiritualidad() {
       thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       google_drive_url: item.google_drive_url ? String(item.google_drive_url) : null,
       file_type: item.file_type ? String(item.file_type) : null,
+      section: String(item.section || 'espiritualidad'),
     }))
     .filter((item) => Boolean(item.google_drive_url));
 
@@ -104,10 +108,16 @@ export default async function Espiritualidad() {
       </section>
 
       <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
+        <div className="mx-auto mb-8 max-w-3xl text-center">
+          <p className="text-sm leading-relaxed text-stone-600 md:text-base">
+            Un espacio para encontrarnos con Jesús: elegí una oración, descargala o compartila en tu grupo de IAM.
+          </p>
+        </div>
         <EspiritualidadCardsGrid
           uploadedDocuments={uploadedDocuments}
           uploadedLinks={uploadedLinks}
           resourcePages={resourcePages}
+          textPrayers={JSON.parse(JSON.stringify(textPrayers)) as TextPrayer[]}
         />
       </main>
     </EspiritualidadClient>
