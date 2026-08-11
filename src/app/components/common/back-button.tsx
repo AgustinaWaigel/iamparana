@@ -18,7 +18,18 @@ export function BackButton() {
       return;
     }
 
-    const parentPath = `/${segments.slice(0, -1).join('/')}`;
+    let parentSegments = segments.slice(0, -1);
+
+    // Skip the "recursos" directory if it doesn't have an index page in these sections
+    if (
+      parentSegments.length === 2 &&
+      parentSegments[1] === 'recursos' &&
+      ['formacion', 'espiritualidad', 'comunicacion', 'logistica'].includes(parentSegments[0])
+    ) {
+      parentSegments = parentSegments.slice(0, -1);
+    }
+
+    const parentPath = `/${parentSegments.join('/')}`;
     router.push(parentPath);
   };
 
