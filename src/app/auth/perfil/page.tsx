@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Eye, EyeOff, ShieldCheck, User, Mail, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Eye, EyeOff, ShieldCheck, User, Mail, Lock, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { refreshSession, useSession } from '@/app/hooks/use-session';
 
@@ -134,6 +134,11 @@ export default function PerfilPage() {
               <p className="text-xs font-bold uppercase tracking-widest text-brand-brown/60">Nivel de Acceso</p>
               <p className="font-black uppercase tracking-tighter text-brand-brown">{user.role}</p>
             </div>
+          </div>
+          <div className="border-b border-brand-brown/10 bg-stone-50 p-6">
+            <div className="flex items-center gap-2 text-sm font-bold text-brand-brown"><MapPin size={16} /> Participación</div>
+            <p className="mt-2 text-sm text-stone-600">{user.isAnimator ? 'Animador/a de IAM' : 'Miembro de IAM'}</p>
+            <div className="mt-3 flex flex-wrap gap-2">{(user.areas || []).length ? user.areas!.map((area) => <span key={area} className="rounded-full bg-brand-brown/10 px-3 py-1 text-xs font-bold capitalize text-brand-brown">{area}</span>) : <span className="text-sm text-stone-500">No tenés áreas asignadas.</span>}</div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">

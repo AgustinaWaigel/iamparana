@@ -8,6 +8,8 @@ interface User {
   nombre: string;
   role: string;
   isActive: boolean;
+  isAnimator?: boolean;
+  areas?: string[];
 }
 
 interface SessionState {

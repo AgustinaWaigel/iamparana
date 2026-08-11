@@ -12,7 +12,7 @@ interface EspiritualidadClientProps {
 
 export function EspiritualidadClient({ children }: EspiritualidadClientProps) {
   const router = useRouter();
-  const { isAdmin } = useSession();
+  const { isAdmin, user } = useSession();
   const handleRefresh = useCallback(() => {
     router.refresh();
   }, [router]);
@@ -21,7 +21,7 @@ export function EspiritualidadClient({ children }: EspiritualidadClientProps) {
     <>
       {children}
 
-      <EspiritualidadEditor isAdmin={isAdmin} onRefresh={handleRefresh} />
+      <EspiritualidadEditor isAdmin={isAdmin || user?.areas?.includes('espiritualidad') === true} onRefresh={handleRefresh} />
     </>
   );
 }

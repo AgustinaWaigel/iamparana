@@ -15,6 +15,8 @@ interface User {
   role: string;
   is_active: number;
   created_at: string;
+  is_animator?: number;
+  areas?: string | null;
 }
 
 export default function UsuariosPage() {
@@ -26,7 +28,7 @@ export default function UsuariosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editForm, setEditForm] = useState({ displayName: '', role: 'animador', password: '' });
+  const [editForm, setEditForm] = useState({ displayName: '', role: 'miembro', password: '', isAnimator: false, areas: [] as string[] });
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
   // 🛡️ Redirección de seguridad (Cliente como respaldo del Servidor)
@@ -107,6 +109,8 @@ export default function UsuariosPage() {
       displayName: targetUser.display_name || targetUser.email.split('@')[0],
       role: targetUser.role,
       password: '',
+      isAnimator: targetUser.is_animator === 1,
+      areas: String(targetUser.areas || '').split(',').filter(Boolean),
     });
   };
 
@@ -121,6 +125,8 @@ export default function UsuariosPage() {
         body: JSON.stringify({
           displayName: editForm.displayName.trim(),
           role: editForm.role,
+          isAnimator: editForm.isAnimator,
+          areas: editForm.areas,
           ...(editForm.password.trim() ? { password: editForm.password.trim() } : {}),
         }),
       });
@@ -191,7 +197,7 @@ export default function UsuariosPage() {
               className="text-sm border-stone-300 rounded-lg focus:ring-brand-brown"
             >
               <option value="">Todos los roles</option>
-              {['admin', 'equipo', 'redactor', 'coordinador', 'animador'].map(role => (
+              {['admin', 'miembro'].map(role => (
                 <option key={role} value={role} className="capitalize">{role}</option>
               ))}
             </select>
@@ -297,11 +303,14 @@ export default function UsuariosPage() {
                   onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value }))}
                   className="modal-input-unified mt-1"
                 >
-                  {['admin', 'equipo', 'redactor', 'coordinador', 'animador'].map((role) => (
+                  {['admin', 'miembro'].map((role) => (
                     <option key={role} value={role}>{role}</option>
                   ))}
                 </select>
               </div>
+
+              <label className="flex items-center gap-2 text-sm font-semibold text-stone-700"><input type="checkbox" checked={editForm.isAnimator} onChange={(e) => setEditForm((prev) => ({ ...prev, isAnimator: e.target.checked }))} /> Es animador/a</label>
+              <div><p className="text-xs font-bold uppercase tracking-wide text-stone-500">Áreas que puede gestionar</p><div className="mt-2 grid grid-cols-2 gap-2">{['animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad'].map((area) => <label key={area} className="flex items-center gap-2 text-sm capitalize"><input type="checkbox" checked={editForm.areas.includes(area)} onChange={(e) => setEditForm((prev) => ({ ...prev, areas: e.target.checked ? [...prev.areas, area] : prev.areas.filter((item) => item !== area) }))} />{area}</label>)}</div></div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wide text-stone-500">Nueva contraseña (opcional)</label>

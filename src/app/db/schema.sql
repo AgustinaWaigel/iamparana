@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS roles (
 
 INSERT OR IGNORE INTO roles (name, description) VALUES
   ('admin', 'Administrador del sistema'),
+  ('miembro', 'Miembro de la IAM'),
   ('equipo', 'Miembro del equipo'),
   ('redactor', 'Redactor de contenido'),
   ('coordinador', 'Coordinador de actividades'),
@@ -140,9 +141,18 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role_id INTEGER NOT NULL DEFAULT 5,
   is_active INTEGER NOT NULL DEFAULT 1,
+  is_animator INTEGER NOT NULL DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS user_areas (
+  user_id INTEGER NOT NULL,
+  area TEXT NOT NULL CHECK(area IN ('animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad')),
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, area),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS auth_sessions (

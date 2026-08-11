@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findPasswordReset, deletePasswordReset, deleteExpiredPasswordResets } from "@/server/db/auth-repository";
+import { findPasswordReset, deletePasswordReset, deleteExpiredPasswordResets, deleteAllSessionsByUserId } from "@/server/db/auth-repository";
 import { hashPassword } from "@/server/lib/auth-security";
 import { updateUser } from "@/server/db/auth-repository";
 
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     // Actualizar la contraseña
     const newHash = hashPassword(password);
     await updateUser(reset.userId, { passwordHash: newHash });
+    await deleteAllSessionsByUserId(reset.userId);
 
     // Invalidar el token
     await deletePasswordReset(tokenHash);

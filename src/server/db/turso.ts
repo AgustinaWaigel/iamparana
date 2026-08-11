@@ -155,9 +155,18 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role_id INTEGER NOT NULL DEFAULT 5,
   is_active INTEGER NOT NULL DEFAULT 1,
+  is_animator INTEGER NOT NULL DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS user_areas (
+  user_id INTEGER NOT NULL,
+  area TEXT NOT NULL CHECK(area IN ('animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad')),
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, area),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS auth_sessions (
@@ -335,6 +344,7 @@ CREATE INDEX IF NOT EXISTS idx_holiday_dates_date ON holiday_dates(date);
 const INITIAL_DATA_SQL = `
 INSERT OR IGNORE INTO roles (name, description) VALUES
   ('admin', 'Administrador del sistema'),
+  ('miembro', 'Miembro de la IAM'),
   ('equipo', 'Miembro del equipo'),
   ('redactor', 'Redactor de contenido'),
   ('coordinador', 'Coordinador de actividades'),
@@ -603,6 +613,23 @@ async function ensureResourcePageSectionColumn() {
   }
 }
 
+async function ensureUserAreaAccessSchema() {
+  if (!cachedClient) return;
+  try {
+    await cachedClient.execute("ALTER TABLE users ADD COLUMN is_animator INTEGER NOT NULL DEFAULT 0");
+  } catch (error) {
+    const message = String(error instanceof Error ? error.message : error || '').toLowerCase();
+    if (!message.includes('duplicate column')) throw error;
+  }
+  await cachedClient.execute(`CREATE TABLE IF NOT EXISTS user_areas (
+    user_id INTEGER NOT NULL,
+    area TEXT NOT NULL CHECK(area IN ('animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad')),
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, area),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
+}
+
 async function initializeSchema() {
   if (globalForTurso.__iamparanaSchemaInitialized || !cachedClient) {
     return;
@@ -632,6 +659,7 @@ async function initializeSchema() {
     await ensurePasswordResetsTable();
     await ensureSpiritualPrayersTable();
     await ensureResourcePageSectionColumn();
+    await ensureUserAreaAccessSchema();
     await ensureCarouselColumns();
 
     globalForTurso.__iamparanaSchemaInitialized = true;
@@ -665,5 +693,6 @@ export async function ensureSchemaInitialized() {
   await initializeSchema();
   await ensureSpiritualPrayersTable();
   await ensureResourcePageSectionColumn();
+  await ensureUserAreaAccessSchema();
   await ensureCarouselColumns(); // migración independiente del flag principal
 }

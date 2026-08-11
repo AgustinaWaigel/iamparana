@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, password, role, nombre, displayName } = body;
+    const { email, password, role = 'miembro', nombre, displayName } = body;
 
     // 1. Validaciones de entrada
     if (!email || typeof email !== "string" || !email.includes("@")) {
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       return badRequest("La contraseña debe tener al menos 8 caracteres");
     }
 
-    const validRoles = ["admin", "equipo", "redactor", "coordinador", "animador"];
+    const validRoles = ["admin", "miembro"];
     if (!role || !validRoles.includes(role)) {
       return badRequest("Rol no válido");
     }

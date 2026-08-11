@@ -22,7 +22,7 @@ export async function PUT(
 
   try {
     const body = await req.json();
-    const { role, isActive, is_active, password, displayName, nombre } = body;
+    const { role, isActive, is_active, password, displayName, nombre, isAnimator, areas } = body;
     const normalizedIsActive =
       typeof isActive === "boolean"
         ? isActive
@@ -31,9 +31,13 @@ export async function PUT(
           : undefined;
 
     // 3. Validaciones opcionales de campos
-    const validRoles = ["admin", "equipo", "redactor", "coordinador", "animador"];
+    const validRoles = ["admin", "miembro"];
+    const validAreas = ["animacion", "comunicacion", "formacion", "logistica", "espiritualidad"];
     if (role && !validRoles.includes(role)) {
       return badRequest("El rol proporcionado no es válido");
+    }
+    if (areas && (!Array.isArray(areas) || areas.some((area) => typeof area !== 'string' || !validAreas.includes(area)))) {
+      return badRequest("Las áreas seleccionadas no son válidas");
     }
 
     if (password && (typeof password !== "string" || password.length < 8)) {
@@ -48,6 +52,8 @@ export async function PUT(
       isActive: normalizedIsActive,
       passwordHash,
       displayName: typeof displayName === "string" ? displayName : typeof nombre === "string" ? nombre : undefined,
+      isAnimator: typeof isAnimator === 'boolean' ? isAnimator : undefined,
+      areas: Array.isArray(areas) ? areas : undefined,
     });
 
     return NextResponse.json({ success: true, message: "Usuario actualizado" });

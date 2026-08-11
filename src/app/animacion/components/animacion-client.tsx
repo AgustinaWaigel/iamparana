@@ -11,7 +11,7 @@ interface AnimacionClientProps {
 
 export function AnimacionClient({ children }: AnimacionClientProps) {
   const router = useRouter();
-  const { isAdmin } = useSession();
+  const { isAdmin, user } = useSession();
 
   const handleRefresh = useCallback(() => {
     router.refresh();
@@ -20,7 +20,7 @@ export function AnimacionClient({ children }: AnimacionClientProps) {
   return (
     <>
       {children}
-      <AnimacionEditor isAdmin={isAdmin} onRefresh={handleRefresh} />
+      <AnimacionEditor isAdmin={isAdmin || user?.areas?.includes('animacion') === true} onRefresh={handleRefresh} />
     </>
   );
 }

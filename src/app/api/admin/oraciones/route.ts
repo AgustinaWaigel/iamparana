@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { badRequest, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
+import { badRequest, requireAreaWrite, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
 import { createSpiritualPrayer, deleteSpiritualPrayer, getSpiritualPrayer, listSpiritualPrayers, updateSpiritualPrayer } from "@/server/db/spiritual-prayers-repository";
 
 function validPayload(value: unknown): value is { title: string; description?: string; content: string; thumbnailUrl?: string | null } {
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePermission("content.write");
+  const auth = await requireAreaWrite("espiritualidad");
   if ("errorResponse" in auth) return auth.errorResponse;
   try {
     const body = await req.json();

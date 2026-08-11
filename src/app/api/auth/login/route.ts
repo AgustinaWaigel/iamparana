@@ -11,6 +11,7 @@ import {
   AUTH_COOKIE_NAME,
   createSessionToken,
   getSessionExpiresAtIso,
+  hashPassword,
   hashSessionToken,
   verifyPassword,
 } from "@/server/lib/auth-security";
@@ -21,7 +22,9 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, "60 s"),
 });
 
-const DUMMY_HASH = "$2b$10$Z9M3.8QxG1K7S8R9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L";
+// Mantiene un coste comparable aunque el email no exista, sin revelar cuentas por tiempo.
+const DUMMY_HASH = hashPassword("not-a-real-password");
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request) {
   try {
@@ -34,6 +37,9 @@ export async function POST(req: Request) {
       console.warn("⚠️ Rate limit check failed:", rlErr);
       // Si falla la comprobación de rate limit por problemas de red/DNS,
       // permitimos la solicitud en lugar de devolver 500 para no romper la UX.
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Servicio temporalmente no disponible' }, { status: 503 });
+      }
       limitOk = true;
     }
 
@@ -44,9 +50,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const email = typeof body?.email === 'string' ? body.email : '';
+    const password = typeof body?.password === 'string' ? body.password : '';
 
-    if (!email || !password) {
+    if (!email || !password || !EMAIL_PATTERN.test(email.trim())) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 

@@ -12,6 +12,20 @@ export type Permission =
   | "users.manage"
   | "comments.moderate";
 
+export type ManagedArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad";
+
+const AREA_ALIASES: Record<string, ManagedArea> = {
+  animacion: "animacion", juegos: "animacion", recursos: "animacion", canciones: "animacion",
+  comunicacion: "comunicacion", logos: "comunicacion", dibujos: "comunicacion",
+  formacion: "formacion",
+  logistica: "logistica", presupuestos: "logistica", rendiciones: "logistica", inventario: "logistica",
+  espiritualidad: "espiritualidad", oraciones: "espiritualidad", guiones: "espiritualidad",
+};
+
+export function resolveManagedArea(value: unknown): ManagedArea | null {
+  return AREA_ALIASES[String(value || "").trim().toLowerCase()] ?? null;
+}
+
 // 2. Mapeo de Roles (Ajustado a tus roles reales de la IAM)
 const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   admin: ["content.read", "content.write", "content.delete", "users.manage", "comments.moderate"],
@@ -81,4 +95,15 @@ export async function requirePermission(permission: Permission) {
   }
 
   return { user };
+}
+
+/** Administra todo; un miembro puede crear contenido solamente en sus áreas asignadas. */
+export async function requireAreaWrite(areaValue: unknown) {
+  await ensureSchemaInitialized();
+  const user = await getSessionUser();
+  if (!user) return { errorResponse: unauthorized() };
+  const area = resolveManagedArea(areaValue);
+  if (!area) return { errorResponse: badRequest("Área inválida") };
+  if (user.role === "admin" || user.areas.includes(area)) return { user, area };
+  return { errorResponse: forbidden() };
 }

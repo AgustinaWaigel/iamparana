@@ -29,6 +29,8 @@ export async function GET(req: Request) {
       nombre: sessionUser.nombre || "Usuario",
       role: sessionUser.role,
       isActive: sessionUser.isActive,
+      isAnimator: sessionUser.isAnimator,
+      areas: sessionUser.areas,
     });
   } catch (error) {
     console.error(error);

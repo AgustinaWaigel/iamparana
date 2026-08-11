@@ -14,7 +14,7 @@ export default function NuevoUsuarioPage() {
     email: '',
     password: '',
     displayName: '',
-    role: 'animador'
+    role: 'miembro'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,10 +97,7 @@ export default function NuevoUsuarioPage() {
               className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-brand-brown focus:ring-2 focus:ring-brand-brown/20 outline-none transition-all"
             >
               <option value="admin">Administrador</option>
-              <option value="equipo">Equipo</option>
-              <option value="redactor">Redactor</option>
-              <option value="coordinador">Coordinador</option>
-              <option value="animador">Animador</option>
+              <option value="miembro">Miembro</option>
             </select>
           </div>
 

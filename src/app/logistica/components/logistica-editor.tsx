@@ -7,19 +7,20 @@ import { AnimacionEditor } from '@/app/animacion/components/animacion-editor';
 
 export function LogisticaEditor() {
   const router = useRouter();
-  const { isAdmin, isLoading } = useSession();
+  const { isAdmin, isLoading, user } = useSession();
 
   const handleRefresh = useCallback(() => {
     router.refresh();
   }, [router]);
 
-  if (isLoading || !isAdmin) {
+  const canCreate = isAdmin || user?.areas?.includes('logistica') === true;
+  if (isLoading || !canCreate) {
     return null;
   }
 
   return (
     <AnimacionEditor
-      isAdmin={isAdmin}
+      isAdmin={canCreate}
       onRefresh={handleRefresh}
       section="logistica"
       documentTypes={[

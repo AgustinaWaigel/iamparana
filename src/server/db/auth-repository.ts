@@ -2,7 +2,8 @@ import "server-only";
 
 import { ensureSchemaInitialized, getTursoClient } from "@/server/db/turso";
 
-export type UserRole = "admin" | "equipo" | "redactor" | "coordinador" | "animador";
+export type UserRole = "admin" | "miembro" | "equipo" | "redactor" | "coordinador" | "animador";
+export type UserArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad";
 
 export type AuthUser = {
   id: number;
@@ -10,6 +11,8 @@ export type AuthUser = {
   nombre: string;
   role: UserRole;
   isActive: boolean;
+  isAnimator: boolean;
+  areas: UserArea[];
 };
 
 export type SessionUser = AuthUser & {
@@ -39,16 +42,22 @@ function toNumber(value: unknown) {
 }
 
 function toRole(value: unknown): UserRole {
-  const role = typeof value === "string" ? value : "animador";
-  if (["admin", "equipo", "redactor", "coordinador", "animador"].includes(role)) {
+  const role = typeof value === "string" ? value : "miembro";
+  if (["admin", "miembro", "equipo", "redactor", "coordinador", "animador"].includes(role)) {
     return role as UserRole;
   }
-  return "animador";
+  return "miembro";
+}
+
+function toAreas(value: unknown): UserArea[] {
+  const valid = new Set<UserArea>(["animacion", "comunicacion", "formacion", "logistica", "espiritualidad"]);
+  return String(value || "").split(",").filter((area): area is UserArea => valid.has(area as UserArea));
 }
 
 export async function findUserByEmail(email: string): Promise<(AuthUser & { passwordHash: string }) | null> {
   const client = await clientOrThrow();
-  const sql = `SELECT u.id, u.email, u.display_name, u.role, u.is_active, u.password_hash 
+  const sql = `SELECT u.id, u.email, u.display_name, u.role, u.is_active, u.is_animator, u.password_hash,
+          (SELECT GROUP_CONCAT(area, ',') FROM user_areas WHERE user_id = u.id) AS areas
           FROM users u
           WHERE u.email = ? LIMIT 1`;
 
@@ -76,6 +85,8 @@ export async function findUserByEmail(email: string): Promise<(AuthUser & { pass
     nombre: String(row.display_name ?? row.email ?? "").split("@")[0],
     role: toRole(row.role),
     isActive: toNumber(row.is_active) === 1,
+    isAnimator: toNumber(row.is_animator) === 1,
+    areas: toAreas(row.areas),
     passwordHash: String(row.password_hash ?? ""),
   };
 }
@@ -105,7 +116,8 @@ export async function getSessionUserByTokenHash(tokenHash: string): Promise<Sess
   const client = await clientOrThrow();
   await deleteExpiredSessions();
 
-  const sql = `SELECT s.id as session_id, u.id, u.email, u.display_name, u.role, u.is_active
+  const sql = `SELECT s.id as session_id, u.id, u.email, u.display_name, u.role, u.is_active, u.is_animator,
+          (SELECT GROUP_CONCAT(area, ',') FROM user_areas WHERE user_id = u.id) AS areas
           FROM auth_sessions s
           JOIN users u ON u.id = s.user_id
           WHERE s.token_hash = ? AND s.expires_at > CURRENT_TIMESTAMP
@@ -136,12 +148,15 @@ export async function getSessionUserByTokenHash(tokenHash: string): Promise<Sess
     nombre: String(row.display_name ?? row.email ?? "").split("@")[0],
     role: toRole(row.role),
     isActive: toNumber(row.is_active) === 1,
+    isAnimator: toNumber(row.is_animator) === 1,
+    areas: toAreas(row.areas),
   };
 }
 
 export async function listUsers() {
   const client = await clientOrThrow();
-  const sql = `SELECT u.id, u.email, u.display_name, u.role, u.is_active, u.created_at, u.updated_at 
+  const sql = `SELECT u.id, u.email, u.display_name, u.role, u.is_active, u.is_animator, u.created_at, u.updated_at,
+     (SELECT GROUP_CONCAT(area, ',') FROM user_areas WHERE user_id = u.id) AS areas
      FROM users u
      ORDER BY u.created_at ASC`;
 
@@ -161,7 +176,7 @@ export async function listUsers() {
 export async function createUser(
   email: string,
   passwordHash: string,
-  role: UserRole = "animador",
+  role: UserRole = "miembro",
   displayName?: string
 ) {
   const client = await clientOrThrow();
@@ -184,7 +199,7 @@ export async function createUser(
 
 export async function updateUser(
   id: number,
-  params: { role?: UserRole; isActive?: boolean; passwordHash?: string; displayName?: string }
+  params: { role?: UserRole; isActive?: boolean; passwordHash?: string; displayName?: string; isAnimator?: boolean; areas?: UserArea[] }
 ) {
   const client = await clientOrThrow();
   const sets: string[] = [];
@@ -198,6 +213,10 @@ export async function updateUser(
   if (typeof params.isActive === "boolean") {
     sets.push("is_active = ?");
     args.push(params.isActive ? 1 : 0);
+  }
+  if (typeof params.isAnimator === "boolean") {
+    sets.push("is_animator = ?");
+    args.push(params.isAnimator ? 1 : 0);
   }
   if (params.passwordHash) {
     sets.push("password_hash = ?");
@@ -240,6 +259,13 @@ export async function updateUser(
       sql: `UPDATE users SET ${fallbackSets.join(", ")} WHERE id = ?`,
       args: fallbackArgs,
     });
+  }
+
+  if (params.areas) {
+    await client.execute({ sql: "DELETE FROM user_areas WHERE user_id = ?", args: [id] });
+    for (const area of params.areas) {
+      await client.execute({ sql: "INSERT OR IGNORE INTO user_areas (user_id, area) VALUES (?, ?)", args: [id, area] });
+    }
   }
 }
 

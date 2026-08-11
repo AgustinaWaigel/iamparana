@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { requirePermission, badRequest, serverError } from "@/app/api/admin/_shared/auth";
+import { requirePermission, requireAreaWrite, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import {
   saveLink,
   getLinksBySection,
@@ -54,9 +54,6 @@ export async function GET(req: Request) {
 
 // POST /api/admin/links - Create new link
 export async function POST(req: Request) {
-  const auth = await requirePermission("content.write");
-  if ("errorResponse" in auth) return auth.errorResponse;
-
   try {
     const body = await req.json();
     const { section, title, description, url, icon, thumbnailUrl } = body;
@@ -64,6 +61,8 @@ export async function POST(req: Request) {
     if (!section) {
       return badRequest("Section is required");
     }
+    const auth = await requireAreaWrite(section);
+    if ("errorResponse" in auth) return auth.errorResponse;
 
     if (!title) {
       return badRequest("Title is required");

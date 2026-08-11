@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { badRequest, isValidSlug, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
+import { badRequest, isValidSlug, requireAreaWrite, requirePermission, serverError } from "@/app/api/admin/_shared/auth";
 import {
   createResourcePage,
   deleteResourcePage,
@@ -34,9 +34,6 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const auth = await requirePermission("content.write");
-  if ("errorResponse" in auth) return auth.errorResponse;
-
   try {
     const body = await req.json();
     const slug = String(body.slug || "").trim();
@@ -46,6 +43,8 @@ export async function POST(req: Request) {
     const textureUrl = String(body.textureUrl || "").trim();
     const template = String(body.template || "gold").trim();
     const section = String(body.section || "animacion").trim();
+    const auth = await requireAreaWrite(section);
+    if ("errorResponse" in auth) return auth.errorResponse;
 
     if (!title) {
       return badRequest("Title is required");

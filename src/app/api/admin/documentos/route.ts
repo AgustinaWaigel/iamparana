@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { requirePermission, badRequest, serverError } from "@/app/api/admin/_shared/auth";
+import { requirePermission, requireAreaWrite, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import {
   saveDocument,
   getDocumentsBySection,
@@ -60,9 +60,6 @@ export async function GET(req: NextRequest) {
 
 // POST /api/admin/documentos
 export async function POST(req: NextRequest) {
-  const auth = await requirePermission("content.write");
-  if ("errorResponse" in auth) return auth.errorResponse;
-
   try {
     let touchedSection: string | null = null;
     const contentType = req.headers.get("content-type") || "";
@@ -79,6 +76,8 @@ export async function POST(req: NextRequest) {
       if (!file || !section || !title) {
         return badRequest("Missing required fields (file, section, or title)");
       }
+      const auth = await requireAreaWrite(section);
+      if ("errorResponse" in auth) return auth.errorResponse;
       touchedSection = section;
 
       if (file.size > 100 * 1024 * 1024) {
@@ -116,6 +115,9 @@ export async function POST(req: NextRequest) {
       const { titulo, descripcion, tipo, url, fileId, thumbnailUrl } = body;
 
       if (!titulo || !url || !fileId) return badRequest("Missing metadata");
+
+      const auth = await requireAreaWrite(tipo || 'formacion');
+      if ("errorResponse" in auth) return auth.errorResponse;
 
       touchedSection = tipo || 'formacion';
 
