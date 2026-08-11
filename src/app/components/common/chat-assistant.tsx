@@ -148,7 +148,22 @@ export function ChatAssistant() {
                       : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 rounded-tl-sm border border-slate-200 dark:border-slate-700 shadow-sm"
                   }`}
                 >
-                  {m.content}
+                  {m.content.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
+                    if (part.match(/(https?:\/\/[^\s]+)/)) {
+                      return (
+                        <a 
+                          key={i} 
+                          href={part} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        >
+                          {part}
+                        </a>
+                      );
+                    }
+                    return <span key={i}>{part}</span>;
+                  })}
                 </div>
               </div>
             ))}
