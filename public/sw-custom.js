@@ -1,3 +1,7 @@
+// Un único worker: carga Workbox (caché/offline) y suma las notificaciones push.
+// No registrar /sw.js y este archivo por separado: ambos comparten el scope '/'.
+importScripts('/sw.js');
+
 // Service Worker customizado para manejar push notifications
 // Este SW se registra DESPUÉS del SW de workbox para agregar funcionalidad de push
 

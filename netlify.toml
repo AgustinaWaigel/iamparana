@@ -17,10 +17,15 @@
 
 # Headers para Service Worker y PWA
 [[headers]]
-  for = "/sw.js"
+  for = "/sw-custom.js"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
     Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/workbox-*.js"

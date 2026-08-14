@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   // BORRÁ 'output: export' y 'basePath'
   images: {
     remotePatterns: [

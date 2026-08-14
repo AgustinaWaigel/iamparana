@@ -27,7 +27,7 @@ export function ServiceWorkerRegistration() {
     }
 
     navigator.serviceWorker
-      .register('/sw.js')
+      .register('/sw-custom.js', { scope: '/' })
       .then((registration) => {
         console.log('Service Worker registrado:', registration);
       })
