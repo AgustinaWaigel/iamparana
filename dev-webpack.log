@@ -1,0 +1,14 @@
+
+> iamparana@0.1.0 dev
+> next dev --webpack --port 3001
+
+▲ Next.js 16.2.4 (webpack)
+- Local:         http://localhost:3001
+- Network:       http://100.106.99.1:3001
+- Environments: .env.local
+✓ Ready in 609ms
+
+○ Compiling /auth/login ...
+ GET /auth/login 200 in 7.8s (next.js: 7.3s, proxy.ts: 249ms, application-code: 310ms)
+ GET /api/auth/me 401 in 2.8s (next.js: 2.7s, application-code: 24ms)
+ POST /api/auth/login 500 in 5.3s (next.js: 544ms, application-code: 4.7s)

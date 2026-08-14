@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-  const isAuthPage = pathname.startsWith("/login");
+  const isAuthPage = pathname.startsWith("/auth");
   const isAdminPage = pathname.startsWith("/admin");
 
   if (isAdminPage) {
