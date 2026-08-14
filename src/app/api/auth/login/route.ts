@@ -22,6 +22,21 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, "60 s"),
 });
 
+const localAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function isLocalRateLimitExceeded(ip: string) {
+  const now = Date.now();
+  const current = localAttempts.get(ip);
+
+  if (!current || current.resetAt <= now) {
+    localAttempts.set(ip, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+
+  current.count += 1;
+  return current.count > 5;
+}
+
 // Mantiene un coste comparable aunque el email no exista, sin revelar cuentas por tiempo.
 const DUMMY_HASH = hashPassword("not-a-real-password");
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -37,10 +52,7 @@ export async function POST(req: Request) {
       console.warn("⚠️ Rate limit check failed:", rlErr);
       // Si falla la comprobación de rate limit por problemas de red/DNS,
       // permitimos la solicitud en lugar de devolver 500 para no romper la UX.
-      if (process.env.NODE_ENV === 'production') {
-        return NextResponse.json({ error: 'Servicio temporalmente no disponible' }, { status: 503 });
-      }
-      limitOk = true;
+      limitOk = !isLocalRateLimitExceeded(ip);
     }
 
     if (!limitOk) {
