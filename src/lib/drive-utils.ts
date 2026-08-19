@@ -67,7 +67,9 @@ export function getGoogleDriveProxyImageUrl(urlOrPath: string | undefined | null
 
   const fileId = extractGoogleDriveFileId(raw);
   if (fileId) {
-    return `/api/drive-image?id=${encodeURIComponent(fileId)}`;
+    // Cambiar esta versión invalida respuestas incorrectas que hayan quedado
+    // almacenadas antes de separar la caché de Netlify por ID de archivo.
+    return `/api/drive-image?id=${encodeURIComponent(fileId)}&v=2`;
   }
 
   return raw;

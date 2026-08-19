@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
         'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
         // Cada ID representa una imagen diferente. Netlify debe incluirlo en
         // la clave de caché para no servir la foto de otro slide.
-        'Netlify-Vary': 'query=id|src',
+        'Netlify-Vary': 'query=id|src|v',
       },
     });
   } catch (error) {

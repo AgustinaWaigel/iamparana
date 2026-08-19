@@ -475,31 +475,33 @@ export async function deleteAgendaEvento(id: number): Promise<void> {
 
 export async function listCarouselItems(): Promise<CarouselItem[]> {
   const client = getTursoClient();
-  if (isTursoReadEnabled && client) {
-    await ensureCarouselColumns();
-    try {
-      const result = await client.execute(
-        "SELECT id, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
-      );
-
-      return result.rows.map((row) => ({
-        id: asNumber(row.id),
-        imageDesktop: normalizeCarouselImagePath(row.imageDesktop),
-        imageMobile: normalizeCarouselImagePath(row.imageMobile),
-        alt: asString(row.alt),
-        title: asOptionalString(row.title) ?? "",
-        description: asOptionalString(row.description) ?? "",
-        tag: asOptionalString(row.tag) ?? "",
-        link: asOptionalString(row.link),
-        buttonText: asOptionalString(row.buttonText),
-        order: asNumber(row.order),
-      }));
-    } catch (error) {
-      console.error("Turso read carousel failed, fallback to FS", error);
-    }
+  if (!isTursoReadEnabled || !client) {
+    console.error("Turso no está configurado para leer el carrusel");
+    return [];
   }
 
-  return readCarouselFromFs();
+  try {
+    await ensureCarouselColumns();
+    const result = await client.execute(
+      "SELECT id, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
+    );
+
+    return result.rows.map((row) => ({
+      id: asNumber(row.id),
+      imageDesktop: normalizeCarouselImagePath(row.imageDesktop),
+      imageMobile: normalizeCarouselImagePath(row.imageMobile),
+      alt: asString(row.alt),
+      title: asOptionalString(row.title) ?? "",
+      description: asOptionalString(row.description) ?? "",
+      tag: asOptionalString(row.tag) ?? "",
+      link: asOptionalString(row.link),
+      buttonText: asOptionalString(row.buttonText),
+      order: asNumber(row.order),
+    }));
+  } catch (error) {
+    console.error("Turso read carousel failed", error);
+    return [];
+  }
 }
 
 export async function saveContent(
