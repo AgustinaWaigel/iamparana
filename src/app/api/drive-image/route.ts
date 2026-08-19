@@ -51,12 +51,18 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    const bytes = Buffer.from(mediaResponse.data as ArrayBuffer);
+    // Crear un ArrayBuffer propio y transferible. Evita reutilizar el backing
+    // buffer de Axios/Google, que puede no ser detachable en runtimes nuevos.
+    const source = new Uint8Array(mediaResponse.data as ArrayBuffer);
+    const bytes = Uint8Array.from(source);
 
     return new NextResponse(bytes, {
       headers: {
         'Content-Type': mimeType,
         'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
+        // Cada ID representa una imagen diferente. Netlify debe incluirlo en
+        // la clave de caché para no servir la foto de otro slide.
+        'Netlify-Vary': 'query=id|src',
       },
     });
   } catch (error) {
