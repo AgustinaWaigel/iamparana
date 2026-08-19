@@ -147,12 +147,12 @@ export default async function Noticias() {
                         <h2 className="text-2xl font-bold text-brand-brown mb-3 leading-tight group-hover:text-brand-gold transition-colors">
                           {noticias[0].title}
                         </h2>
-                        <p className="text-gray-700 text-sm line-clamp-2 mb-4">
+                        <p className="m-0 mb-4 w-full text-left text-gray-700 text-sm line-clamp-2">
                           {noticias[0].description}
                         </p>
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <p className="text-xs text-gray-500 font-semibold">
+                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
                           {formatDate(noticias[0].date)}
                         </p>
                         <span className="text-sm font-bold text-brand-brown group-hover:translate-x-1 transition-transform">
@@ -193,7 +193,7 @@ export default async function Noticias() {
                             <h3 className="text-sm font-bold text-brand-brown line-clamp-3 group-hover:text-brand-gold transition-colors">
                               {item.title}
                             </h3>
-                            <p className="text-[11px] text-gray-500 font-semibold mt-2">
+                            <p className="m-0 mt-2 w-full text-left text-[11px] text-gray-500 font-semibold">
                               {formatDate(item.date)}
                             </p>
                           </div>
@@ -238,10 +238,10 @@ export default async function Noticias() {
                         <h2 className="text-lg font-bold text-brand-brown mb-2 line-clamp-2 group-hover:text-brand-gold transition-colors">
                           {item.title}
                         </h2>
-                        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                        <p className="m-0 mb-3 w-full text-left text-gray-600 text-sm line-clamp-2">
                           {item.description}
                         </p>
-                        <p className="text-xs text-gray-500 font-semibold">
+                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
                           {formatDate(item.date)}
                         </p>
                       </div>

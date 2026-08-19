@@ -146,7 +146,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
             key={displayActive}
             className="absolute inset-x-0 bottom-0 z-20 p-6 sm:p-8 md:p-11 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700"
           >
-            <div className="max-w-2xl pointer-events-auto">
+            <div className="flex max-w-2xl flex-col items-start text-left pointer-events-auto">
               {activeItem.tag && (
                 <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
                   <span className="h-1.5 w-1.5 rounded-full bg-brand-gold" />
@@ -154,12 +154,12 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
                 </span>
               )}
               {activeItem.title && (
-                <h1 className="font-display text-[26px] sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.04] mb-3 drop-shadow-sm text-balance">
+                <h1 className="m-0 mb-3 w-full text-left font-display text-[26px] sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.04] drop-shadow-sm text-balance">
                   {activeItem.title}
                 </h1>
               )}
               {activeItem.description && (
-                <p className="text-sm md:text-[15px] text-white/80 mb-5 max-w-xl leading-relaxed">
+                <p className="m-0 mb-5 w-full max-w-2xl text-left text-sm md:text-[15px] text-white/80 leading-relaxed">
                   {activeItem.description}
                 </p>
               )}

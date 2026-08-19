@@ -89,12 +89,12 @@ export default async function HomePage() {
                         <h2 className="text-2xl font-bold text-brand-brown mb-3 leading-tight group-hover:text-brand-gold transition-colors">
                           {noticias[0].title}
                         </h2>
-                        <p className="text-gray-700 text-sm line-clamp-3 mb-4">
+                        <p className="m-0 mb-4 w-full text-left text-gray-700 text-sm line-clamp-3">
                           {noticias[0].description}
                         </p>
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <p className="text-xs text-gray-500 font-semibold">
+                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
                           {new Date(noticias[0].date).toLocaleDateString('es-AR')}
                         </p>
                         <span className="text-sm font-bold text-brand-brown group-hover:translate-x-1 transition-transform">
@@ -135,7 +135,7 @@ export default async function HomePage() {
                             <h3 className="text-sm font-bold text-brand-brown line-clamp-3 group-hover:text-brand-gold transition-colors mt-1">
                               {item.title}
                             </h3>
-                            <p className="text-[11px] text-gray-500 font-semibold mt-2">
+                            <p className="m-0 mt-2 w-full text-left text-[11px] text-gray-500 font-semibold">
                               {new Date(item.date).toLocaleDateString('es-AR')}
                             </p>
                           </div>
