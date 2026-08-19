@@ -111,6 +111,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
   const activeItem = items[displayActive];
   const activeDesktopUrl = getGoogleDriveProxyImageUrl(activeItem.imageDesktop);
   const activeMobileUrl = getGoogleDriveProxyImageUrl(activeItem.imageMobile || activeItem.imageDesktop);
+  const activeImageKey = `${activeItem.id ?? displayActive}:${activeItem.imageDesktop}:${activeItem.imageMobile || ""}`;
 
   return (
     <div className="group relative rounded-[20px] h-[120vw] sm:h-[33vw] overflow-hidden bg-stone-900 select-none">
@@ -121,7 +122,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         )}
 
         {/* Slides — solo imagen + degradado (el texto va en una capa única, abajo) */}
-        <div key={activeItem.id ?? displayActive} className="absolute inset-0 z-10 animate-in fade-in duration-700">
+        <div key={activeImageKey} className="absolute inset-0 z-10 animate-in fade-in duration-700">
           {activeDesktopUrl && (
             <picture className="block h-full w-full">
               {activeMobileUrl && <source media="(max-width: 767px)" srcSet={activeMobileUrl} />}

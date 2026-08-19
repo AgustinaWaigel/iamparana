@@ -75,7 +75,13 @@ function asOptionalString(value: unknown) {
 }
 
 function asNumber(value: unknown, fallback = 0) {
-  return typeof value === "number" ? value : fallback;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
 }
 
 function normalizeCarouselImagePath(value: unknown) {

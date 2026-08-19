@@ -9,12 +9,6 @@ export function proxy(request: NextRequest) {
 
   const isAdminPage = pathname.startsWith("/admin");
   const isProfilePage = pathname === "/auth/perfil";
-  const isGuestOnlyPage = [
-    "/auth/login",
-    "/auth/registro",
-    "/auth/recuperar",
-    "/auth/nueva-contrasena",
-  ].includes(pathname);
 
   if (isAdminPage || isProfilePage) {
     if (!token) {
@@ -23,10 +17,6 @@ export function proxy(request: NextRequest) {
     }
     // La validación real de la sesión se hace en los Server Components de /admin o en la API
     // para no saturar Turso con una consulta por cada petición de asset.
-  }
-
-  if (isGuestOnlyPage && token) {
-    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   return NextResponse.next();
