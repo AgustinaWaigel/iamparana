@@ -4,7 +4,7 @@ import { NoticiasClient } from "@/app/noticias/components/noticias-client";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { listNoticiasPreview } from "@/server/db/content-repository";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 function parseDate(dateStr: string): Date {
@@ -34,34 +34,61 @@ interface Noticia {
   cat?: string;
 }
 
-export default async function Noticias() {
+export default async function Noticias({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = '' } = await searchParams;
+  const searchQuery = q.trim();
   let noticias = await listNoticiasPreview() as Noticia[];
+
+  if (searchQuery) {
+    const normalizedQuery = searchQuery.toLocaleLowerCase('es');
+    noticias = noticias.filter((noticia) =>
+      [noticia.title, noticia.description, noticia.cat]
+        .filter(Boolean)
+        .some((value) => String(value).toLocaleLowerCase('es').includes(normalizedQuery))
+    );
+  }
   
   // Sort by date descending
   noticias = noticias.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
 
-  // Contar noticias por categoría
+  // Las categorías se construyen exclusivamente con los valores presentes
+  // en Turso. Las variantes de mayúsculas/minúsculas se agrupan juntas.
+  const categoryMap = new Map<string, { label: string; key: string; count: number }>();
+  for (const noticia of noticias) {
+    const label = noticia.cat?.trim();
+    if (!label) continue;
+
+    const key = label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const existing = categoryMap.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      categoryMap.set(key, { label, key, count: 1 });
+    }
+  }
+
   const categorias = [
     { label: "Todas", key: "todas", count: noticias.length },
-    { label: "Iglesia", key: "iglesia", count: noticias.filter(n => n.cat === "Iglesia").length },
-    { label: "Encuentros", key: "encuentros", count: noticias.filter(n => n.cat === "Encuentros").length },
-    { label: "Campamento", key: "campamento", count: noticias.filter(n => n.cat === "Campamento").length },
-    { label: "Formación", key: "formacion", count: noticias.filter(n => n.cat === "Formación").length },
-    { label: "Espiritualidad", key: "espiritualidad", count: noticias.filter(n => n.cat === "Espiritualidad").length },
+    ...Array.from(categoryMap.values()).sort((a, b) => a.label.localeCompare(b.label, 'es')),
   ];
 
   const content = (
     <>
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden px-6 sm:px-12 py-20 sm:py-28"
+        className="relative overflow-hidden border-b border-brand-gold/20 px-5 py-14 sm:px-10 sm:py-20"
         style={{
-          backgroundColor: "#5a3a24",
+          backgroundColor: "#3a1508",
           backgroundImage: `
             linear-gradient(
-              135deg,
-              rgba(58, 34, 20, 0.98) 0%,
-              rgba(90, 58, 36, 0.95) 100%
+              115deg,
+              rgba(44, 15, 5, 0.98) 0%,
+              rgba(86, 42, 20, 0.94) 58%,
+              rgba(105, 61, 31, 0.9) 100%
             ),
             url('/assets/textures/areasg.webp')
           `,
@@ -69,43 +96,56 @@ export default async function Noticias() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0)_70%)]" />
+        <div className="absolute -right-24 -top-28 h-80 w-80 rounded-full bg-brand-gold/10 blur-3xl" />
+        <div className="absolute -bottom-36 left-1/3 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
 
-        <div className="relative max-w-7xl mx-auto text-left">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
-            
-            {/* Contenido izquierdo */}
-            <div className="lg:col-span-2 text-left">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-gold block mb-4">
-                Sala de Prensa
-              </span>
+        <div className="relative mx-auto max-w-7xl">
+          <div className="max-w-4xl text-left">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-white/5 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-brand-gold backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-gold" />
+                Enterate de todas las novedades
+              </div>
 
-              <h1 className="m-0 text-6xl sm:text-7xl lg:text-8xl font-black leading-none mb-6 text-white drop-shadow-lg">
-                Noticias
+              <h1 className="m-0 max-w-3xl text-left font-display text-5xl font-black leading-[0.95] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+                Noticias de la IAM
               </h1>
 
-              <p className="m-0 max-w-lg text-lg sm:text-xl leading-relaxed text-amber-100">
-                Entérate de las últimas novedades, encuentros y propuestas de la
-                Infancia y Adolescencia Misionera de Paraná.
+              <p className="m-0 mt-6 max-w-2xl text-left text-base leading-relaxed text-amber-50/80 sm:text-lg">
+                Eventos, noticias, encuentros y propuestas de la Infancia y Adolescencia
+                Misionera de Paraná.
               </p>
-            </div>
 
-            {/* Buscador derecho */}
-            <div className="mt-8 lg:mt-0">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar noticias..."
-                  className="w-full px-6 py-3.5 pr-12 rounded-full bg-white text-brand-brown placeholder-brand-brown/40 border-0 focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all shadow-2xl"
-                />
-
-                <Search
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-brown/50 pointer-events-none"
-                  size={18}
-                />
-              </div>
-            </div>
-
+              <form action="/noticias" method="get" className="mt-7 flex max-w-2xl items-center gap-2">
+                <label className="relative block min-w-0 flex-1">
+                  <span className="sr-only">Buscar noticias</span>
+                  <Search
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand-brown/50"
+                    size={18}
+                  />
+                  <input
+                    type="search"
+                    name="q"
+                    defaultValue={searchQuery}
+                    placeholder="Buscar por título, descripción o categoría..."
+                    className="h-12 w-full rounded-full border border-white/20 bg-white py-3 pl-11 pr-5 text-sm font-medium text-brand-brown shadow-xl outline-none placeholder:text-brand-brown/45 focus:border-brand-gold focus:ring-4 focus:ring-brand-gold/20"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="h-12 shrink-0 rounded-full bg-brand-gold px-5 text-sm font-black text-brand-deep transition hover:bg-brand-goldsoft"
+                >
+                  Buscar
+                </button>
+                {searchQuery && (
+                  <Link
+                    href="/noticias"
+                    aria-label="Limpiar búsqueda"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+                  >
+                    <X size={18} />
+                  </Link>
+                )}
+              </form>
           </div>
         </div>
       </section>
@@ -119,6 +159,20 @@ export default async function Noticias() {
 
         {/* Grid Principal - Noticia destacada + cuatro noticias */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          {noticias.length === 0 && (
+            <div className="rounded-3xl border border-stone-200 bg-stone-50 px-6 py-16 text-center">
+              <Search className="mx-auto mb-4 text-stone-300" size={34} />
+              <h2 className="m-0 text-xl font-black text-brand-brown">No encontramos noticias</h2>
+              <p className="m-0 mt-2 text-sm text-stone-500">
+                {searchQuery ? `No hay resultados para “${searchQuery}”.` : 'Todavía no hay noticias publicadas.'}
+              </p>
+              {searchQuery && (
+                <Link href="/noticias" className="mt-5 inline-flex rounded-full bg-brand-brown px-5 py-2.5 text-sm font-bold text-white">
+                  Ver todas las noticias
+                </Link>
+              )}
+            </div>
+          )}
           {noticias.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Noticia destacada izquierda */}

@@ -20,9 +20,10 @@ interface Noticia {
   image: string;
   content: string;
   date: string;
+  cat?: string;
 }
 
-type NoticiaResumen = Pick<Noticia, 'slug' | 'title' | 'description' | 'image' | 'date'>;
+type NoticiaResumen = Pick<Noticia, 'slug' | 'title' | 'description' | 'image' | 'date' | 'cat'>;
 
 interface NoticiasEditorProps {
   isAdmin: boolean;
@@ -45,6 +46,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
     image: '',
     content: '',
     date: new Date().toISOString().split('T')[0],
+    cat: 'Nacional',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [bloques, setBloques] = useState<BloqueContenido[]>([]);
@@ -129,7 +131,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
   };
 
   const handleEditarNoticia = (noticia: Noticia) => {
-    setFormData(noticia);
+    setFormData({ ...noticia, cat: noticia.cat || 'Nacional' });
     setEditingSlug(noticia.slug);
     try {
       const contenidoParseado = JSON.parse(noticia.content);
@@ -262,6 +264,19 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
                       <div className="relative">
                         <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className={inputClass} />
                       </div>
+                    </div>
+
+                    <div>
+                      <label className={labelClass}>Categoría</label>
+                      <select
+                        value={formData.cat || 'Nacional'}
+                        onChange={(e) => setFormData({ ...formData, cat: e.target.value })}
+                        className={inputClass}
+                      >
+                        {['Nacional', 'Iglesia', 'Encuentros', 'Campamento', 'Formación', 'Espiritualidad'].map((category) => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>

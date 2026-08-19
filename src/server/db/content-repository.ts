@@ -10,6 +10,7 @@ export interface NoticiaPreview {
   slug: string;
   title: string;
   date: string;
+  cat?: string;
   description: string;
   image: string;
 }
@@ -251,13 +252,14 @@ export async function listNoticiasPreview(): Promise<NoticiaPreview[]> {
   if (isTursoReadEnabled && client) {
     try {
       const result = await client.execute(
-        "SELECT slug, title, date, description, image FROM noticias ORDER BY date DESC"
+        "SELECT slug, title, date, cat, description, image FROM noticias ORDER BY date DESC"
       );
 
       return result.rows.map((row) => ({
         slug: asString(row.slug),
         title: asString(row.title),
         date: asString(row.date),
+        cat: asOptionalString(row.cat),
         description: asString(row.description),
         image: asString(row.image),
       }));
