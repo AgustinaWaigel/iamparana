@@ -263,6 +263,9 @@ export async function listCarouselItems() {
       imageDesktop as imageDesktop, 
       imageMobile as imageMobile, 
       alt, 
+      title,
+      description,
+      tag,
       link, 
       buttonText, 
       "order" 

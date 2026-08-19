@@ -184,6 +184,10 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
     }
   };
 
+  const currentEditingItem = editingId === null
+    ? null
+    : items.find((item) => item.id === editingId) ?? null;
+
   const modalContent = (
     <div className="modal-overlay-unified">
       <div className="modal-panel-unified max-h-[92vh] max-w-5xl flex flex-col">
@@ -290,6 +294,13 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
                       ? "Opcional: selecciona imagen desktop para reemplazar"
                       : "Seleccionar imagen desktop o soltar aquí"}
                 </p>
+                {currentEditingItem && !fileDesktop && getGoogleDriveProxyImageUrl(currentEditingItem.imageDesktop) && (
+                  <img
+                    src={getGoogleDriveProxyImageUrl(currentEditingItem.imageDesktop) || undefined}
+                    alt={`Imagen desktop actual de ${currentEditingItem.alt || "slide"}`}
+                    className="mt-3 h-28 w-full max-w-sm rounded-xl border border-stone-200 bg-stone-100 object-cover"
+                  />
+                )}
               </div>
             </div>
 
@@ -315,6 +326,13 @@ export default function CarouselModal({ isOpen, onClose, onSave }: Props) {
                       ? "Opcional: selecciona imagen mobile para reemplazar"
                       : "Seleccionar imagen mobile o soltar aquí"}
                 </p>
+                {currentEditingItem && !fileMobile && getGoogleDriveProxyImageUrl(currentEditingItem.imageMobile || currentEditingItem.imageDesktop) && (
+                  <img
+                    src={getGoogleDriveProxyImageUrl(currentEditingItem.imageMobile || currentEditingItem.imageDesktop) || undefined}
+                    alt={`Imagen mobile actual de ${currentEditingItem.alt || "slide"}`}
+                    className="mt-3 h-40 w-28 rounded-xl border border-stone-200 bg-stone-100 object-cover"
+                  />
+                )}
               </div>
             </div>
 
