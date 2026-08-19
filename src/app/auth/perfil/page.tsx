@@ -39,7 +39,7 @@ export default function PerfilPage() {
   // Sincronizar datos del usuario al cargar
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/admin');
+      router.replace('/auth/login');
     } else if (user) {
       setFormData(prev => ({
         ...prev,

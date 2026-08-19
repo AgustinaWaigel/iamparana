@@ -278,12 +278,23 @@ export default function UsuariosPage() {
       </div>
 
       {editingUser && (
-        <div className="modal-overlay-unified z-[120]" onClick={() => setEditingUser(null)}>
+        <div
+          className="modal-overlay-unified z-[120]"
+          role="presentation"
+          onMouseDown={(event) => {
+            // Cerrar solamente si el clic comenzó en el fondo. Los controles
+            // nativos (especialmente select y checkbox en móviles) pueden
+            // emitir un clic que burbujea hasta el overlay.
+            if (event.target === event.currentTarget) setEditingUser(null);
+          }}
+        >
           <div
             className="modal-panel-unified max-w-md p-5"
-            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-user-title"
           >
-            <h3 className="modal-title-unified">Editar usuario</h3>
+            <h3 id="edit-user-title" className="modal-title-unified">Editar usuario</h3>
             <p className="mt-1 text-sm text-stone-500">{editingUser.email}</p>
 
             <div className="mt-4 space-y-3">

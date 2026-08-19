@@ -3,14 +3,20 @@ import type { NextRequest } from "next/server";
 
 const AUTH_COOKIE_NAME = "iam_auth";
 
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-  const isAuthPage = pathname.startsWith("/auth");
   const isAdminPage = pathname.startsWith("/admin");
+  const isProfilePage = pathname === "/auth/perfil";
+  const isGuestOnlyPage = [
+    "/auth/login",
+    "/auth/registro",
+    "/auth/recuperar",
+    "/auth/nueva-contrasena",
+  ].includes(pathname);
 
-  if (isAdminPage) {
+  if (isAdminPage || isProfilePage) {
     if (!token) {
       const url = new URL("/auth/login", request.url);
       return NextResponse.redirect(url);
@@ -19,7 +25,7 @@ export async function proxy(request: NextRequest) {
     // para no saturar Turso con una consulta por cada petición de asset.
   }
 
-  if (isAuthPage && token) {
+  if (isGuestOnlyPage && token) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
