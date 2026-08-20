@@ -86,22 +86,22 @@ const Header: React.FC = () => {
       {/* Línea de acento dorada */}
       <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-brand-gold via-brand-goldsoft to-brand-gold" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-[1180px] items-center justify-between px-6">
+      <div className="relative mx-auto flex h-full w-full max-w-[1180px] items-center justify-between pl-3 pr-16 sm:px-6">
 
         <div className="relative z-[70] flex items-center">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Image
               src="/assets/multimedia/logo%20iam%20nuevo%20redondo.png"
               alt="IAM Paraná"
               width={44} height={44}
               priority
-              className="h-11 w-11 object-contain drop-shadow"
+              className="h-10 w-10 shrink-0 object-contain drop-shadow sm:h-11 sm:w-11"
             />
-            <span className="hidden sm:flex flex-col leading-none">
-              <span className="font-display text-[19px] font-extrabold tracking-tight text-white">
+            <span className="flex min-w-0 flex-col leading-none">
+              <span className="font-display text-[15px] font-extrabold tracking-tight text-white sm:text-[19px]">
                 IAM <span className="text-brand-gold">Paraná</span>
               </span>
-              <span className="text-[10.5px] font-medium uppercase tracking-[0.22em] text-white/55">
+              <span className="mt-1 whitespace-nowrap text-[7px] font-medium uppercase tracking-[0.08em] text-white/65 sm:mt-0 sm:text-[10.5px] sm:tracking-[0.22em] sm:text-white/55">
                 Infancia y Adolescencia Misionera
               </span>
             </span>
