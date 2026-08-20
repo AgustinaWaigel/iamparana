@@ -66,14 +66,13 @@ export async function POST(req: NextRequest) {
           title: "Nueva noticia: " + body.title,
           body: body.description || body.title,
           icon: "/icon-192x192.png",
+          tag: `noticia-${slug}`,
           data: {
             url: `/noticias/${slug}`,
             type: "noticia",
             slug: slug,
           },
-        },
-        "noticia",
-        slug as any // Usamos el slug como ID
+        }
       );
       console.log("Notificación push enviada para nueva noticia:", slug);
     } catch (notificationError) {

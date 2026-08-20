@@ -98,21 +98,16 @@ export async function sendNotificationToAll(payload: PushNotificationPayload, ev
     const subscriptions = await getAllPushSubscriptions();
     console.log(`📢 Sending notification to ${subscriptions.length} subscribers...`);
     
-    let successCount = 0;
+    const results = await Promise.all(subscriptions.map((sub) => sendPushNotification(sub, payload)));
+    const successCount = results.filter(Boolean).length;
 
-    for (const sub of subscriptions) {
-      const sent = await sendPushNotification(sub, payload);
-      if (sent) {
-        successCount++;
-        if (eventType && eventId) {
-          await recordNotificationSent({
-            event_type: eventType,
-            event_id: eventId,
-            title: payload.title,
-            body: payload.body,
-          });
-        }
-      }
+    if (successCount > 0 && eventType && eventId !== undefined) {
+      await recordNotificationSent({
+        event_type: eventType,
+        event_id: eventId,
+        title: payload.title,
+        body: payload.body,
+      });
     }
 
     console.log(`✅ Notifications sent: ${successCount}/${subscriptions.length}`);

@@ -28,7 +28,15 @@ export function usePushNotifications() {
   }, []);
 }
 
-async function subscribeToPushNotifications(registration: ServiceWorkerRegistration) {
+export async function enablePushNotifications(): Promise<boolean> {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return false;
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return false;
+  const registration = await navigator.serviceWorker.ready;
+  return subscribeToPushNotifications(registration);
+}
+
+async function subscribeToPushNotifications(registration: ServiceWorkerRegistration): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 3000);
@@ -38,7 +46,7 @@ async function subscribeToPushNotifications(registration: ServiceWorkerRegistrat
     if (!response.ok) throw new Error(`Could not obtain VAPID key (${response.status})`);
 
     const { publicKey } = await response.json();
-    if (!publicKey) return;
+    if (!publicKey) return false;
 
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
@@ -54,8 +62,10 @@ async function subscribeToPushNotifications(registration: ServiceWorkerRegistrat
       body: JSON.stringify({ action: "subscribe", subscription: subscription.toJSON() }),
     });
     localStorage.setItem("pushNotificationsEnabled", "true");
+    return true;
   } catch (error) {
     console.warn("Push subscription error:", error);
+    return false;
   }
 }
 

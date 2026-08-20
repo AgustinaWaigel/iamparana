@@ -1,23 +1,39 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, FileClock, LogOut, Users, Settings } from 'lucide-react';
+import { Bell, BellRing, ChevronDown, FileClock, LogOut, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession } from '@/app/hooks/use-session';
+import { enablePushNotifications } from '@/app/hooks/use-push-notifications';
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsBusy, setNotificationsBusy] = useState(false);
 
   const submenuRef = useRef<HTMLLIElement>(null);
   const userMenuRef = useRef<HTMLLIElement>(null);
 
   const pathname = usePathname();
   const { user, isLoading } = useSession();
+
+  useEffect(() => {
+    setNotificationsEnabled(typeof Notification !== 'undefined' && Notification.permission === 'granted');
+  }, []);
+
+  const handleEnableNotifications = async () => {
+    setNotificationsBusy(true);
+    try {
+      setNotificationsEnabled(await enablePushNotifications());
+    } finally {
+      setNotificationsBusy(false);
+    }
+  };
 
   // Detectar si estamos en mobile
   useEffect(() => {
@@ -203,6 +219,18 @@ const Header: React.FC = () => {
                       </li>
 
                       <li><Link href="/auth/perfil" className="flex items-center justify-center md:justify-start gap-3 rounded-xl px-4 py-3 text-[15px] md:py-2.5 font-semibold transition-colors hover:bg-white/15 hover:text-brand-gold" onClick={() => isMobile && setUserMenuOpen(false)}><Settings size={16} /> Mi Perfil</Link></li>
+
+                      <li>
+                        <button
+                          type="button"
+                          onClick={handleEnableNotifications}
+                          disabled={notificationsBusy || notificationsEnabled}
+                          className="flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors hover:bg-white/15 hover:text-brand-gold disabled:cursor-default disabled:opacity-75 md:justify-start md:py-2.5"
+                        >
+                          {notificationsEnabled ? <BellRing size={16} /> : <Bell size={16} />}
+                          {notificationsBusy ? 'Activando...' : notificationsEnabled ? 'Notificaciones activadas' : 'Activar notificaciones'}
+                        </button>
+                      </li>
 
                       {user.role === 'admin' && (
                         <>
