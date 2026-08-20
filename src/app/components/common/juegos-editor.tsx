@@ -27,6 +27,17 @@ interface JuegosEditorProps {
   onRefresh?: () => void;
 }
 
+function normalizeSlug(value: string) {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function youtubeIdFromInput(value: string | null | undefined) {
+  const input = String(value || '').trim();
+  if (!input) return '';
+  const match = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([A-Za-z0-9_-]{6,})/);
+  return match?.[1] || input;
+}
+
 export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -102,6 +113,11 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
   }, []);
 
   if (!isAdmin) return null;
+
+  const resetGameForm = () => {
+    setFormData({ title: '', description: '', youtubeId: '', category: 'general', sectionId: null, order: 999, slug: '' });
+    setEditingId(null);
+  };
 
   const handleOpenEditor = () => {
     setFormData({ title: '', description: '', youtubeId: '', category: 'general', sectionId: null, order: 999, slug: '' });
@@ -194,8 +210,8 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
     setSuccess('');
     setIsLoading(true);
 
-    if (!formData.slug || !formData.title || !formData.description) {
-      setError('Completa los campos requeridos');
+    if (!formData.title?.trim() || !formData.description?.trim()) {
+      setError('Completá el título y la descripción');
       setIsLoading(false);
       return;
     }
@@ -208,7 +224,12 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          slug: editingId ? formData.slug : normalizeSlug(formData.title),
+          youtubeId: youtubeIdFromInput(formData.youtubeId),
+          order: formData.order ?? 999,
+        }),
       });
 
       if (!response.ok) {
@@ -217,8 +238,7 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
       }
 
       setSuccess(editingId ? 'Juego actualizado' : 'Juego creado');
-      setFormData({ title: '', description: '', youtubeId: '', category: 'general', order: 999, slug: '' });
-      setEditingId(null);
+      resetGameForm();
       await loadJuegos();
       onRefresh?.();
     } catch (err) {
@@ -309,7 +329,7 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                   </button>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div>
                   <div>
                     <label className="modal-label-unified">Titulo</label>
                     <input
@@ -317,16 +337,6 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                       value={sectionForm.title}
                       onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })}
                       placeholder="Ej: Juegos cooperativos"
-                      className="modal-input-unified"
-                    />
-                  </div>
-                  <div>
-                    <label className="modal-label-unified">Slug</label>
-                    <input
-                      type="text"
-                      value={sectionForm.slug}
-                      onChange={(e) => setSectionForm({ ...sectionForm, slug: e.target.value })}
-                      placeholder="juegos-cooperativos"
                       className="modal-input-unified"
                     />
                   </div>
@@ -358,10 +368,7 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                   ) : (
                     sections.map((section) => (
                       <div key={section.id} className="flex items-center justify-between rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
-                        <div>
-                          <p className="font-bold text-stone-800 text-sm">{section.title}</p>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{section.slug}</p>
-                        </div>
+                        <p className="font-bold text-stone-800 text-sm">{section.title}</p>
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -412,19 +419,9 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                   <p className="modal-label-unified">{editingId ? 'Editar' : 'Nuevo'} juego</p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div>
                   <div>
-                    <label className="modal-label-unified">Slug</label>
-                    <input
-                      type="text"
-                      value={formData.slug || ''}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                      placeholder="juego-cooperativo"
-                      className="modal-input-unified"
-                    />
-                  </div>
-                  <div>
-                    <label className="modal-label-unified">Titulo</label>
+                    <label className="modal-label-unified">Título del juego *</label>
                     <input
                       type="text"
                       value={formData.title || ''}
@@ -437,17 +434,17 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="modal-label-unified">YouTube ID</label>
+                    <label className="modal-label-unified">Video de YouTube (opcional)</label>
                     <input
                       type="text"
                       value={formData.youtubeId || ''}
                       onChange={(e) => setFormData({ ...formData, youtubeId: e.target.value })}
-                      placeholder="dQw4w9WgXcQ"
+                      placeholder="Pegá el enlace completo del video"
                       className="modal-input-unified"
                     />
                   </div>
                   <div>
-                    <label className="modal-label-unified">Seccion</label>
+                    <label className="modal-label-unified">Sección</label>
                     <select
                       value={formData.sectionId ?? ''}
                       onChange={(e) => setFormData({ ...formData, sectionId: e.target.value ? Number(e.target.value) : null })}
@@ -465,7 +462,7 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="modal-label-unified">Categoria</label>
+                    <label className="modal-label-unified">Tipo de juego</label>
                     <select
                       value={formData.category || 'general'}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -480,26 +477,13 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                 </div>
 
                 <div>
-                  <label className="modal-label-unified">Descripcion</label>
+                  <label className="modal-label-unified">Descripción *</label>
                   <textarea
                     value={formData.description || ''}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Descripcion"
                     className="modal-input-unified min-h-[110px]"
                   />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="modal-label-unified">Orden</label>
-                    <input
-                      type="number"
-                      value={formData.order || 999}
-                      onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-                      placeholder="Orden"
-                      className="modal-input-unified"
-                    />
-                  </div>
                 </div>
 
                 <div className="modal-actions-unified">
@@ -512,7 +496,8 @@ export function JuegosEditor({ onRefresh }: JuegosEditorProps) {
                   </button>
                   {editingId && (
                     <button
-                      onClick={() => setEditingId(null)}
+                      type="button"
+                      onClick={resetGameForm}
                       className="modal-btn-secondary-unified"
                     >
                       Cancelar

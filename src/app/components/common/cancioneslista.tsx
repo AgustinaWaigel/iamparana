@@ -71,6 +71,14 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
     setIsEditorOpen(true);
   };
 
+  const closeEditor = () => {
+    if (saveBusy) return;
+    setIsEditorOpen(false);
+    setEditingSlug(null);
+    setDraft(EMPTY_DRAFT);
+    setSaveError('');
+  };
+
   const openEditModal = async (song: Cancion) => {
     setSaveError('');
     setSaveBusy(true);
@@ -118,6 +126,8 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
       const nextSong: Cancion = { title: draft.title, slug: isEdit ? editingSlug! : slug, artist: draft.artist };
       setSongsState(prev => isEdit ? prev.map(s => s.slug === editingSlug ? nextSong : s) : [...prev, nextSong]);
       setIsEditorOpen(false);
+      setEditingSlug(null);
+      setDraft(EMPTY_DRAFT);
     } catch (error) {
       setSaveError('Error al guardar en el servidor');
     } finally { setSaveBusy(false); }
@@ -206,11 +216,11 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
               <h2 className="modal-title-unified italic">
                 {editingSlug ? 'Editar Canción' : 'Nueva Canción'}
               </h2>
-              <AdminActionButton action="close" compact onClick={() => setIsEditorOpen(false)} />
+              <AdminActionButton action="close" compact onClick={closeEditor} />
             </div>
 
             <form onSubmit={submitSong} className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Título *</label>
                   <input type="text" className={inputClass} value={draft.title} onChange={(e) => setDraft(prev => ({...prev, title: e.target.value, slug: editingSlug ? prev.slug : normalizeSlug(e.target.value)}))} required />
@@ -221,13 +231,6 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
                 </div>
               </div>
 
-              {!editingSlug && (
-                <div>
-                  <label className={labelClass}>Slug (URL)</label>
-                  <input type="text" className={inputClass} value={draft.slug} disabled />
-                </div>
-              )}
-
               <div>
                 <label className={labelClass}>Letra y Acordes</label>
                 <textarea className={`${inputClass} font-mono text-xs leading-relaxed`} rows={12} value={draft.content} onChange={(e) => setDraft(prev => ({...prev, content: e.target.value}))} placeholder="[G] El acorde va entre corchetes antes de la palabra" required />
@@ -236,7 +239,7 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
               {saveError && <p className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl">{saveError}</p>}
 
               <div className="flex gap-3 pt-4">
-                <AdminActionButton action="close" label="Cancelar" tone="neutral" className="flex-1 py-3" onClick={() => setIsEditorOpen(false)} />
+                <AdminActionButton action="close" label="Cancelar" tone="neutral" className="flex-1 py-3" onClick={closeEditor} />
                 <AdminActionButton action="save" type="submit" disabled={saveBusy} label="Guardar" className="flex-[2] py-3 uppercase tracking-widest" />
               </div>
             </form>

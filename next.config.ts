@@ -5,6 +5,8 @@ const nextConfig = {
   },
   // BORRÁ 'output: export' y 'basePath'
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 86400,
     localPatterns: [
       { pathname: '/api/drive-image' },
       { pathname: '/assets/**' },

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import CarouselAdminTools from "@/app/components/common/CarouselAdminTools";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getImageProps } from "next/image";
 
 export interface CarouselItem {
   id?: number;
@@ -112,6 +113,22 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
   const activeDesktopUrl = getGoogleDriveProxyImageUrl(activeItem.imageDesktop);
   const activeMobileUrl = getGoogleDriveProxyImageUrl(activeItem.imageMobile || activeItem.imageDesktop);
   const activeImageKey = `${activeItem.id ?? displayActive}:${activeItem.imageDesktop}:${activeItem.imageMobile || ""}`;
+  const desktopImageProps = activeDesktopUrl
+    ? getImageProps({
+        src: activeDesktopUrl,
+        alt: activeItem.alt,
+        fill: true,
+        sizes: "100vw",
+      }).props
+    : null;
+  const mobileImageProps = activeMobileUrl
+    ? getImageProps({
+        src: activeMobileUrl,
+        alt: activeItem.alt,
+        fill: true,
+        sizes: "100vw",
+      }).props
+    : null;
 
   return (
     <div className="group relative rounded-[20px] h-[120vw] sm:h-[33vw] overflow-hidden bg-stone-900 select-none">
@@ -125,14 +142,19 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         <div key={activeImageKey} className="absolute inset-0 z-10 animate-in fade-in duration-700">
           {activeDesktopUrl && (
             <picture className="block h-full w-full">
-              {activeMobileUrl && <source media="(max-width: 767px)" srcSet={activeMobileUrl} />}
-              <img
-                src={activeDesktopUrl}
-                alt={activeItem.alt}
+              {mobileImageProps && (
+                <source
+                  media="(max-width: 767px)"
+                  srcSet={mobileImageProps.srcSet}
+                  sizes={mobileImageProps.sizes}
+                />
+              )}
+              {desktopImageProps && <img
+                {...desktopImageProps}
                 className="h-full w-full object-cover animate-kenburns"
                 loading={displayActive === 0 ? "eager" : "lazy"}
                 draggable={false}
-              />
+              />}
             </picture>
           )}
 
