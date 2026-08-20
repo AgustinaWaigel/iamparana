@@ -84,7 +84,6 @@ export default async function HomePage() {
                             fill
                             sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            priority={index === 0}
                           />
                         )}
                       </div>

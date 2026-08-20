@@ -9,6 +9,7 @@ import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
 import { NoticiasClient } from '@/app/noticias/components/noticias-client';
 import { NoticiasAdminButtons } from '@/app/noticias/components/noticias-admin-buttons';
 import { NewsEngagement } from '@/app/noticias/components/news-engagement';
+import Image from 'next/image';
 
 type Props = {
   params: Promise<{
@@ -110,11 +111,14 @@ export default async function NoticiaPage(props: Props) {
         {/* Imagen principal de la noticia. */}
         {getGoogleDriveImageUrl(image) && (
           <div className="w-full mb-10">
-            <img
-              src={getGoogleDriveImageUrl(image) || undefined}
+            <Image
+              src={getGoogleDriveImageUrl(image) || ''}
               alt={title}
+              width={1600}
+              height={900}
+              sizes="(max-width: 1024px) 100vw, 960px"
               className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
-              loading="eager"
+              loading="lazy"
               decoding="async"
             />
           </div>
@@ -150,12 +154,14 @@ export default async function NoticiaPage(props: Props) {
                       img: ({ src, alt }) => {
                         const imageUrl = getGoogleDriveImageUrl(typeof src === 'string' ? src : '');
                         return imageUrl ? (
-                          <img
+                          <Image
                             src={imageUrl}
                             alt={alt || 'Imagen de la noticia'}
+                            width={1400}
+                            height={788}
+                            sizes="(max-width: 1024px) 100vw, 900px"
                             className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100 my-6"
                             loading="lazy"
-                            decoding="async"
                           />
                         ) : null;
                       },
@@ -172,12 +178,14 @@ export default async function NoticiaPage(props: Props) {
               if (!imageUrl) return null;
               return (
                 <div key={bloque.id} className="w-full my-8">
-                  <img
+                  <Image
                     src={imageUrl}
                     alt="Imagen de la noticia"
+                    width={1400}
+                    height={788}
+                    sizes="(max-width: 1024px) 100vw, 900px"
                     className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
                     loading="lazy"
-                    decoding="async"
                   />
                 </div>
               );

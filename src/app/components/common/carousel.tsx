@@ -152,7 +152,8 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               {desktopImageProps && <img
                 {...desktopImageProps}
                 className="h-full w-full object-cover animate-kenburns"
-                loading={displayActive === 0 ? "eager" : "lazy"}
+                loading="lazy"
+                fetchPriority="low"
                 draggable={false}
               />}
             </picture>

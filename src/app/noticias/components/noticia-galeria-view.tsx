@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
+import Image from 'next/image';
 
 // Muestra la galería asociada a una noticia usando imágenes almacenadas en Drive.
 interface GaleriaImagen {
@@ -57,12 +58,14 @@ export function NoticiaGaleriaView({ slug }: NoticiaGaleriaViewProps) {
           if (!imageUrl) return null;
           return (
             <figure key={img.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-              <img
+              <Image
                 src={imageUrl}
                 alt={img.alt_text || 'Galería de la noticia'}
+                width={1400}
+                height={900}
+                sizes="(max-width: 1024px) 100vw, 900px"
                 className="w-full h-auto object-contain bg-black/5"
                 loading="lazy"
-                decoding="async"
               />
               {img.caption && (
                 <figcaption className="bg-gray-50 p-3 text-sm text-gray-700">
