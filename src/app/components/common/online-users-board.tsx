@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Users } from "lucide-react";
 
-interface OnlineUser { id: number; name: string; role: string }
+interface OnlineUser { name: string }
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "U";
@@ -48,8 +48,8 @@ export function OnlineUsersBoard() {
           </div>
         </div>
         <div className="flex items-center -space-x-2">
-          {visibleUsers.map((user) => (
-            <div key={user.id} title={`${user.name} · ${user.role}`} className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-brand-gold to-amber-600 text-[10px] font-black text-brand-deep shadow-sm">
+          {visibleUsers.map((user, index) => (
+            <div key={`${user.name}-${index}`} title={user.name} className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-brand-gold to-amber-600 text-[10px] font-black text-brand-deep shadow-sm">
               {initials(user.name)}
             </div>
           ))}

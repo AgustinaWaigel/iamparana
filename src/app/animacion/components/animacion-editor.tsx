@@ -39,7 +39,14 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
 
   if (!isAdmin) return null;
 
-  const toSlug = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/-+/g, '-');
+  const toSlug = (value: string) => value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
 
   const done = (message: string) => {
     setSuccess(message);
@@ -253,7 +260,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                   {mode === 'document' ? <FileText size={22} /> : mode === 'link' ? <LinkIcon size={22} /> : <LayoutPanelTop size={22} />}
                 </div>
                 <h2 className="text-xl font-black">
-                  {mode === 'document' ? 'Agregar Documento' : mode === 'link' ? 'Agregar Enlace' : 'Crear Página'}
+                  {mode === 'document' ? 'Subir un archivo' : mode === 'link' ? 'Agregar un enlace web' : 'Crear una sección de recursos'}
                 </h2>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors">
@@ -264,13 +271,13 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
             <div className="p-6 overflow-y-auto custom-scrollbar">
               <div className="flex p-1 bg-stone-100/80 rounded-2xl mb-8 border border-stone-200/60">
                 <button onClick={() => changeMode('document')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'document' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
-                  <FileUp size={16} /> Documento
+                  <FileUp size={16} /> Archivo
                 </button>
                 <button onClick={() => changeMode('link')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'link' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
-                  <LinkIcon size={16} /> Enlace
+                  <LinkIcon size={16} /> Enlace web
                 </button>
                 <button onClick={() => changeMode('page')} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'page' ? 'bg-white text-brand-brown shadow-sm' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-200/50'}`}>
-                  <LayoutPanelTop size={16} /> Página
+                  <LayoutPanelTop size={16} /> Sección
                 </button>
               </div>
 
@@ -291,7 +298,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                 {mode === 'document' && (
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
-                      <label className={labelClass}>Título del Documento *</label>
+                      <label className={labelClass}>Nombre del recurso *</label>
                       <input type="text" required value={docData.titulo} onChange={(e) => setDocData({ ...docData, titulo: e.target.value })} className={inputClass} placeholder="Ej: Guía de dinámicas" />
                     </div>
 
@@ -301,7 +308,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                     </div>
 
                     <div>
-                      <label className={labelClass}>Clasificación</label>
+                      <label className={labelClass}>Dónde querés mostrarlo</label>
                       <div className="relative group">
                         <select value={docData.tipo} onChange={(e) => setDocData({ ...docData, tipo: e.target.value })} className={`${inputClass} appearance-none pr-12 cursor-pointer`}>
                           {availableDocumentTypes.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -311,7 +318,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                     </div>
 
                     <div>
-                      <label className={labelClass}>Archivo *</label>
+                      <label className={labelClass}>Elegir archivo *</label>
                       <div className="relative overflow-hidden border-2 border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 transition-colors rounded-2xl p-6 flex flex-col items-center justify-center gap-3 text-center group cursor-pointer">
                         {file ? (
                           <div className="w-full flex items-center justify-between bg-white p-3 rounded-xl border border-stone-200 shadow-sm cursor-default">
@@ -371,7 +378,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                 {mode === 'link' && (
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
-                      <label className={labelClass}>Título del Enlace *</label>
+                      <label className={labelClass}>Nombre del recurso *</label>
                       <input type="text" required value={linkData.title} onChange={(e) => setLinkData({ ...linkData, title: e.target.value })} className={inputClass} placeholder="Ej: Banco de dinámicas" />
                     </div>
 
@@ -381,8 +388,8 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                     </div>
 
                     <div>
-                      <label className={labelClass}>URL de destino *</label>
-                      <input type="url" required value={linkData.url} onChange={(e) => setLinkData({ ...linkData, url: e.target.value })} className={inputClass} placeholder="https://..." />
+                      <label className={labelClass}>Dirección del enlace *</label>
+                      <input type="url" required value={linkData.url} onChange={(e) => setLinkData({ ...linkData, url: e.target.value })} className={inputClass} placeholder="Pegá acá el enlace, por ejemplo https://..." />
                     </div>
 
                     <div>
@@ -418,7 +425,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                 {mode === 'page' && (
                   <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
                     <div>
-                      <label className={labelClass}>Título de la Página *</label>
+                      <label className={labelClass}>Nombre de la sección *</label>
                       <input
                         type="text"
                         required
@@ -436,24 +443,13 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                     </div>
 
                     <div>
-                      <label className={labelClass}>Descripción interna</label>
+                      <label className={labelClass}>Descripción</label>
                       <textarea
                         value={pageData.description}
                         onChange={(e) => setPageData({ ...pageData, description: e.target.value })}
                         className={`${inputClass} resize-none`}
                         rows={3}
-                        placeholder="Opcional. Breve nota interna sobre esta página."
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Imagen de cabecera (Textura)</label>
-                      <input
-                        type="text"
-                        value={pageData.textureUrl}
-                        onChange={(e) => setPageData({ ...pageData, textureUrl: e.target.value })}
-                        className={inputClass}
-                        placeholder="/assets/textures/areasg.webp"
+                        placeholder="Contá brevemente qué recursos van a encontrarse acá."
                       />
                     </div>
 
@@ -477,7 +473,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                             </div>
                             <div>
                               <p className="text-sm font-bold text-stone-700">Subir imagen miniatura</p>
-                              <p className="text-xs text-stone-500 mt-1">Si subís imagen, reemplaza la textura manual.</p>
+                              <p className="text-xs text-stone-500 mt-1">Esta imagen se mostrará en la tarjeta de la sección.</p>
                             </div>
                             <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && setPageThumbnailFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                           </>
@@ -495,7 +491,7 @@ export function AnimacionEditor({ isAdmin, onRefresh, section = 'animacion', doc
                     {isLoading ? (
                       <><Loader2 size={18} className="animate-spin" /> Guardando...</>
                     ) : (
-                      <>{mode === 'document' ? 'Subir Documento' : mode === 'link' ? 'Guardar Enlace' : 'Crear Página'}</>
+                      <>{mode === 'document' ? 'Subir recurso' : mode === 'link' ? 'Guardar enlace' : 'Crear sección'}</>
                     )}
                   </button>
                 </div>
