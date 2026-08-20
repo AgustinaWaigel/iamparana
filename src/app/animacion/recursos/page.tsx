@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Download, ExternalLink, FolderOpen, Music2, Sparkles } from "lucide-react";
 import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Recursos de Animación | IAM Paraná",

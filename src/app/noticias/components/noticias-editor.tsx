@@ -6,6 +6,15 @@ import {
   ChevronLeft, Save, Calendar, FileText, Layout, Bold, Italic, Underline, AlertCircle
 } from 'lucide-react';
 
+const NEWS_CATEGORIES = [
+  'NACIONAL',
+  'IGLESIA',
+  'ENCUENTROS',
+  'CAMPAMENTO',
+  'FORMACIÓN',
+  'ESPIRITUALIDAD',
+] as const;
+
 interface BloqueContenido {
   id: string;
   type: 'text' | 'image';
@@ -46,7 +55,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
     image: '',
     content: '',
     date: new Date().toISOString().split('T')[0],
-    cat: 'Nacional',
+    cat: 'NACIONAL',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [bloques, setBloques] = useState<BloqueContenido[]>([]);
@@ -131,7 +140,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
   };
 
   const handleEditarNoticia = (noticia: Noticia) => {
-    setFormData({ ...noticia, cat: noticia.cat || 'Nacional' });
+    setFormData({ ...noticia, cat: (noticia.cat || 'NACIONAL').trim().toUpperCase() });
     setEditingSlug(noticia.slug);
     try {
       const contenidoParseado = JSON.parse(noticia.content);
@@ -168,7 +177,7 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
         }
         return { id: b.id, type: b.type, value: b.value };
       }));
-      const payload = { ...formData, slug, image: imageUrl, content: JSON.stringify(bloquesProcesados) };
+      const payload = { ...formData, cat: (formData.cat || 'NACIONAL').trim().toUpperCase(), slug, image: imageUrl, content: JSON.stringify(bloquesProcesados) };
       const method = editingSlug ? 'PUT' : 'POST';
       const url = editingSlug ? `/api/admin/noticias/${editingSlug}` : '/api/admin/noticias';
       const response = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -269,11 +278,11 @@ export function NoticiasEditor({ isAdmin, onRefresh, editingNoticia }: NoticiasE
                     <div>
                       <label className={labelClass}>Categoría</label>
                       <select
-                        value={formData.cat || 'Nacional'}
+                        value={(formData.cat || 'NACIONAL').toUpperCase()}
                         onChange={(e) => setFormData({ ...formData, cat: e.target.value })}
                         className={inputClass}
                       >
-                        {['Nacional', 'Iglesia', 'Encuentros', 'Campamento', 'Formación', 'Espiritualidad'].map((category) => (
+                        {NEWS_CATEGORIES.map((category) => (
                           <option key={category} value={category}>{category}</option>
                         ))}
                       </select>

@@ -1,11 +1,8 @@
 "use client";
 import { useEffect } from "react";
-import { useSession } from "@/app/hooks/use-session";
 
 export function PresenceHeartbeat() {
-  const { user } = useSession();
   useEffect(() => {
-    if (!user) return;
     const touch = () => {
       if (document.visibilityState === "visible") {
         fetch("/api/presence", { method: "POST", credentials: "include", keepalive: true })
@@ -22,6 +19,6 @@ export function PresenceHeartbeat() {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", touch);
     };
-  }, [user?.id]);
+  }, []);
   return null;
 }

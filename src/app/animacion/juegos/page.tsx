@@ -5,7 +5,7 @@ import { JuegosClientContent } from '@/app/components/common/juegos-client-conte
 import { HeroSection } from '@/app/components/common/hero-section';
 import { getDocumentsBySection } from '@/server/db/admin-repository';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Juegos',

@@ -7,8 +7,6 @@ import { BackButton } from '@/app/components/common/back-button';
 import { PushNotificationsProvider } from '@/app/components/providers/push-notifications-provider';
 import { Bricolage_Grotesque, Hanken_Grotesk } from 'next/font/google';
 import { PresenceHeartbeat } from '@/app/components/common/presence-heartbeat';
-import { getSessionUser } from '@/app/api/admin/_shared/auth';
-import { touchUserPresence } from '@/server/db/presence-repository';
 
 const displayFont = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -61,18 +59,11 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const sessionUser = await getSessionUser();
-  if (sessionUser) {
-    await touchUserPresence(sessionUser.id).catch((error) => {
-      console.error("No se pudo registrar la presencia del usuario", error);
-    });
-  }
-
   return (
     // El HTML raíz define el idioma del sitio y monta los proveedores globales.
     <html lang="es" className={`${displayFont.variable} ${bodyFont.variable}`}>

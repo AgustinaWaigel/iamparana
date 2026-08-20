@@ -10,7 +10,7 @@ import { LogisticaCardsGrid } from "./components/logistica-cards-grid";
 import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
 import { listResourcePages } from "@/server/db/resource-pages-repository";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const viewport: Viewport = {
   themeColor: "#dc2626",

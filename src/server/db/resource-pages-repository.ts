@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ensureSchemaInitialized, getTursoClient } from "@/server/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 
 export interface ResourcePage {
   id: number;
@@ -114,7 +114,6 @@ async function getUniqueSectionSlug(pageId: number, baseValue: string) {
 }
 
 export async function listResourcePages(): Promise<ResourcePage[]> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute(`
     SELECT p.id, p.slug, p.title, p.section, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
@@ -136,7 +135,6 @@ export async function createResourcePage(input: {
   template?: string;
   createdByUserId: number;
 }): Promise<number> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const slug = await getUniquePageSlug(input.slug || input.title);
   
@@ -163,7 +161,6 @@ export async function createResourcePage(input: {
 }
 
 export async function getResourcePageBySlug(slug: string): Promise<ResourcePage | null> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
     sql: `SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
@@ -179,7 +176,6 @@ export async function getResourcePageBySlug(slug: string): Promise<ResourcePage 
 }
 
 export async function getResourcePageById(id: number): Promise<ResourcePage | null> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
     sql: `SELECT p.id, p.slug, p.title, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
@@ -195,7 +191,6 @@ export async function getResourcePageById(id: number): Promise<ResourcePage | nu
 }
 
 export async function listResourceSections(pageId: number): Promise<ResourceSection[]> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
     sql: "SELECT id, page_id, slug, title, section_key, position FROM resource_sections WHERE page_id = ? ORDER BY position ASC, created_at ASC",
@@ -211,7 +206,6 @@ export async function createResourceSection(input: {
   slug: string;
   title: string;
 }): Promise<number> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
 
   const positionResult = await client.execute({
@@ -232,7 +226,6 @@ export async function createResourceSection(input: {
 }
 
 export async function getResourceSectionById(id: number): Promise<ResourceSection | null> {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const result = await client.execute({
     sql: "SELECT id, page_id, slug, title, section_key, position FROM resource_sections WHERE id = ? LIMIT 1",
@@ -246,7 +239,6 @@ export async function updateResourcePage(
   id: number,
   data: { title?: string; section?: string; description?: string; thumbnailUrl?: string | null; textureUrl?: string; template?: string }
 ) {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
 
   await client.execute({
@@ -270,7 +262,6 @@ export async function updateResourcePage(
 }
 
 export async function deleteResourcePage(id: number) {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
 
   const sections = await listResourceSections(id);
@@ -285,7 +276,6 @@ export async function deleteResourcePage(id: number) {
 }
 
 export async function updateResourceSection(id: number, data: { title?: string }) {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   await client.execute({
     sql: `UPDATE resource_sections
@@ -297,7 +287,6 @@ export async function updateResourceSection(id: number, data: { title?: string }
 }
 
 export async function deleteResourceSection(id: number) {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const section = await getResourceSectionById(id);
   if (!section) return;
@@ -308,7 +297,6 @@ export async function deleteResourceSection(id: number) {
 }
 
 export async function moveResourceSection(id: number, direction: "up" | "down") {
-  await ensureSchemaInitialized();
   const client = clientOrThrow();
   const current = await getResourceSectionById(id);
   if (!current) return;

@@ -3,7 +3,7 @@ import CancionesLista from "@/app/components/common/cancioneslista";
 import { HeroSection } from "@/app/components/common/hero-section";
 import { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Canciones | IAM Paraná",

@@ -25,6 +25,10 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('es-AR');
 }
 
+function normalizeCategory(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
 interface Noticia {
   slug: string;
   title: string;
@@ -37,11 +41,30 @@ interface Noticia {
 export default async function Noticias({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; categoria?: string }>;
 }) {
-  const { q = '' } = await searchParams;
+  const { q = '', categoria = 'todas' } = await searchParams;
   const searchQuery = q.trim();
-  let noticias = await listNoticiasPreview() as Noticia[];
+  const allNoticias = await listNoticiasPreview() as Noticia[];
+
+  const categoryMap = new Map<string, { label: string; key: string; count: number }>();
+  for (const noticia of allNoticias) {
+    const label = noticia.cat?.trim();
+    if (!label) continue;
+    const key = normalizeCategory(label);
+    const existing = categoryMap.get(key);
+    if (existing) existing.count += 1;
+    else categoryMap.set(key, { label: label.toUpperCase(), key, count: 1 });
+  }
+
+  const categorias = [
+    { label: "TODAS", key: "todas", count: allNoticias.length },
+    ...Array.from(categoryMap.values()).sort((a, b) => a.label.localeCompare(b.label, 'es')),
+  ];
+  const selectedCategory = categoria === 'todas' ? 'todas' : normalizeCategory(categoria);
+  let noticias = selectedCategory === 'todas'
+    ? allNoticias
+    : allNoticias.filter((noticia) => normalizeCategory(noticia.cat || '') === selectedCategory);
 
   if (searchQuery) {
     const normalizedQuery = searchQuery.toLocaleLowerCase('es');
@@ -54,27 +77,6 @@ export default async function Noticias({
   
   // Sort by date descending
   noticias = noticias.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
-
-  // Las categorías se construyen exclusivamente con los valores presentes
-  // en Turso. Las variantes de mayúsculas/minúsculas se agrupan juntas.
-  const categoryMap = new Map<string, { label: string; key: string; count: number }>();
-  for (const noticia of noticias) {
-    const label = noticia.cat?.trim();
-    if (!label) continue;
-
-    const key = label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const existing = categoryMap.get(key);
-    if (existing) {
-      existing.count += 1;
-    } else {
-      categoryMap.set(key, { label, key, count: 1 });
-    }
-  }
-
-  const categorias = [
-    { label: "Todas", key: "todas", count: noticias.length },
-    ...Array.from(categoryMap.values()).sort((a, b) => a.label.localeCompare(b.label, 'es')),
-  ];
 
   const content = (
     <>
@@ -116,6 +118,7 @@ export default async function Noticias({
               </p>
 
               <form action="/noticias" method="get" className="mt-7 flex max-w-2xl items-center gap-2">
+                {selectedCategory !== 'todas' && <input type="hidden" name="categoria" value={selectedCategory} />}
                 <label className="relative block min-w-0 flex-1">
                   <span className="sr-only">Buscar noticias</span>
                   <Search
@@ -154,7 +157,7 @@ export default async function Noticias({
       <main className="w-full bg-white">
         {/* Filtros */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4">
-          <NoticiasFiltersSection categorias={categorias} />
+          <NoticiasFiltersSection categorias={categorias} selectedCategory={selectedCategory} searchQuery={searchQuery} />
         </div>
 
         {/* Grid Principal - Noticia destacada + cuatro noticias */}
@@ -228,22 +231,31 @@ export default async function Noticias({
 }
 
 // Componente de filtros
-function NoticiasFiltersSection({ categorias }: { categorias: { label: string; key: string; count: number }[] }) {
+function NoticiasFiltersSection({ categorias, selectedCategory, searchQuery }: { categorias: { label: string; key: string; count: number }[]; selectedCategory: string; searchQuery: string }) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2">
-      {categorias.map((cat) => (
-        <button
-          key={cat.key}
-          className={`whitespace-nowrap px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-1.5 flex-shrink-0 ${
-            cat.key === "todas"
-              ? "bg-brand-brown text-white"
-              : "bg-white text-brand-brown border-2 border-brand-brown/20 hover:border-brand-brown/40"
-          }`}
-        >
-          {cat.label}
-          <span className="font-bold">{cat.count}</span>
-        </button>
-      ))}
+      {categorias.map((cat) => {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('q', searchQuery);
+        if (cat.key !== 'todas') params.set('categoria', cat.key);
+        const href = params.size ? `/noticias?${params.toString()}` : '/noticias';
+        const active = cat.key === selectedCategory;
+
+        return (
+          <Link
+            key={cat.key}
+            href={href}
+            className={`flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold uppercase no-underline transition-all ${
+              active
+                ? "bg-brand-brown text-white"
+                : "border-2 border-brand-brown/20 bg-white text-brand-brown hover:border-brand-brown/40"
+            }`}
+          >
+            {cat.label}
+            <span className="font-black">{cat.count}</span>
+          </Link>
+        );
+      })}
     </div>
   );
 }

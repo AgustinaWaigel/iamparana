@@ -27,8 +27,9 @@ export function getGoogleDriveImageUrl(urlOrPath: string | undefined | null): st
   }
 
   if (/^[a-zA-Z0-9_-]{10,}$/.test(fileId)) {
-    // Endpoint más estable para <img>
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+    // Servimos archivos de Drive mediante nuestro endpoint autenticado. Esto
+    // evita depender de permisos públicos, redirects y cachés cruzadas.
+    return `/api/drive-image?id=${encodeURIComponent(fileId)}&v=3`;
   }
 
   return value;
@@ -69,7 +70,7 @@ export function getGoogleDriveProxyImageUrl(urlOrPath: string | undefined | null
   if (fileId) {
     // Cambiar esta versión invalida respuestas incorrectas que hayan quedado
     // almacenadas antes de separar la caché de Netlify por ID de archivo.
-    return `/api/drive-image?id=${encodeURIComponent(fileId)}&v=2`;
+    return `/api/drive-image?id=${encodeURIComponent(fileId)}&v=3`;
   }
 
   return raw;

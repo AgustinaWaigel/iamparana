@@ -11,7 +11,7 @@ import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-rep
 import { listResourcePages } from "@/server/db/resource-pages-repository";
 import { listSpiritualPrayers } from "@/server/db/spiritual-prayers-repository";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const viewport: Viewport = {
   themeColor: "#6b7280",
