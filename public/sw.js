@@ -1,5 +1,5 @@
 // Worker de caché independiente de los hashes de cada build de Next.
-const CACHE_NAME = "iam-parana-runtime-v1";
+const CACHE_NAME = "iam-parana-runtime-v2";
 const APP_SHELL = ["/", "/manifest.json", "/icon-192x192.png", "/icon-512x512.png"];
 
 self.addEventListener("install", (event) => {
@@ -22,6 +22,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
+
+  // Next administra sus propios chunks, prefetch y respuestas RSC. Cachearlos
+  // desde el worker provoca una revalidación adicional por cada navegación y
+  // puede mezclar payloads de distintas páginas.
+  const isNextInternal = url.pathname.startsWith("/_next/");
+  const isReactServerComponent =
+    url.searchParams.has("_rsc") ||
+    request.headers.get("RSC") === "1" ||
+    request.headers.get("Next-Router-Prefetch") === "1";
+  if (isNextInternal || isReactServerComponent) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(request, "/"));

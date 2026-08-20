@@ -17,7 +17,7 @@ export default async function LogisticaResourcePage({ params }: { params: Promis
   return (
     <main className="min-h-screen bg-stone-50 pb-20">
       <header className="bg-gradient-to-br from-red-700 to-red-500 px-4 py-16 text-center text-white shadow-lg">
-        <h1 className="mx-auto max-w-4xl text-3xl font-black md:text-5xl">{data.page.title}</h1>
+        <h1 className="mx-auto max-w-4xl break-words text-[clamp(1.8rem,9vw,3rem)] font-black leading-tight [overflow-wrap:anywhere]">{data.page.title}</h1>
         {data.page.description && <p className="mx-auto mt-4 max-w-2xl text-red-50">{data.page.description}</p>}
       </header>
 

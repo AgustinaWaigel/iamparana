@@ -41,7 +41,7 @@ export default function CalendarioPage() {
           Información Oficial
         </div>
         <p className="text-lg font-medium text-amber-50/90 leading-relaxed italic border-l-2 border-brand-gold/50 pl-4">
-          Mantenete al tanto de todas las actividades, reuniones de guías y campamentos.
+          Mantenete al tanto de todas las actividades, reuniones de animadores y campamentos.
         </p>
       </div>
 

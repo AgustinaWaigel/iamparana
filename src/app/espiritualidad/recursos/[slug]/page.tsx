@@ -65,7 +65,7 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
         
         <div className="relative z-10 w-full max-w-4xl px-4 sm:px-6 text-center text-white">
           <h1
-            className="mx-auto block w-full max-w-[calc(100vw-2rem)] text-[clamp(1.4rem,7.5vw,2rem)] sm:text-4xl md:text-7xl font-black uppercase tracking-normal sm:tracking-tighter leading-none sm:leading-tight mb-3 sm:mb-4 drop-shadow-md break-all"
+            className="mx-auto mb-3 block w-full max-w-[calc(100vw-2rem)] break-words text-[clamp(1.6rem,8vw,2.5rem)] font-black uppercase leading-none tracking-normal drop-shadow-md sm:mb-4 sm:text-4xl sm:leading-tight sm:tracking-tighter md:text-7xl"
             style={{ overflowWrap: "anywhere" }}
           >
             {data.page.title}

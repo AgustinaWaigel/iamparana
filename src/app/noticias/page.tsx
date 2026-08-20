@@ -89,7 +89,7 @@ export default async function Noticias({
     <>
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden border-b border-brand-gold/20 px-5 py-14 sm:px-10 sm:py-20"
+        className="relative overflow-hidden border-b border-brand-gold/20 px-4 py-10 sm:px-10 sm:py-20"
         style={{
           backgroundColor: "#3a1508",
           backgroundImage: `
@@ -115,7 +115,7 @@ export default async function Noticias({
                 Enterate de todas las novedades
               </div>
 
-              <h1 className="m-0 max-w-3xl text-left font-display text-5xl font-black leading-[0.95] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+              <h1 className="m-0 max-w-3xl break-words text-left font-display text-[clamp(2.35rem,12vw,3rem)] font-black leading-[0.98] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl [overflow-wrap:anywhere]">
                 Noticias de la IAM
               </h1>
 
@@ -124,7 +124,7 @@ export default async function Noticias({
                 Misionera de Paraná.
               </p>
 
-              <form action="/noticias" method="get" className="mt-7 flex max-w-2xl items-center gap-2">
+              <form action="/noticias" method="get" className="mt-7 flex max-w-2xl flex-wrap items-center gap-2 sm:flex-nowrap">
                 {selectedCategory !== 'todas' && <input type="hidden" name="categoria" value={selectedCategory} />}
                 <label className="relative block min-w-0 flex-1">
                   <span className="sr-only">Buscar noticias</span>
@@ -142,7 +142,7 @@ export default async function Noticias({
                 </label>
                 <button
                   type="submit"
-                  className="h-12 shrink-0 rounded-full bg-brand-gold px-5 text-sm font-black text-brand-deep transition hover:bg-brand-goldsoft"
+                  className="h-12 shrink-0 rounded-full bg-brand-gold px-4 text-sm font-black text-brand-deep transition hover:bg-brand-goldsoft sm:px-5"
                 >
                   Buscar
                 </button>
