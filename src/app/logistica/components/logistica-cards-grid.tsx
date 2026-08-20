@@ -7,9 +7,9 @@ import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 // --- TYPES ---
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
-type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
+type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; created_at: string; };
 
 type CardItem = {
   id: string;
@@ -23,6 +23,7 @@ type CardItem = {
   googleDriveUrl?: string | null;
   linkUrl?: string;
   thumbnailUrl?: string | null;
+  createdAt: string;
 };
 
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
@@ -220,18 +221,18 @@ export function LogisticaCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   // --- DATA TRANSFORMATION ---
   const cards = useMemo<CardItem[]>(() => {
     const documentCards: CardItem[] = documentsState.map((doc) => ({
-      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento de logística', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'red', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || null,
+      id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento de logística', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'red', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || null, createdAt: doc.created_at,
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({
-      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace de referencia', href: resourceLink.url, badge: 'Enlace', accent: 'red', resourceId: resourceLink.id, linkUrl: resourceLink.url, thumbnailUrl: resourceLink.thumbnail_url || null,
+      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace de referencia', href: resourceLink.url, badge: 'Enlace', accent: 'red', resourceId: resourceLink.id, linkUrl: resourceLink.url, thumbnailUrl: resourceLink.thumbnail_url || null, createdAt: resourceLink.created_at,
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
-      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos', href: `/logistica/recursos/${page.slug}`, badge: 'Página de recursos', accent: 'red', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null,
+      id: `resource-page-${page.id}`, kind: 'resource-page', title: page.title, description: page.description || 'Página de recursos', href: `/logistica/recursos/${page.slug}`, badge: 'Página de recursos', accent: 'red', resourceId: page.id, thumbnailUrl: page.thumbnail_url || page.texture_url || null, createdAt: page.created_at,
     }));
 
-    return [...resourcePageCards, ...documentCards, ...linkCards];
+    return [...resourcePageCards, ...documentCards, ...linkCards].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.resourceId - a.resourceId);
   }, [documentsState, linksState, resourcePagesState]);
 
   const filteredCards = useMemo(() => {
@@ -363,7 +364,7 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
   const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : null;
 
   return (
-    <article className="group flex flex-col bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 overflow-hidden">
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className={`${headerBg} h-40 flex items-center justify-center relative overflow-hidden`}>
         
         {isAdmin && (
@@ -396,8 +397,8 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
         rel={card.href.startsWith('/') ? undefined : 'noopener noreferrer'}
         className="flex flex-1 flex-col p-4 text-left no-underline group/link"
       >
-        <h3 className="text-base font-bold text-gray-900 line-clamp-2 group-hover/link:underline">{card.title}</h3>
-        <p className="text-xs text-stone-600 line-clamp-2 mt-1 flex-1">{card.description}</p>
+        <h3 className="m-0 w-full line-clamp-2 text-left text-base font-bold text-gray-900 group-hover/link:underline">{card.title}</h3>
+        <p className="m-0 mt-2 w-full flex-1 line-clamp-2 text-left text-xs leading-relaxed text-stone-600">{card.description}</p>
         <div className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold border ${actionBtnClass} w-fit`}>
           {card.badge}
         </div>

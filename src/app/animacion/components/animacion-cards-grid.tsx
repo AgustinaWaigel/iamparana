@@ -8,9 +8,9 @@ import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
-type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
+type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; created_at: string; };
 
 type CardItem = {
   id: string;
@@ -24,6 +24,7 @@ type CardItem = {
   googleDriveUrl?: string | null;
   linkUrl?: string;
   thumbnailUrl?: string | null;
+  createdAt: string;
 };
 
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
@@ -226,6 +227,7 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
       resourceId: doc.id,
       googleDriveUrl: doc.google_drive_url,
       thumbnailUrl: doc.thumbnail_url || null,
+      createdAt: doc.created_at,
     }));
 
     const linkCards: CardItem[] = linksState.map((resourceLink) => ({
@@ -239,6 +241,7 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
       resourceId: resourceLink.id,
       linkUrl: resourceLink.url,
       thumbnailUrl: resourceLink.thumbnail_url || null,
+      createdAt: resourceLink.created_at,
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
@@ -251,9 +254,10 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
       accent: 'green',
       resourceId: page.id,
       thumbnailUrl: page.thumbnail_url || page.texture_url || null,
+      createdAt: page.created_at,
     }));
 
-    return [...resourcePageCards, ...documentCards, ...linkCards];
+    return [...resourcePageCards, ...documentCards, ...linkCards].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.resourceId - a.resourceId);
   }, [documentsState, linksState, resourcePagesState]);
 
   const filteredCards = useMemo(() => {
@@ -388,7 +392,7 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
   const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : null;
 
   return (
-    <article className="group flex flex-col bg-white rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-stone-100 overflow-hidden">
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className={`${headerBg} h-40 flex items-center justify-center relative overflow-hidden`}>
         {isAdmin && (
           <div className="absolute right-3 top-3 z-20 flex gap-2">
@@ -419,8 +423,8 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
             {card.badge}
           </span>
         </div>
-        <h3 className="text-xl font-black text-brand-brown mb-2 line-clamp-2 leading-tight">{card.title}</h3>
-        <p className="text-stone-500 mb-8 flex-1 text-sm leading-relaxed line-clamp-3">{card.description}</p>
+        <h3 className="m-0 w-full line-clamp-2 text-left text-xl font-black leading-tight text-brand-brown">{card.title}</h3>
+        <p className="m-0 mt-3 mb-8 w-full flex-1 line-clamp-3 text-left text-sm leading-relaxed text-stone-500">{card.description}</p>
 
         <ActionWrapper
           href={card.href}

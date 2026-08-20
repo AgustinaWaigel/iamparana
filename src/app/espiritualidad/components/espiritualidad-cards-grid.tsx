@@ -9,10 +9,10 @@ import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 // --- TYPES ---
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; section: string; };
-type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; template: string; };
-type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; section: string; created_at: string; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
+type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; thumbnail_url?: string | null; texture_url?: string | null; template: string; created_at: string; };
+type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; created_at: string; };
 
 // Eliminamos el tipo 'static'
 type CardItem = {
@@ -28,6 +28,7 @@ type CardItem = {
   linkUrl?: string;
   thumbnailUrl?: string | null;
   content?: string;
+  createdAt: string;
 };
 
 type EditDraft = { kind: CardItem['kind']; resourceId: number; title: string; description: string; url: string; };
@@ -247,7 +248,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
   const prayerCards: CardItem[] = textPrayersState.map((prayer) => ({
     id: `text-prayer-${prayer.id}`, kind: 'text-prayer', title: prayer.title,
     description: prayer.description || 'Oración para rezar en comunidad o de manera personal.', href: '', badge: 'Oración', accent: 'blue',
-    resourceId: prayer.id, thumbnailUrl: prayer.thumbnail_url, content: prayer.content,
+    resourceId: prayer.id, thumbnailUrl: prayer.thumbnail_url, content: prayer.content, createdAt: prayer.created_at,
   }));
   // 1. Filtrar y mapear documentos
   const documentCards: CardItem[] = documentsState.map((doc) => ({
@@ -260,6 +261,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
     accent: 'blue', // Color representativo para documentos
     resourceId: doc.id,
     thumbnailUrl: doc.thumbnail_url || null,
+    createdAt: doc.created_at,
   }));
 
   // 2. Filtrar y mapear enlaces
@@ -273,6 +275,7 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
     accent: 'blue',
     resourceId: resourceLink.id,
     thumbnailUrl: resourceLink.thumbnail_url || null,
+    createdAt: resourceLink.created_at,
   }));
 
   // 3. Filtrar Páginas de Recursos por SLUG o Sección
@@ -289,9 +292,10 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
       accent: 'blue',
       resourceId: page.id,
       thumbnailUrl: page.thumbnail_url || page.texture_url || '/assets/textures/espiritualidad.webp',
+      createdAt: page.created_at,
     }));
 
-  return [...prayerCards, ...resourcePageCards, ...documentCards, ...linkCards];
+  return [...prayerCards, ...resourcePageCards, ...documentCards, ...linkCards].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.resourceId - a.resourceId);
 }, [documentsState, linksState, resourcePagesState, textPrayersState]);
 
   const filteredCards = useMemo(() => {
@@ -450,7 +454,7 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete, onOpen }: { card: CardI
     : '/assets/textures/espiritualidad.webp'; 
 
   return (
-    <article className=" overflow-hidden group flex flex-col bg-white rounded-3xl shadow-sm hover:shadow-xl ...">
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className={`${headerBg} h-40 flex items-center justify-center relative overflow-hidden`}>
         {isAdmin && (
           <div className="absolute right-3 top-3 z-20 flex gap-2">
@@ -486,8 +490,8 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete, onOpen }: { card: CardI
             {card.badge}
           </span>
         </div>
-        <h3 className="text-xl font-black text-brand-brown mb-2 line-clamp-2 leading-tight">{card.title}</h3>
-        <p className="text-stone-500 mb-8 flex-1 text-sm leading-relaxed line-clamp-3">{card.description}</p>
+        <h3 className="m-0 w-full line-clamp-2 text-left text-xl font-black leading-tight text-brand-brown">{card.title}</h3>
+        <p className="m-0 mt-3 mb-8 w-full flex-1 line-clamp-3 text-left text-sm leading-relaxed text-stone-500">{card.description}</p>
         
         {card.kind === 'text-prayer' ? (
           <button type="button" onClick={onOpen} className={`group/btn flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 font-bold rounded-xl border transition-all ${actionBtnClass}`}>

@@ -43,9 +43,9 @@ export const metadata: Metadata = {
   },
 };
 
-type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; };
-type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; };
-type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; };
+type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
+type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
+type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function Logistica() {
   const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
@@ -66,6 +66,7 @@ export default async function Logistica() {
       thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       google_drive_url: item.google_drive_url ? String(item.google_drive_url) : null,
       file_type: item.file_type ? String(item.file_type) : null,
+      created_at: String(item.created_at || ''),
     }))
     .filter((item) => Boolean(item.google_drive_url));
 
@@ -76,6 +77,7 @@ export default async function Logistica() {
     thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
     url: String(item.url || ''),
     icon: item.icon ? String(item.icon) : null,
+    created_at: String(item.created_at || ''),
   }));
 
   const resourcePages = resourcePagesRows
@@ -88,6 +90,7 @@ export default async function Logistica() {
       template: String(item.template || 'red'),
       thumbnail_url: item.thumbnail_url ? String(item.thumbnail_url) : null,
       texture_url: item.texture_url ? String(item.texture_url) : null,
+      created_at: String(item.created_at || ''),
     }))
     .filter((item) => item.section === 'logistica' && Boolean(item.slug));
 
