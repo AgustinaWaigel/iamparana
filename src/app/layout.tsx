@@ -28,7 +28,9 @@ export const metadata: Metadata = {
     default: "IAM Paraná",
     template: "%s | IAM Paraná",
   },
-  description: "Infancia y Adolescencia Misionera en Paraná.",
+  description: "Sitio oficial de Infancia y Adolescencia Misionera de Paraná: noticias, formación, juegos, canciones, espiritualidad y recursos para animadores.",
+  applicationName: "IAM Paraná",
+  keywords: ["IAM Paraná", "Infancia y Adolescencia Misionera", "misiones", "animadores", "Arquidiócesis de Paraná"],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "IAM Paraná",
-    description: "Infancia y Adolescencia Misionera en Paraná.",
+    description: "Noticias, formación y recursos para la Infancia y Adolescencia Misionera de Paraná.",
     url: "https://iamparana.com.ar",
     siteName: "IAM Paraná",
     images: [
@@ -68,6 +70,19 @@ export default function RootLayout({
     // El HTML raíz define el idioma del sitio y monta los proveedores globales.
     <html lang="es" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body className="antialiased font-sans">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'IAM Paraná',
+              alternateName: 'Infancia y Adolescencia Misionera de Paraná',
+              url: 'https://iamparana.com.ar',
+              logo: 'https://iamparana.com.ar/assets/multimedia/logo%20iam%20nuevo%20redondo.png',
+            }).replace(/</g, '\\u003c'),
+          }}
+        />
         <BackButton />
         <ClientLayout>{children}</ClientLayout>
         <AnalyticsProvider />

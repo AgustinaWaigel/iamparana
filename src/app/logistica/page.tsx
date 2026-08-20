@@ -7,8 +7,7 @@ import { LogisticaClient } from "@/app/logistica/components/logistica-client";
 import { LogisticaCardsGrid } from "./components/logistica-cards-grid";
 
 // Base de Datos
-import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
-import { listResourcePages } from "@/server/db/resource-pages-repository";
+import { getAreaLandingContent } from "@/server/db/admin-repository";
 
 export const revalidate = 60;
 
@@ -48,11 +47,10 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function Logistica() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['logistica', 'presupuestos', 'rendiciones', 'inventario']),
-    getLinksBySection('logistica'),
-    listResourcePages(),
-  ]);
+  const areaContent = await getAreaLandingContent('logistica', ['logistica', 'presupuestos', 'rendiciones', 'inventario']);
+  const uploadedDocumentsRaw = areaContent.documents;
+  const uploadedLinksRaw = areaContent.links;
+  const resourcePagesRaw = areaContent.pages;
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
   const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;

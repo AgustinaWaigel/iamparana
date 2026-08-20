@@ -5,15 +5,17 @@ import { Gamepad2, Music2 } from 'lucide-react';
 import { HeroSection } from '@/app/components/common/hero-section';
 import { AnimacionClient } from '@/app/animacion/components/animacion-client';
 import { AnimacionCardsGrid } from '@/app/animacion/components/animacion-cards-grid';
-import { getDocumentsBySections, getLinksBySection } from '@/server/db/admin-repository';
-import { listResourcePages } from '@/server/db/resource-pages-repository';
+import { getAreaLandingContent } from '@/server/db/admin-repository';
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Animación | IAM Paraná',
-  description: 'Recursos, juegos y cancionero para la animación de grupos.',
+  title: 'Animación',
+  description: 'Juegos, canciones, dinámicas y recursos para animar encuentros de Infancia y Adolescencia Misionera.',
+  alternates: { canonical: '/animacion' },
   openGraph: {
     title: 'Animación - IAM Paraná',
-    description: 'Página del equipo de animación',
+    description: 'Juegos, canciones, dinámicas y recursos para animar encuentros de IAM Paraná.',
     url: 'https://iamparana.com.ar/animacion',
     images: [{ url: 'https://iamparana.com.ar/logoiam.jpg' }],
     type: 'website',
@@ -34,11 +36,10 @@ function isValidHttpUrl(value: string): boolean {
 }
 
 export default async function AnimacionPage() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['animacion', 'recursos']),
-    getLinksBySection('animacion'),
-    listResourcePages(),
-  ]);
+  const areaContent = await getAreaLandingContent('animacion', ['animacion', 'recursos']);
+  const uploadedDocumentsRaw = areaContent.documents;
+  const uploadedLinksRaw = areaContent.links;
+  const resourcePagesRaw = areaContent.pages;
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
   const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;

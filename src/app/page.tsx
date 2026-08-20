@@ -9,6 +9,13 @@ import { CalendarDays, ChevronRight } from "lucide-react";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
 import { OnlineUsersBoard } from "@/app/components/common/online-users-board";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: { absolute: "IAM Paraná" },
+  description: "Sitio oficial de Infancia y Adolescencia Misionera de Paraná. Encontrá noticias, agenda, formación y recursos para encuentros.",
+  alternates: { canonical: "/" },
+};
 
 export const dynamic = "force-dynamic";
 

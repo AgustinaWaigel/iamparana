@@ -125,6 +125,20 @@ export async function listResourcePages(): Promise<ResourcePage[]> {
   return result.rows as unknown as ResourcePage[];
 }
 
+export async function listResourcePagesBySection(section: string): Promise<ResourcePage[]> {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: `SELECT p.id, p.slug, p.title, p.section, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
+                 COALESCE(s.template, 'gold') as template
+          FROM resource_pages p
+          LEFT JOIN resource_page_styles s ON s.page_id = p.id
+          WHERE p.section = ?
+          ORDER BY p.created_at DESC`,
+    args: [section],
+  });
+  return result.rows as unknown as ResourcePage[];
+}
+
 export async function createResourcePage(input: {
   slug: string;
   title: string;

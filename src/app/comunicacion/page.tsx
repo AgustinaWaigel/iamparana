@@ -7,8 +7,7 @@ import { ComunicacionClient } from "@/app/comunicacion/components/comunicacion-c
 import { ComunicacionCardsGrid } from "./components/comunicacion-cards-grid";
 
 // Base de Datos
-import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
-import { listResourcePages } from "@/server/db/resource-pages-repository";
+import { getAreaLandingContent } from "@/server/db/admin-repository";
 export const revalidate = 60;
 
 export const viewport: Viewport = {
@@ -47,11 +46,10 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function Comunicacion() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['comunicacion', 'logos', 'dibujos', 'recursos']),
-    getLinksBySection('comunicacion'),
-    listResourcePages(),
-  ]);
+  const areaContent = await getAreaLandingContent('comunicacion', ['comunicacion', 'logos', 'dibujos', 'recursos']);
+  const uploadedDocumentsRaw = areaContent.documents;
+  const uploadedLinksRaw = areaContent.links;
+  const resourcePagesRaw = areaContent.pages;
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
   const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;

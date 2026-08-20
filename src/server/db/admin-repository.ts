@@ -369,6 +369,38 @@ export async function getDocumentsBySections(sections: string[]) {
   return result.rows;
 }
 
+export async function getAreaLandingContent(area: string, documentSections: string[]) {
+  const client = clientOrThrow();
+  const normalized = documentSections.map((item) => item.trim()).filter(Boolean);
+  const placeholders = normalized.map(() => '?').join(', ');
+  const documentsStatement = normalized.length > 0
+    ? {
+        sql: `SELECT id, section, title, description, thumbnail_url, google_drive_id, google_drive_url, file_size, file_type, uploaded_by_user_id, created_at
+              FROM documents WHERE section IN (${placeholders}) ORDER BY created_at DESC`,
+        args: normalized,
+      }
+    : { sql: 'SELECT * FROM documents WHERE 1 = 0', args: [] };
+
+  const [documents, links, pages] = await client.batch([
+    documentsStatement,
+    {
+      sql: 'SELECT id, section, title, description, thumbnail_url, url, icon, created_by_user_id, created_at FROM links WHERE section = ? ORDER BY created_at DESC',
+      args: [area],
+    },
+    {
+      sql: `SELECT p.id, p.slug, p.title, p.section, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
+                   COALESCE(s.template, 'gold') AS template
+            FROM resource_pages p
+            LEFT JOIN resource_page_styles s ON s.page_id = p.id
+            WHERE p.section = ?
+            ORDER BY p.created_at DESC`,
+      args: [area],
+    },
+  ], 'read');
+
+  return { documents: documents.rows, links: links.rows, pages: pages.rows };
+}
+
 export async function getDocument(id: number) {
   const client = clientOrThrow();
   const result = await client.execute({

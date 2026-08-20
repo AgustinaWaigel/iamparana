@@ -7,6 +7,7 @@ import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
+import Image from 'next/image';
 
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
 type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
@@ -407,7 +408,14 @@ function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isA
 
         {thumbnailUrl ? (
           <>
-            <img src={thumbnailUrl} alt={`Miniatura de ${card.title}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <Image
+              src={thumbnailUrl}
+              alt={`Miniatura de ${card.title}`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover"
+              loading="lazy"
+            />
             <div className="absolute inset-0 bg-black/15" />
             <div className="absolute left-4 bottom-4 z-20 rounded-xl bg-white/90 p-2 shadow-sm">
               {getCardIcon(card, 28, 'text-brand-brown')}

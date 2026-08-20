@@ -5,6 +5,13 @@ import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-b
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { listNoticiasPreview } from "@/server/db/content-repository";
 import { Search, X } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Noticias",
+  description: "Últimas noticias, actividades y novedades de Infancia y Adolescencia Misionera de Paraná.",
+  alternates: { canonical: "/noticias" },
+};
 export const dynamic = "force-dynamic";
 
 function parseDate(dateStr: string): Date {

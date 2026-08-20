@@ -7,8 +7,7 @@ import { EspiritualidadClient } from "@/app/espiritualidad/components/espiritual
 import { EspiritualidadCardsGrid } from "./components/espiritualidad-cards-grid";
 
 // Base de Datos
-import { getDocumentsBySections, getLinksBySection } from "@/server/db/admin-repository";
-import { listResourcePages } from "@/server/db/resource-pages-repository";
+import { getAreaLandingContent } from "@/server/db/admin-repository";
 import { listSpiritualPrayers } from "@/server/db/spiritual-prayers-repository";
 
 export const revalidate = 60;
@@ -50,12 +49,13 @@ type ResourcePageCard = { id: number; slug: string; title: string; description: 
 type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; created_at: string; };
 
 export default async function Espiritualidad() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw, textPrayers] = await Promise.all([
-    getDocumentsBySections(['espiritualidad', 'recursos', 'oraciones', 'guiones']),
-    getLinksBySection('espiritualidad'),
-    listResourcePages(),
+  const [areaContent, textPrayers] = await Promise.all([
+    getAreaLandingContent('espiritualidad', ['espiritualidad', 'recursos', 'oraciones', 'guiones']),
     listSpiritualPrayers(),
   ]);
+  const uploadedDocumentsRaw = areaContent.documents;
+  const uploadedLinksRaw = areaContent.links;
+  const resourcePagesRaw = areaContent.pages;
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
   const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;

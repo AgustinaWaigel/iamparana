@@ -8,15 +8,15 @@ import { FormacionCardsGrid } from './components/formacion-cards-grid';
 import { HeroSection } from '@/app/components/common/hero-section';
 
 // Base de Datos
-import { getDocumentsBySections, getLinksBySection } from '@/server/db/admin-repository';
-import { listResourcePages } from '@/server/db/resource-pages-repository';
+import { getAreaLandingContent } from '@/server/db/admin-repository';
 
 export const metadata: Metadata = {
   title: 'Formación',
-  description: 'Página del área de formación',
+  description: 'Materiales, documentos y propuestas de formación para animadores de Infancia y Adolescencia Misionera.',
+  alternates: { canonical: '/formacion' },
   openGraph: {
     title: 'Formación',
-    description: 'Página del área de formación',
+    description: 'Materiales y propuestas de formación para animadores de IAM Paraná.',
     url: 'https://iamparana.com.ar/formacion',
     images: [{ url: 'https://iamparana.com.ar/logoiam.jpg', alt: 'Logo IAM Paraná', width: 800, height: 600 }],
     type: 'website',
@@ -29,11 +29,10 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function FormacionPage() {
-  const [uploadedDocumentsRaw, uploadedLinksRaw, resourcePagesRaw] = await Promise.all([
-    getDocumentsBySections(['formacion', 'temario', 'carta', 'otro']),
-    getLinksBySection('formacion'),
-    listResourcePages(),
-  ]);
+  const areaContent = await getAreaLandingContent('formacion', ['formacion', 'temario', 'carta', 'otro']);
+  const uploadedDocumentsRaw = areaContent.documents;
+  const uploadedLinksRaw = areaContent.links;
+  const resourcePagesRaw = areaContent.pages;
 
   const uploadedDocumentsRows = JSON.parse(JSON.stringify(uploadedDocumentsRaw)) as Array<Record<string, unknown>>;
   const uploadedLinksRows = JSON.parse(JSON.stringify(uploadedLinksRaw)) as Array<Record<string, unknown>>;
