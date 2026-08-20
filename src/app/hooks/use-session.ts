@@ -53,7 +53,7 @@ async function loadSession(): Promise<SessionState> {
         return {
           user,
           isLoading: false,
-          isAdmin: normalizedRole === 'admin' || normalizedRole === 'equipo' || normalizedRole === 'coordinador',
+          isAdmin: normalizedRole === 'admin',
         } satisfies SessionState;
       })
       .catch((error) => {
