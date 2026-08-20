@@ -3,7 +3,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { getTursoClient, ensureCarouselColumns } from "@/server/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 import { isTursoReadEnabled } from "@/app/lib/feature-flags";
 
 export interface NoticiaPreview {
@@ -483,7 +483,6 @@ export async function listCarouselItems(): Promise<CarouselItem[]> {
   }
 
   try {
-    await ensureCarouselColumns();
     const result = await client.execute(
       "SELECT id, imageDesktop, imageMobile, alt, title, description, tag, link, buttonText, \"order\" FROM carousel ORDER BY \"order\" ASC"
     );

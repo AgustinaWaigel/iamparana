@@ -174,139 +174,52 @@ export default async function Noticias({
             </div>
           )}
           {noticias.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Noticia destacada izquierda */}
-              <div className="relative group">
-                <article className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden h-full flex flex-col border border-gray-100">
-                  <Link href={`/noticias/${noticias[0].slug}`} className="block h-full no-underline flex flex-col">
-                    <div className="relative h-64 overflow-hidden bg-gray-200">
-                      {getGoogleDriveImageUrl(noticias[0].image) && (
-                        <Image
-                          src={getGoogleDriveImageUrl(noticias[0].image) || ''}
-                          alt={noticias[0].title}
-                          fill
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          priority={true}
-                        />
-                      )}
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col justify-between">
-                      {noticias[0].cat && (
-                        <span className="inline-block text-xs font-bold uppercase tracking-wider text-brand-brown/70 mb-2">
-                          • {noticias[0].cat}
-                        </span>
-                      )}
-                      <div>
-                        <h2 className="text-2xl font-bold text-brand-brown mb-3 leading-tight group-hover:text-brand-gold transition-colors">
-                          {noticias[0].title}
-                        </h2>
-                        <p className="m-0 mb-4 w-full text-left text-gray-700 text-sm line-clamp-2">
-                          {noticias[0].description}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
-                          {formatDate(noticias[0].date)}
-                        </p>
-                        <span className="text-sm font-bold text-brand-brown group-hover:translate-x-1 transition-transform">
-                          Leer más →
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </article>
-                {<NoticiasAdminButtons noticia={noticias[0]} />}
-              </div>
-
-              {/* Grid de 4 noticias derecha */}
-              {noticias.length > 1 && (
-                <div className="grid grid-cols-2 gap-4">
-                  {noticias.slice(1, 5).map((item) => (
-                    <div key={item.slug} className="relative group">
-                      <article className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden h-full flex flex-col border border-gray-100">
-                        <Link href={`/noticias/${item.slug}`} className="block h-full no-underline flex flex-col">
-                          <div className="relative h-32 overflow-hidden bg-gray-200">
-                            {getGoogleDriveImageUrl(item.image) && (
-                              <Image
-                                src={getGoogleDriveImageUrl(item.image) || ''}
-                                alt={item.title}
-                                fill
-                                sizes="(max-width: 1024px) 50vw, 25vw"
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                priority={false}
-                              />
-                            )}
-                          </div>
-                          <div className="p-3 flex-1 flex flex-col justify-between">
-                            {item.cat && (
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-brown/60">
-                                {item.cat}
-                              </span>
-                            )}
-                            <h3 className="text-sm font-bold text-brand-brown line-clamp-3 group-hover:text-brand-gold transition-colors">
-                              {item.title}
-                            </h3>
-                            <p className="m-0 mt-2 w-full text-left text-[11px] text-gray-500 font-semibold">
-                              {formatDate(item.date)}
-                            </p>
-                          </div>
-                        </Link>
-                      </article>
-                      {<NoticiasAdminButtons noticia={item} />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Más noticias */}
-        {noticias.length > 5 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 border-t border-gray-200">
-            <h3 className="text-2xl font-bold text-brand-brown mb-8">Más noticias</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {noticias.slice(5).map((item) => (
-                <div key={item.slug} className="relative group">
-                  <article className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">
-                    <Link href={`/noticias/${item.slug}`} className="block h-full no-underline">
-                      <div className="relative h-48 overflow-hidden bg-gray-200">
+            <div className="flex flex-wrap gap-5">
+              {noticias.map((item, index) => (
+                <div key={item.slug} className="group relative min-w-0 flex-[1_1_320px]">
+                  <article className="flex h-full min-h-[430px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md transition-all hover:-translate-y-1 hover:shadow-xl">
+                    <Link href={`/noticias/${item.slug}`} className="flex h-full flex-col no-underline">
+                      <div className="relative h-52 shrink-0 overflow-hidden bg-gray-200 sm:h-56">
                         {getGoogleDriveImageUrl(item.image) && (
                           <Image
                             src={getGoogleDriveImageUrl(item.image) || ''}
                             alt={item.title}
                             fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            priority={false}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            priority={index === 0}
                           />
                         )}
                       </div>
-                      <div className="p-4">
+                      <div className="flex flex-1 flex-col p-5">
                         {item.cat && (
-                          <span className="text-xs font-bold uppercase tracking-wider text-brand-brown/70 block mb-2">
+                          <span className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-brown/70">
                             {item.cat}
                           </span>
                         )}
-                        <h2 className="text-lg font-bold text-brand-brown mb-2 line-clamp-2 group-hover:text-brand-gold transition-colors">
+                        <h2 className="m-0 line-clamp-2 text-xl font-bold leading-tight text-brand-brown transition-colors group-hover:text-brand-gold">
                           {item.title}
                         </h2>
-                        <p className="m-0 mb-3 w-full text-left text-gray-600 text-sm line-clamp-2">
+                        <p className="m-0 mt-3 line-clamp-3 w-full text-left text-sm leading-relaxed text-gray-600">
                           {item.description}
                         </p>
-                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
-                          {formatDate(item.date)}
-                        </p>
+                        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-4">
+                          <p className="m-0 text-left text-xs font-semibold text-gray-500">
+                            {formatDate(item.date)}
+                          </p>
+                          <span className="text-sm font-bold text-brand-brown transition-transform group-hover:translate-x-1">
+                            Leer más →
+                          </span>
+                        </div>
                       </div>
                     </Link>
                   </article>
-                  {<NoticiasAdminButtons noticia={item} />}
+                  <NoticiasAdminButtons noticia={item} />
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </>
   );

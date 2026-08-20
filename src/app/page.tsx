@@ -8,6 +8,7 @@ import { getSessionUser } from "@/server/lib/api-utils";
 import { CalendarDays, ChevronRight } from "lucide-react";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
+import { OnlineUsersBoard } from "@/app/components/common/online-users-board";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +22,12 @@ interface Noticia {
 }
 
 export default async function HomePage() {
-  const carouselItems = await listCarouselItems();
-  const noticias = (await listNoticiasPreview()) as Noticia[];
-  const user = await getSessionUser();
+  const [carouselItems, noticiasResult, user] = await Promise.all([
+    listCarouselItems(),
+    listNoticiasPreview(),
+    getSessionUser(),
+  ]);
+  const noticias = noticiasResult as Noticia[];
   const isAdmin = user?.role === "admin";
 
   return (
@@ -35,6 +39,8 @@ export default async function HomePage() {
       <section className="w-full px-3 sm:px-8 pt-8">
         <Carousel initialItems={carouselItems} isAdmin={isAdmin} />
       </section>
+
+      <OnlineUsersBoard />
 
       {/* ══════════════════════════════════════════
           2. NOTICIAS (protagonistas, ancho completo)
@@ -62,90 +68,52 @@ export default async function HomePage() {
 
         <FadeInSection delay={80}>
           {noticias.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              {/* Noticia destacada */}
-              <div key={noticias[0].slug} className="relative group">
-                <article className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden h-full flex flex-col">
-                  <Link href={`/noticias/${noticias[0].slug}`} className="block h-full no-underline flex flex-col">
-                    <div className="relative h-64 overflow-hidden bg-gray-200">
-                      {getGoogleDriveImageUrl(noticias[0].image) && (
-                        <Image
-                          src={getGoogleDriveImageUrl(noticias[0].image) || ''}
-                          alt={noticias[0].title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          priority={true}
-                        />
-                      )}
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col justify-between">
-                      {noticias[0].cat && (
-                        <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-brown/70 mb-2">
-                          • {noticias[0].cat}
-                        </span>
-                      )}
-                      <div>
-                        <h2 className="text-2xl font-bold text-brand-brown mb-3 leading-tight group-hover:text-brand-gold transition-colors">
-                          {noticias[0].title}
-                        </h2>
-                        <p className="m-0 mb-4 w-full text-left text-gray-700 text-sm line-clamp-3">
-                          {noticias[0].description}
-                        </p>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+              {noticias.slice(0, 5).map((item, index) => (
+                <div
+                  key={item.slug}
+                  className={`group relative min-w-0 ${index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}`}
+                >
+                  <article className={`flex h-full flex-col overflow-hidden bg-white shadow-md ring-1 ring-brand-brown/10 transition-all hover:-translate-y-1 hover:shadow-xl ${index === 0 ? "min-h-[480px] rounded-3xl" : "min-h-[250px] rounded-2xl"}`}>
+                    <Link href={`/noticias/${item.slug}`} className="flex h-full flex-col no-underline">
+                      <div className={`relative shrink-0 overflow-hidden bg-gray-200 ${index === 0 ? "h-64 lg:flex-1" : "h-32"}`}>
+                        {getGoogleDriveImageUrl(item.image) && (
+                          <Image
+                            src={getGoogleDriveImageUrl(item.image) || ''}
+                            alt={item.title}
+                            fill
+                            sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            priority={index === 0}
+                          />
+                        )}
                       </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <p className="m-0 w-full text-left text-xs text-gray-500 font-semibold">
-                          {new Date(noticias[0].date).toLocaleDateString('es-AR')}
-                        </p>
-                        <span className="text-sm font-bold text-brand-brown group-hover:translate-x-1 transition-transform">
-                          Leer más →
-                        </span>
+                      <div className={`flex flex-1 flex-col ${index === 0 ? "p-6 sm:p-7" : "p-4"}`}>
+                        {item.cat && (
+                          <span className="mb-2 text-[10px] font-bold uppercase tracking-wider text-brand-brown/65">
+                            {item.cat}
+                          </span>
+                        )}
+                        <h3 className={`m-0 line-clamp-2 font-bold leading-tight text-brand-brown transition-colors group-hover:text-brand-gold ${index === 0 ? "text-2xl sm:text-3xl" : "text-base"}`}>
+                          {item.title}
+                        </h3>
+                        {index === 0 && (
+                          <p className="m-0 mt-3 line-clamp-3 w-full text-left text-sm leading-relaxed text-gray-600 sm:text-base">
+                            {item.description}
+                          </p>
+                        )}
+                        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-4">
+                          <p className="m-0 text-left text-xs font-semibold text-gray-500">
+                            {new Date(item.date).toLocaleDateString('es-AR')}
+                          </p>
+                          <span className="text-sm font-bold text-brand-brown">Leer más →</span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </article>
-                {isAdmin && <NoticiasAdminButtons noticia={noticias[0]} />}
-              </div>
-
-              {/* Grid de noticias restantes */}
-              {noticias.length > 1 && (
-                <div className="grid grid-cols-2 gap-4">
-                  {noticias.slice(1, 5).map((item) => (
-                    <div key={item.slug} className="relative group">
-                      <article className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden h-full flex flex-col">
-                        <Link href={`/noticias/${item.slug}`} className="block h-full no-underline flex flex-col">
-                          <div className="relative h-32 overflow-hidden bg-gray-200">
-                            {getGoogleDriveImageUrl(item.image) && (
-                              <Image
-                                src={getGoogleDriveImageUrl(item.image) || ''}
-                                alt={item.title}
-                                fill
-                                sizes="(max-width: 768px) 50vw, 25vw"
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                priority={false}
-                              />
-                            )}
-                          </div>
-                          <div className="p-3 flex-1 flex flex-col justify-between">
-                            {item.cat && (
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-brown/60">
-                                {item.cat}
-                              </span>
-                            )}
-                            <h3 className="text-sm font-bold text-brand-brown line-clamp-3 group-hover:text-brand-gold transition-colors mt-1">
-                              {item.title}
-                            </h3>
-                            <p className="m-0 mt-2 w-full text-left text-[11px] text-gray-500 font-semibold">
-                              {new Date(item.date).toLocaleDateString('es-AR')}
-                            </p>
-                          </div>
-                        </Link>
-                      </article>
-                      {isAdmin && <NoticiasAdminButtons noticia={item} />}
-                    </div>
-                  ))}
+                    </Link>
+                  </article>
+                  {isAdmin && <NoticiasAdminButtons noticia={item} />}
                 </div>
-              )}
+              ))}
             </div>
           )}
         </FadeInSection>

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ensureSchemaInitialized, getTursoClient } from "@/server/db/turso";
+import { getTursoClient } from "@/server/db/turso";
 
 export type UserRole = "admin" | "miembro" | "equipo" | "redactor" | "coordinador" | "animador";
 export type UserArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad";
@@ -20,7 +20,6 @@ export type SessionUser = AuthUser & {
 };
 
 async function clientOrThrow() {
-  await ensureSchemaInitialized();
   const client = getTursoClient();
   if (!client) {
     throw new Error("Turso no configurado");

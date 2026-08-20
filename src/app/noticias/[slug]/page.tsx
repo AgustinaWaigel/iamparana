@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
 import { NoticiasClient } from '@/app/noticias/components/noticias-client';
 import { NoticiasAdminButtons } from '@/app/noticias/components/noticias-admin-buttons';
+import { NewsEngagement } from '@/app/noticias/components/news-engagement';
 
 type Props = {
   params: Promise<{
@@ -190,6 +191,8 @@ export default async function NoticiaPage(props: Props) {
         <div className="mt-12">
           <NoticiaGaleriaView slug={params.slug} />
         </div>
+
+        <NewsEngagement slug={params.slug} />
 
         <hr className="w-full border-t border-gray-200 my-10" />
 

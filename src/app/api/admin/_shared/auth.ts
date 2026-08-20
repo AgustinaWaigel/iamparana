@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers"; // Usamos el helper oficial
 import { getSessionUserByTokenHash, UserRole } from "@/server/db/auth-repository";
 import { AUTH_COOKIE_NAME, hashSessionToken } from "@/server/lib/auth-security";
-import { ensureSchemaInitialized } from "@/server/db/turso";
 
 // 1. Tipado de Permisos
 export type Permission =
@@ -80,9 +79,6 @@ export async function getSessionUser() {
 
 // 6. Protector de Rutas API
 export async function requirePermission(permission: Permission) {
-  // Inicializar schema cuando se requiere autenticación
-  await ensureSchemaInitialized();
-  
   const user = await getSessionUser();
   
   if (!user) {
@@ -99,7 +95,6 @@ export async function requirePermission(permission: Permission) {
 
 /** Administra todo; un miembro puede crear contenido solamente en sus áreas asignadas. */
 export async function requireAreaWrite(areaValue: unknown) {
-  await ensureSchemaInitialized();
   const user = await getSessionUser();
   if (!user) return { errorResponse: unauthorized() };
   const area = resolveManagedArea(areaValue);
