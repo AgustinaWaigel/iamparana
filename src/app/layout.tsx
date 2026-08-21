@@ -79,7 +79,7 @@ export default function RootLayout({
               name: 'IAM Paraná',
               alternateName: 'Infancia y Adolescencia Misionera de Paraná',
               url: 'https://iamparana.com.ar',
-              logo: 'https://iamparana.com.ar/assets/multimedia/logo%20iam%20nuevo%20redondo.png',
+              logo: 'https://iamparana.com.ar/assets/header/logoiam.jpg',
             }).replace(/</g, '\\u003c'),
           }}
         />
