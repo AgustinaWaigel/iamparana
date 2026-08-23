@@ -10,11 +10,15 @@ function initials(name: string) {
 
 export function OnlineUsersBoard() {
   const [users, setUsers] = useState<OnlineUser[]>([]);
+  const [visitors, setVisitors] = useState(0);
+  const [total, setTotal] = useState(0);
   const load = useCallback(async () => {
     const response = await fetch("/api/presence", { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
     setUsers(Array.isArray(data.users) ? data.users : []);
+    setVisitors(Number(data.visitors || 0));
+    setTotal(Number(data.total || 0));
   }, []);
 
   useEffect(() => {
@@ -41,9 +45,9 @@ export function OnlineUsersBoard() {
           <div>
             <h2 className="m-0 text-sm font-black text-brand-brown">Comunidad en línea</h2>
             <p className="m-0 text-xs text-stone-500">
-              {users.length === 0
+              {total === 0
                 ? "Nadie conectado todavía"
-                : `${users.length} ${users.length === 1 ? "persona conectada" : "personas conectadas"}`}
+                : `${total} ${total === 1 ? "persona conectada" : "personas conectadas"}`}
             </p>
           </div>
         </div>
@@ -53,6 +57,11 @@ export function OnlineUsersBoard() {
               {initials(user.name)}
             </div>
           ))}
+          {visitors > 0 && (
+            <div title={`${visitors} ${visitors === 1 ? "visitante" : "visitantes"}`} className="flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-white bg-stone-200 px-2 text-[10px] font-black text-stone-600">
+              +{visitors}
+            </div>
+          )}
           {users.length > visibleUsers.length && (
             <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-stone-200 text-[10px] font-black text-stone-600">+{users.length - visibleUsers.length}</div>
           )}
