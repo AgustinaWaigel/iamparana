@@ -95,7 +95,7 @@ const Header: React.FC = () => {
   return (
     <header
       className="fixed top-0 z-[60] h-20 w-full text-white shadow-lg"
-      style={{ backgroundColor: "#4d220c", backgroundImage: "url('/assets/header/headerbg.webp')", backgroundSize: "520px", backgroundBlendMode: "soft-light" }}
+      style={{ backgroundColor: "#4d220c", backgroundSize: "520px", backgroundBlendMode: "soft-light" }}
     >
       {/* Overlay de gradiente lateral */}
       <div className="absolute inset-0 bg-gradient-to-r from-brand-deep/85 via-brand-brown/70 to-brand-deep/85" />
@@ -107,7 +107,7 @@ const Header: React.FC = () => {
         <div className="relative z-[70] flex items-center">
           <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Image
-              src="/assets/header/logoiam.jpg"
+              src="/assets/header/logoiam2.jpg"
               alt="IAM Paraná"
               width={44} height={44}
               priority
