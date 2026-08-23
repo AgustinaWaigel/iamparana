@@ -21,6 +21,7 @@ self.addEventListener('push', (event) => {
       body: data.body || 'Nueva notificación',
       icon: data.icon || '/icon-192x192.png',
       badge: data.badge || '/icon-192x192.png',
+      image: data.image || undefined,
       tag: data.tag || 'notification',
       data: data.data || {},
       requireInteraction: false,

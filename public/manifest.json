@@ -1,12 +1,13 @@
 {
-  "name": "IAMParaná",
-  "short_name": "IAMParaná",
-  "description": "Instituto de Acción Misionera Paraná",
+  "id": "/",
+  "name": "IAM Paraná",
+  "short_name": "IAM Paraná",
+  "description": "Infancia y Adolescencia Misionera de Paraná",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#4d220c",
+  "background_color": "#4d220c",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -20,6 +21,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

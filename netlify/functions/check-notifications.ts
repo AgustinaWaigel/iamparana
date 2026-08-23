@@ -5,7 +5,8 @@ export default async (req: any, context: any) => {
   const authHeader = req.headers.get("authorization");
   const netlifyAuth = req.headers.get("x-webhook-signature");
   
-  if (!authHeader && !netlifyAuth) {
+  const isScheduledInvocation = Boolean(context?.next_run);
+  if (!isScheduledInvocation && !authHeader && !netlifyAuth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -43,5 +44,6 @@ export default async (req: any, context: any) => {
 };
 
 export const config = {
-  schedule: "@daily",
+  // 12:00 UTC = 09:00 en Argentina.
+  schedule: "0 12 * * *",
 };

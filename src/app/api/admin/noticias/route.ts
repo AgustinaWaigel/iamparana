@@ -8,6 +8,7 @@ import {
 import { badRequest, requirePermission, isValidSlug, serverError } from "@/app/api/admin/_shared/auth";
 import { sendNotificationToAll } from "@/server/lib/push-notification-service";
 import { recordAuditEvent } from "@/server/db/audit-repository";
+import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 
 // Forzamos que el listado de noticias en el panel siempre sea fresco
 export const dynamic = 'force-dynamic';
@@ -63,9 +64,10 @@ export async function POST(req: NextRequest) {
     try {
       await sendNotificationToAll(
         {
-          title: "Nueva noticia: " + body.title,
-          body: body.description || body.title,
+          title: "Hay una nueva historia en IAM Paraná",
+          body: `${body.title}${body.description ? ` — ${body.description}` : ""}`.slice(0, 180),
           icon: "/icon-192x192.png",
+          image: getGoogleDriveImageUrl(body.image) || "/assets/header/logoiam.jpg",
           tag: `noticia-${slug}`,
           data: {
             url: `/noticias/${slug}`,

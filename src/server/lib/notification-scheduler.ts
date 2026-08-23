@@ -64,22 +64,29 @@ export async function checkAndSendEventNotifications(): Promise<{ sent: number; 
         const alreadySent = await getNotificationSentByEventType(notificationType, evento.id);
         
         if (!alreadySent) {
+          let title = "";
           let message = "";
           if (notificationType === "event_7days") {
-            message = `Faltan 7 días para: ${evento.evento}`;
+            title = "Se acerca un encuentro de IAM Paraná";
+            message = `${evento.evento} es dentro de una semana. Guardá la fecha.`;
           } else if (notificationType === "event_1day") {
-            message = `¡Mañana es: ${evento.evento}!`;
+            title = "¡Mañana nos encontramos!";
+            message = `Te esperamos en ${evento.evento}. Revisá los detalles en el calendario.`;
           } else if (notificationType === "event_today") {
-            message = `¡Hoy es: ${evento.evento}!`;
+            title = "¡Es hoy!";
+            message = `${evento.evento} comienza hoy. ¡Nos vemos!`;
           }
 
           const sent = await sendNotificationToAll(
             {
-              title: "Recordatorio de Evento",
+              title,
               body: message,
               icon: "/icon-192x192.png",
               badge: "/icon-192x192.png",
+              image: "/assets/header/logoiam.jpg",
+              tag: `${notificationType}-${evento.id}`,
               data: {
+                url: "/calendario",
                 eventId: String(evento.id),
                 eventName: evento.evento,
               },

@@ -16,6 +16,7 @@ interface PushNotificationPayload {
   body: string;
   icon?: string;
   badge?: string;
+  image?: string;
   tag?: string;
   data?: Record<string, string>;
 }
@@ -55,6 +56,7 @@ async function sendPushNotification(
       body: payload.body,
       icon: payload.icon || "/icon-192x192.png",
       badge: payload.badge || "/icon-192x192.png",
+      image: payload.image,
       tag: payload.tag || "default",
       data: payload.data || {},
     });

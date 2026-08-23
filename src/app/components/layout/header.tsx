@@ -107,7 +107,7 @@ const Header: React.FC = () => {
         <div className="relative z-[70] flex items-center">
           <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Image
-              src="/assets/header/logoiam2.jpg"
+              src="/assets/header/logoiam2.png"
               alt="IAM Paraná"
               width={44} height={44}
               priority
