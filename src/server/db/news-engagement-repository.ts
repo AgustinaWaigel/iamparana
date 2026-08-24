@@ -101,6 +101,27 @@ export async function createNewsComment(slug: string, userId: number, content: s
   });
 }
 
+export async function canCreateNewsComment(slug: string, userId: number, content: string) {
+  await ensureNewsEngagementSchema();
+  const result = await clientOrThrow().execute({
+    sql: `SELECT
+            EXISTS(
+              SELECT 1 FROM news_comments
+              WHERE user_id = ? AND created_at >= DATETIME('now', '-15 seconds')
+            ) AS too_fast,
+            EXISTS(
+              SELECT 1 FROM news_comments
+              WHERE news_slug = ? AND user_id = ? AND LOWER(TRIM(content)) = LOWER(TRIM(?))
+                AND created_at >= DATETIME('now', '-10 minutes')
+            ) AS duplicate_comment`,
+    args: [userId, slug, userId, content],
+  });
+  return {
+    tooFast: Number(result.rows[0]?.too_fast || 0) === 1,
+    duplicate: Number(result.rows[0]?.duplicate_comment || 0) === 1,
+  };
+}
+
 export async function deleteNewsComment(commentId: number, userId: number, canModerate: boolean) {
   await ensureNewsEngagementSchema();
   const client = clientOrThrow();

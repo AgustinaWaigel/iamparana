@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/app/api/admin/_shared/auth";
-import { createNewsComment, deleteNewsComment, getNewsEngagement, toggleNewsLike } from "@/server/db/news-engagement-repository";
+import { canCreateNewsComment, createNewsComment, deleteNewsComment, getNewsEngagement, toggleNewsLike } from "@/server/db/news-engagement-repository";
+import { moderateComment } from "@/server/lib/comment-moderation";
 
 type Context = { params: Promise<{ slug: string }> };
 
@@ -39,6 +40,19 @@ export async function POST(req: NextRequest, { params }: Context) {
       const content = typeof body.content === "string" ? body.content.trim() : "";
       if (!content || content.length > 1000) {
         return NextResponse.json({ error: "El comentario debe tener entre 1 y 1000 caracteres" }, { status: 400 });
+      }
+
+      const moderation = moderateComment(content);
+      if (!moderation.allowed) {
+        return NextResponse.json({ error: moderation.message }, { status: 422 });
+      }
+
+      const commentGuard = await canCreateNewsComment(slug, user.id, content);
+      if (commentGuard.tooFast) {
+        return NextResponse.json({ error: "Esperá unos segundos antes de publicar otro comentario." }, { status: 429 });
+      }
+      if (commentGuard.duplicate) {
+        return NextResponse.json({ error: "Ese comentario ya fue publicado." }, { status: 409 });
       }
       await createNewsComment(slug, user.id, content);
       return NextResponse.json({ success: true }, { status: 201 });

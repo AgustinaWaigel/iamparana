@@ -7,6 +7,7 @@ import { BackButton } from '@/app/components/common/back-button';
 import { PushNotificationsProvider } from '@/app/components/providers/push-notifications-provider';
 import { Bricolage_Grotesque, Hanken_Grotesk } from 'next/font/google';
 import { PresenceHeartbeat } from '@/app/components/common/presence-heartbeat';
+import { ChatAssistant } from '@/app/components/common/chat-assistant';
 
 const displayFont = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -97,6 +98,7 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <PushNotificationsProvider />
         <PresenceHeartbeat />
+        <ChatAssistant />
       </body>
     </html>
   );

@@ -1,14 +1,36 @@
 "use client";
 
-import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Loader2, Send, Square, User, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
-type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+const FORBIN_IMAGE = "/uploads/forbincito.jpg";
+
+type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
+
+function MessageContent({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+        h1: ({ children }) => <p className="mb-2 font-semibold">{children}</p>,
+        h2: ({ children }) => <p className="mb-2 font-semibold">{children}</p>,
+        h3: ({ children }) => <p className="mb-2 font-semibold">{children}</p>,
+        ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
+        ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>,
+        a: ({ href = "", children }) => {
+          const external = /^https?:\/\//.test(href);
+          return <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="font-medium text-blue-600 hover:underline dark:text-blue-400">{children}</a>;
+        },
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
 
 export function ChatAssistant() {
   const pathname = usePathname();
@@ -18,218 +40,122 @@ export function ChatAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanInput = input.trim();
+  async function sendMessage(text: string) {
+    const cleanInput = text.trim();
     if (!cleanInput || isLoading) return;
 
-    const userMessage: ChatMessage = {
-      id: `${Date.now()}-user`,
-      role: "user",
-      content: cleanInput,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const timestamp = Date.now();
+    const userMessage: ChatMessage = { id: `${timestamp}-user`, role: "user", content: cleanInput };
+    const assistantId = `${timestamp}-assistant`;
+    const conversation = [...messages, userMessage];
+    setMessages([...conversation, { id: assistantId, role: "assistant", content: "" }]);
     setInput("");
     setIsLoading(true);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
+        body: JSON.stringify({ messages: conversation.map(({ role, content }) => ({ role, content })) }),
+        signal: controller.signal,
       });
-
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || `Error ${response.status}`);
       }
+      if (!response.body) throw new Error("No se pudo transmitir la respuesta.");
 
-      const assistantText = await response.text();
-      const assistantMessage: ChatMessage = {
-        id: `${Date.now()}-assistant`,
-        role: "assistant",
-        content: assistantText.trim(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        assistantText += decoder.decode(value, { stream: true });
+        setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: assistantText } : message));
+      }
+      assistantText += decoder.decode();
+      setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: assistantText.trim() || "No pude generar una respuesta." } : message));
     } catch (error) {
-      console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}-assistant`,
-          role: "assistant",
-          content: "Lo siento, no pude responder en este momento.",
-        },
-      ]);
+      if (controller.signal.aborted) {
+        setMessages((current) => current.map((message) => message.id === assistantId && !message.content ? { ...message, content: "Respuesta detenida." } : message));
+      } else {
+        console.error("Chat error:", error);
+        const errorMessage = error instanceof Error ? error.message : "No pude responder en este momento.";
+        setMessages((current) => current.map((message) => message.id === assistantId ? { ...message, content: errorMessage } : message));
+      }
     } finally {
+      abortControllerRef.current = null;
       setIsLoading(false);
     }
-  };
-
-  // Auto-scroll al final del chat
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
-
-  // Autofocus al abrir el widget
-  useEffect(() => {
-    if (isOpen) {
-      inputRef.current?.focus();
-    }
-  }, [isOpen]);
-
-  if (pathname !== '/') {
-    return null;
   }
 
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isLoading]);
+  useEffect(() => { if (isOpen) inputRef.current?.focus(); }, [isOpen]);
+  useEffect(() => () => abortControllerRef.current?.abort(), []);
+
+  if (pathname !== "/") return null;
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end sm:bottom-6 sm:right-6">
       {isOpen && (
-        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300">
-          
-          {/* Header */}
-          <div className="bg-primary/90 text-primary-foreground p-4 flex justify-between items-center backdrop-blur-md">
+        <div className="mb-3 flex h-[min(560px,calc(100dvh-7rem))] w-[calc(100vw-2rem)] max-w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-5 fade-in dark:border-slate-800/80 dark:bg-slate-950/95 sm:mb-4">
+          <div className="flex items-center justify-between bg-primary/90 p-4 text-primary-foreground">
             <div className="flex items-center gap-2">
-              <Bot className="w-6 h-6" />
-              <h3 className="font-semibold text-lg">Asistente IamParaná</h3>
+              <Image src={FORBIN_IMAGE} alt="Mons. Carlos Augusto Forbin-Janson" width={36} height={36} className="h-9 w-9 rounded-full border-2 border-white/70 object-cover object-[40%_35%]" />
+              <div><h3 className="font-semibold leading-tight">Forbincito</h3><p className="text-xs opacity-80">Asistente de IAM Paraná</p></div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-primary-foreground/80 hover:text-white transition-colors"
-              aria-label="Cerrar chat"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <button onClick={() => setIsOpen(false)} aria-label="Cerrar chat" className="opacity-80 transition-opacity hover:opacity-100"><X className="h-5 w-5" /></button>
           </div>
 
-          {/* Área de Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-5">
+          <div className="flex-1 space-y-5 overflow-y-auto p-4" aria-live="polite">
             {messages.length === 0 && (
-              <div className="text-center text-slate-700 dark:text-slate-300 mt-10 space-y-2">
-                <Bot className="w-12 h-12 mx-auto opacity-50" />
-                <p>¡Hola! Soy el asistente virtual.</p>
-                <p className="text-sm">
-                  Pregúntame sobre noticias, la agenda de eventos o documentos del sitio.
-                </p>
+              <div className="mt-8 space-y-3 text-center text-slate-700 dark:text-slate-300">
+                <Image src={FORBIN_IMAGE} alt="Forbincito" width={64} height={64} className="mx-auto h-16 w-16 rounded-full border-2 border-primary/30 object-cover object-[40%_35%] shadow-sm" />
+                <p>¡Hola! Soy Forbincito, el asistente virtual de IAM Paraná.</p>
+                <p className="text-sm">Podés preguntarme sobre la IAM, noticias y próximos eventos.</p>
+                <div className="flex flex-wrap justify-center gap-2 pt-2">
+                  {["¿Qué es la IAM?", "Próximos eventos", "Últimas noticias"].map((suggestion) => (
+                    <button key={suggestion} type="button" onClick={() => void sendMessage(suggestion)} className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10">{suggestion}</button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex gap-2 max-w-[85%] ${
-                  m.role === "user" ? "ml-auto flex-row-reverse" : ""
-                } mt-1 mb-1`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                  }`}
-                >
-                  {m.role === "user" ? (
-                    <User className="w-5 h-5" />
-                  ) : (
-                    <Bot className="w-5 h-5" />
-                  )}
+            {messages.map((message) => (
+              <div key={message.id} className={`flex max-w-[88%] gap-2 ${message.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
+                <div className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full ${message.role === "user" ? "bg-primary text-primary-foreground" : "border border-primary/30 bg-white"}`}>
+                  {message.role === "user" ? <User className="h-5 w-5" /> : <Image src={FORBIN_IMAGE} alt="Forbincito" width={32} height={32} className="h-full w-full object-cover object-[40%_35%]" />}
                 </div>
-
-                <div
-                  className={`p-3 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-sm shadow-sm"
-                      : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 rounded-tl-sm border border-slate-200 dark:border-slate-700 shadow-sm"
-                  }`}
-                >
-                  {m.content.split(/(\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s]+)/g).map((part, i) => {
-                    const mdLinkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-                    if (mdLinkMatch) {
-                      return (
-                        <a 
-                          key={i} 
-                          href={mdLinkMatch[2]} 
-                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                        >
-                          {mdLinkMatch[1]}
-                        </a>
-                      );
-                    }
-                    if (part.match(/^(https?:\/\/[^\s]+)$/)) {
-                      return (
-                        <a 
-                          key={i} 
-                          href={part} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                        >
-                          {part}
-                        </a>
-                      );
-                    }
-                    return <span key={i}>{part}</span>;
-                  })}
+                <div className={`whitespace-pre-wrap rounded-2xl p-3 text-sm leading-relaxed shadow-sm ${message.role === "user" ? "rounded-tr-sm bg-primary text-primary-foreground" : "rounded-tl-sm border border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"}`}>
+                  {message.content ? <MessageContent content={message.content} /> : <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Pensando...</span>}
                 </div>
               </div>
             ))}
-
-            {isLoading && (
-              <div className="flex gap-2 max-w-[85%] mt-1 mb-1">
-                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 rounded-tl-sm border border-slate-200 dark:border-slate-700 flex items-center gap-2 shadow-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Escribiendo...</span>
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Formulario e Input */}
-          <div className="p-4 bg-white/90 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800/80">
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
-              <input
-                ref={inputRef}
-                className="flex-1 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-full px-4 py-2 text-sm placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                value={input}
-                placeholder="Escribe tu mensaje..."
-                onChange={(e) => setInput(e.target.value)}
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="bg-primary text-primary-foreground p-2 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 flex items-center justify-center w-10 h-10 shadow-sm"
-                aria-label="Enviar"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4 -ml-0.5" />
-                )}
-              </button>
+          <div className="border-t border-slate-200 bg-white/90 p-4 dark:border-slate-800 dark:bg-slate-950/90">
+            <form onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }} className="flex items-center gap-2">
+              <input ref={inputRef} value={input} onChange={(event) => setInput(event.target.value)} maxLength={1500} disabled={isLoading} placeholder="Escribí tu mensaje..." aria-label="Mensaje" className="flex-1 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:ring-2 focus:ring-primary/50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+              {isLoading ? (
+                <button type="button" onClick={() => abortControllerRef.current?.abort()} aria-label="Detener respuesta" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Square className="h-4 w-4 fill-current" /></button>
+              ) : (
+                <button type="submit" disabled={!input.trim()} aria-label="Enviar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"><Send className="h-4 w-4" /></button>
+              )}
             </form>
           </div>
         </div>
       )}
-
-      {/* Botón Flotante */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-primary text-primary-foreground p-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 animate-in zoom-in group"
-          aria-label="Abrir asistente"
-        >
-          <MessageCircle className="w-7 h-7 group-hover:animate-pulse" />
+        <button onClick={() => setIsOpen(true)} aria-label="Abrir a Forbincito, creador de la IAM" className="group flex h-[76px] w-[76px] items-center justify-center rounded-full border border-white/40 bg-white/25 p-1.5 shadow-2xl backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/35 hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)] sm:h-[84px] sm:w-[84px]">
+          <span className="relative h-full w-full overflow-hidden rounded-full border-2 border-white/90 bg-white shadow-md">
+            <Image src={FORBIN_IMAGE} alt="" fill sizes="(min-width: 640px) 72px, 64px" priority className="scale-110 object-cover object-[39%_32%] transition-transform duration-200 group-hover:scale-[1.16]" />
+          </span>
         </button>
       )}
     </div>

@@ -20,7 +20,7 @@ export default function CarouselAdminTools({ compact = false }: CarouselAdminToo
           onClick={() => setIsOpen(true)}
           action="add"
           icon={Settings}
-          label="Gestionar Carrusel"
+          label=""
           compact={compact}
           className={`shadow-lg hover:shadow-xl ${compact ? "px-3 py-2" : "p-4"} ${compact ? "" : "rounded-full"}`}
         >

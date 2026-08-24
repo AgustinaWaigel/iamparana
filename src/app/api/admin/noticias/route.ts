@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     try {
       await sendNotificationToAll(
         {
-          title: "Hay una nueva historia en IAM Paraná",
+          title: "Hay una nueva noticia en IAM Paraná",
           body: `${body.title}${body.description ? ` — ${body.description}` : ""}`.slice(0, 180),
           icon: "/icon-192x192.png",
           image: getGoogleDriveImageUrl(body.image) || "/assets/header/logoiam.jpg",
