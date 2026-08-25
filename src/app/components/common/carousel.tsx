@@ -119,6 +119,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         alt: activeItem.alt,
         fill: true,
         sizes: "100vw",
+        quality: 70,
       }).props
     : null;
   const mobileImageProps = activeMobileUrl
@@ -127,11 +128,12 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         alt: activeItem.alt,
         fill: true,
         sizes: "100vw",
+        quality: 70,
       }).props
     : null;
 
   return (
-    <div className="group relative rounded-[20px] h-[120vw] sm:h-[33vw] overflow-hidden bg-stone-900 select-none">
+    <div className="group relative h-[min(118vw,620px)] min-h-[430px] overflow-hidden rounded-2xl bg-stone-900 select-none sm:h-[33vw] sm:min-h-0 sm:rounded-[20px]">
         {isAdmin && (
           <div className="absolute top-4 right-4 z-30">
             <CarouselAdminTools compact />
@@ -168,7 +170,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         {activeItem && (activeItem.title || activeItem.description || activeItem.link) && (
           <div
             key={displayActive}
-            className="absolute inset-x-0 bottom-0 z-20 p-6 sm:p-8 md:p-11 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700"
+            className="absolute inset-x-0 bottom-0 z-20 p-5 pb-8 sm:p-8 md:p-11 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700"
           >
             <div className="flex max-w-2xl flex-col items-start text-left pointer-events-auto">
               {activeItem.tag && (
@@ -178,12 +180,12 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
                 </span>
               )}
               {activeItem.title && (
-                <h1 className="m-0 mb-3 w-full text-left font-display text-[26px] sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.04] drop-shadow-sm text-balance">
+                <h1 className="m-0 mb-2 w-full text-left font-display text-[clamp(1.5rem,7vw,2rem)] sm:mb-3 sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.06] drop-shadow-sm text-balance">
                   {activeItem.title}
                 </h1>
               )}
               {activeItem.description && (
-                <p className="m-0 mb-5 w-full max-w-2xl text-left text-sm md:text-[15px] text-white/80 leading-relaxed">
+                <p className="m-0 mb-4 line-clamp-3 w-full max-w-2xl text-left text-sm leading-relaxed text-white/90 sm:mb-5 sm:line-clamp-none md:text-[15px]">
                   {activeItem.description}
                 </p>
               )}
@@ -207,7 +209,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               type="button"
               aria-label="Imagen anterior"
               onClick={() => handleManual(goPrev)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white/30 focus:outline-none"
+              className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus:outline-none sm:left-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
             >
               <ChevronLeft size={18} />
             </button>
@@ -215,13 +217,13 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               type="button"
               aria-label="Imagen siguiente"
               onClick={() => handleManual(goNext)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white/30 focus:outline-none"
+              className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus:outline-none sm:right-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
             >
               <ChevronRight size={18} />
             </button>
 
             {/* Indicadores con barra de progreso */}
-            <div className="absolute bottom-5 sm:bottom-7 right-6 sm:right-8 md:right-11 z-20 flex items-center gap-1.5">
+            <div className="absolute right-5 top-5 z-20 flex items-center gap-1.5 sm:bottom-7 sm:right-8 sm:top-auto md:right-11">
               {items.map((_, i) => (
                 <button
                   key={`dot-${i}`}

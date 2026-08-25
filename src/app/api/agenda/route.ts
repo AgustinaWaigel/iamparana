@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { 
+import {
   listAgendaEventos, 
   createAgendaEvento, 
   updateAgendaEvento, 
@@ -14,6 +14,7 @@ import {
   listCalendarAgendaEvents,
   updateCalendarAgendaEvent,
 } from "@/server/lib/google-calendar-service";
+import { checkAndSendEventNotification } from "@/server/lib/notification-scheduler";
 
 export const revalidate = 60;
 
@@ -91,6 +92,11 @@ export async function POST(req: NextRequest) {
         hora_fin,
         todo_el_dia,
       });
+      try {
+        await checkAndSendEventNotification(creado);
+      } catch (notificationError) {
+        console.warn("El evento se creó, pero no se pudo comprobar su notificación:", notificationError);
+      }
       revalidatePath("/");
       return NextResponse.json(creado, { status: 201 });
     }
@@ -105,6 +111,11 @@ export async function POST(req: NextRequest) {
       hora_fin,
       todo_el_dia
     );
+    try {
+      await checkAndSendEventNotification({ id, evento, fecha });
+    } catch (notificationError) {
+      console.warn("El evento se creó, pero no se pudo comprobar su notificación:", notificationError);
+    }
     revalidatePath("/");
     return NextResponse.json(
       { id, evento, fecha, fecha_fin, color, descripcion, hora_inicio, hora_fin, todo_el_dia },

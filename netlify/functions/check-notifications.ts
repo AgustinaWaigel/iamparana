@@ -44,6 +44,6 @@ export default async (req: any, context: any) => {
 };
 
 export const config = {
-  // 12:00 UTC = 09:00 en Argentina.
-  schedule: "0 12 * * *",
+  // 11:00 UTC = 08:00 en Argentina (UTC-3).
+  schedule: "0 11 * * *",
 };
