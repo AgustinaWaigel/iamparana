@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Check, FolderOpen, House } from 'lucide-react';
 
 const DRIVE_URL =
-  'https://drive.google.com/drive/folders/11kLMD29024YRVHAb8SkFZlPau8TRCJ0F?usp=drive_link';
+  'https://drive.google.com/drive/folders/11kLMD29024YRVHAb8SkFZlPau8TRCJ0F';
 
 export const metadata: Metadata = {
   title: 'Inscripción confirmada',

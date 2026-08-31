@@ -109,9 +109,9 @@ const Header: React.FC = () => {
             <Image
               src="/assets/header/logoiam2.png"
               alt="IAM Paraná"
-              width={44} height={44}
+              width={60} height={60}
               priority
-              className="h-10 w-10 shrink-0 object-contain drop-shadow sm:h-11 sm:w-11"
+              className="h-[52px] w-[52px] shrink-0 object-contain drop-shadow sm:h-[60px] sm:w-[60px]"
             />
             <span className="flex min-w-0 flex-col leading-none">
               <span className="font-display text-[15px] font-extrabold tracking-tight text-white sm:text-[19px]">
