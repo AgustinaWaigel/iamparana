@@ -24,7 +24,7 @@ export function BackButton() {
     if (
       parentSegments.length === 2 &&
       parentSegments[1] === 'recursos' &&
-      ['formacion', 'espiritualidad', 'comunicacion', 'logistica'].includes(parentSegments[0])
+      ['formacion', 'espiritualidad', 'comunicacion', 'logistica', 'institucional'].includes(parentSegments[0])
     ) {
       parentSegments = parentSegments.slice(0, -1);
     }

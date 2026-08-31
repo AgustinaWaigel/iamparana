@@ -3,7 +3,7 @@ import "server-only";
 import { getTursoClient } from "@/server/db/turso";
 
 export type UserRole = "admin" | "miembro" | "equipo" | "redactor" | "coordinador" | "animador";
-export type UserArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad";
+export type UserArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad" | "institucional";
 
 export type AuthUser = {
   id: number;
@@ -49,7 +49,7 @@ function toRole(value: unknown): UserRole {
 }
 
 function toAreas(value: unknown): UserArea[] {
-  const valid = new Set<UserArea>(["animacion", "comunicacion", "formacion", "logistica", "espiritualidad"]);
+  const valid = new Set<UserArea>(["animacion", "comunicacion", "formacion", "logistica", "espiritualidad", "institucional"]);
   return String(value || "").split(",").filter((area): area is UserArea => valid.has(area as UserArea));
 }
 

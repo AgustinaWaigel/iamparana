@@ -33,7 +33,7 @@ export async function PUT(
 
     // 3. Validaciones opcionales de campos
     const validRoles = ["admin", "miembro"];
-    const validAreas = ["animacion", "comunicacion", "formacion", "logistica", "espiritualidad"];
+    const validAreas = ["animacion", "comunicacion", "formacion", "logistica", "espiritualidad", "institucional"];
     if (role && !validRoles.includes(role)) {
       return badRequest("El rol proporcionado no es válido");
     }

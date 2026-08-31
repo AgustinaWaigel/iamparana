@@ -321,7 +321,7 @@ export default function UsuariosPage() {
               </div>
 
               <label className="flex items-center gap-2 text-sm font-semibold text-stone-700"><input type="checkbox" checked={editForm.isAnimator} onChange={(e) => setEditForm((prev) => ({ ...prev, isAnimator: e.target.checked }))} /> Es animador/a</label>
-              <div><p className="text-xs font-bold uppercase tracking-wide text-stone-500">Áreas que puede gestionar</p><div className="mt-2 grid grid-cols-2 gap-2">{['animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad'].map((area) => <label key={area} className="flex items-center gap-2 text-sm capitalize"><input type="checkbox" checked={editForm.areas.includes(area)} onChange={(e) => setEditForm((prev) => ({ ...prev, areas: e.target.checked ? [...prev.areas, area] : prev.areas.filter((item) => item !== area) }))} />{area}</label>)}</div></div>
+              <div><p className="text-xs font-bold uppercase tracking-wide text-stone-500">Áreas que puede gestionar</p><div className="mt-2 grid grid-cols-2 gap-2">{['animacion', 'comunicacion', 'formacion', 'logistica', 'espiritualidad', 'institucional'].map((area) => <label key={area} className="flex items-center gap-2 text-sm capitalize"><input type="checkbox" checked={editForm.areas.includes(area)} onChange={(e) => setEditForm((prev) => ({ ...prev, areas: e.target.checked ? [...prev.areas, area] : prev.areas.filter((item) => item !== area) }))} />{area}</label>)}</div></div>
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wide text-stone-500">Nueva contraseña (opcional)</label>

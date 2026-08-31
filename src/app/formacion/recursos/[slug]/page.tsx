@@ -22,7 +22,13 @@ const TEMPLATE_MAP: Record<string, any> = {
     border: "border-blue-200",
     cardHover: "hover:border-blue-400 hover:shadow-blue-100",
   },
-  // ... puedes seguir extendiendo ocean y earth con esta misma lógica
+  earth: {
+    banner: "bg-gradient-to-br from-stone-900 to-amber-900",
+    accent: "text-amber-800",
+    bgAccent: "bg-amber-50",
+    border: "border-amber-300",
+    cardHover: "hover:border-amber-400 hover:shadow-amber-100",
+  },
 };
 
 export default async function ResourcePage({ params }: { params: Promise<{ slug: string }> }) {

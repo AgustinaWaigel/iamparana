@@ -11,7 +11,7 @@ export type Permission =
   | "users.manage"
   | "comments.moderate";
 
-export type ManagedArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad";
+export type ManagedArea = "animacion" | "comunicacion" | "formacion" | "logistica" | "espiritualidad" | "institucional";
 
 const AREA_ALIASES: Record<string, ManagedArea> = {
   animacion: "animacion", juegos: "animacion", recursos: "animacion", canciones: "animacion",
@@ -19,6 +19,7 @@ const AREA_ALIASES: Record<string, ManagedArea> = {
   formacion: "formacion",
   logistica: "logistica", presupuestos: "logistica", rendiciones: "logistica", inventario: "logistica",
   espiritualidad: "espiritualidad", oraciones: "espiritualidad", guiones: "espiritualidad",
+  institucional: "institucional",
 };
 
 export function resolveManagedArea(value: unknown): ManagedArea | null {
@@ -98,7 +99,10 @@ export async function requireAreaWrite(areaValue: unknown) {
   const user = await getSessionUser();
   if (!user) return { errorResponse: unauthorized() };
   const area = resolveManagedArea(areaValue);
+  // Las subsecciones de páginas de recursos usan claves internas `rp:...`.
+  // El administrador puede gestionarlas aunque no correspondan a un alias de área directo.
+  if (user.role === "admin") return { user, area };
   if (!area) return { errorResponse: badRequest("Área inválida") };
-  if (user.role === "admin" || user.areas.includes(area)) return { user, area };
+  if (user.areas.includes(area)) return { user, area };
   return { errorResponse: forbidden() };
 }
