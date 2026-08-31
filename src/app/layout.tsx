@@ -8,6 +8,7 @@ import { PushNotificationsProvider } from '@/app/components/providers/push-notif
 import { Bricolage_Grotesque, Hanken_Grotesk } from 'next/font/google';
 import { PresenceHeartbeat } from '@/app/components/common/presence-heartbeat';
 import { ChatAssistant } from '@/app/components/common/chat-assistant';
+import { Analytics } from '@vercel/analytics/next';
 
 const displayFont = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -99,6 +100,7 @@ export default function RootLayout({
         <PushNotificationsProvider />
         <PresenceHeartbeat />
         <ChatAssistant />
+        <Analytics />
       </body>
     </html>
   );
