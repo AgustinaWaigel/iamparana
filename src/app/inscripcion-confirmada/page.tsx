@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Check, FolderOpen, House } from 'lucide-react';
 
 const DRIVE_URL =
-  'https://drive.google.com/drive/folders/11kLMD29024YRVHAb8SkFZlPau8TRCJ0F';
-
+  'https://drive.google.com/drive/folders/11kLMD29024YRVHAb8SkFZlPau8TRCJ0Fhttps://drive.google.com/file/d/1eXwQyyVbB5hHLEESDsmEp4J_Ly6VNRE_/view?usp=sharing
 export const metadata: Metadata = {
   title: 'Inscripción confirmada',
   description: 'Confirmación de inscripción al evento de IAM Paraná.',
