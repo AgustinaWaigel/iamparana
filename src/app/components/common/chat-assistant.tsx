@@ -119,7 +119,6 @@ export function ChatAssistant() {
     <div className={`fixed z-[1200] flex flex-col items-end ${isOpen ? "inset-0 sm:inset-auto sm:bottom-6 sm:right-6" : "bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 sm:bottom-6 sm:right-6"}`}>
       {isOpen && (
         <>
-          <button type="button" aria-label="Cerrar chat" onClick={() => setIsOpen(false)} className="absolute inset-0 hidden bg-black/30 backdrop-blur-[2px] sm:block" />
           <section role="dialog" aria-modal="true" aria-labelledby="forbincito-title" className="relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdf9] shadow-2xl animate-in slide-in-from-bottom-5 fade-in sm:mb-4 sm:h-[min(620px,calc(100dvh-3rem))] sm:w-[min(400px,calc(100vw-3rem))] sm:rounded-3xl sm:border sm:border-amber-950/10">
           <div className="flex shrink-0 items-center justify-between bg-gradient-to-r from-[#622d0d] to-[#8a4518] px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white sm:p-4">
             <div className="flex items-center gap-2">
@@ -170,8 +169,8 @@ export function ChatAssistant() {
         </>
       )}
       {!isOpen && (
-        <button onClick={() => setIsOpen(true)} aria-label="Abrir a Forbincito, creador de la IAM" className="group flex h-[76px] w-[76px] items-center justify-center rounded-full border border-white/40 bg-white/25 p-1.5 shadow-2xl backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:bg-white/35 hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)] sm:h-[84px] sm:w-[84px]">
-          <span className="relative h-full w-full overflow-hidden rounded-full border-2 border-white/90 bg-white shadow-md">
+        <button onClick={() => setIsOpen(true)} aria-label="Abrir a Forbincito, creador de la IAM" className="group isolate flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white [clip-path:circle(50%)] outline-none transition duration-200 hover:-translate-y-0.5 sm:h-[84px] sm:w-[84px]">
+          <span className="relative h-full w-full overflow-hidden rounded-full bg-white">
             <Image src={FORBIN_IMAGE} alt="" fill sizes="(min-width: 640px) 72px, 64px" priority className="scale-110 object-cover object-[39%_32%] transition-transform duration-200 group-hover:scale-[1.16]" />
           </span>
         </button>

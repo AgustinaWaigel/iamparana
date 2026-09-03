@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Formación',
     description: 'Materiales y propuestas de formación para animadores de IAM Paraná.',
-    url: 'https://iamparana.com.ar/formacion',
-    images: [{ url: 'https://iamparana.com.ar/logoiam.jpg', alt: 'Logo IAM Paraná', width: 800, height: 600 }],
+    url: 'https://iamparana.com/formacion',
+    images: [{ url: 'https://iamparana.com/logoiam.jpg', alt: 'Logo IAM Paraná', width: 800, height: 600 }],
     type: 'website',
   },
   icons: { icon: '/assets/resources/favicon.ico' },

@@ -17,7 +17,7 @@ export async function generateMetadata() {
       description: "Consultá las fechas de nuestras próximas actividades y encuentros.",
       // Esta página es la vista pública del calendario completo.
       // Además de mostrar los eventos, ofrece un acceso directo al Google Calendar oficial.
-      url: "https://iamparana.com.ar/calendario",
+      url: "https://iamparana.com/calendario",
       siteName: "IAM Paraná",
       locale: "es_AR",
       type: "website",

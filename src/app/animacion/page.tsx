@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Animación - IAM Paraná',
     description: 'Juegos, canciones, dinámicas y recursos para animar encuentros de IAM Paraná.',
-    url: 'https://iamparana.com.ar/animacion',
-    images: [{ url: 'https://iamparana.com.ar/logoiam.jpg' }],
+    url: 'https://iamparana.com/animacion',
+    images: [{ url: 'https://iamparana.com/logoiam.jpg' }],
     type: 'website',
   },
 };

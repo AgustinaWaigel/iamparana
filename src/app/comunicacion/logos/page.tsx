@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Logos',
     description: 'Logos para tus encuentros',
-    url: 'https://iamparana.com.ar/comunicacion/logos',
+    url: 'https://iamparana.com/comunicacion/logos',
     images: [
       {
-        url: 'https://iamparana.com.ar/logoiam.jpg',
+        url: 'https://iamparana.com/logoiam.jpg',
         alt: 'Logo IAM Paraná',
         width: 800,
         height: 600,

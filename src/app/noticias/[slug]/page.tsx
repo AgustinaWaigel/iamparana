@@ -212,7 +212,7 @@ export default async function NoticiaPage(props: Props) {
           <ul className="flex justify-center gap-5 items-center">
             <li>
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://iamparana.com.ar/noticias/${params.slug}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=https://iamparana.com/noticias/${params.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
@@ -227,7 +227,7 @@ export default async function NoticiaPage(props: Props) {
             </li>
             <li>
               <a
-                href={`https://api.whatsapp.com/send?text=¡Mirá esta noticia! https://iamparana.com.ar/noticias/${params.slug}`}
+                href={`https://api.whatsapp.com/send?text=¡Mirá esta noticia! https://iamparana.com/noticias/${params.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"

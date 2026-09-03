@@ -369,6 +369,38 @@ export async function getDocumentsBySections(sections: string[]) {
   return result.rows;
 }
 
+export async function listResourcesForAssistant() {
+  const client = clientOrThrow();
+  const result = await client.execute({
+    sql: `SELECT kind, section, title, description, url, file_type
+          FROM (
+            SELECT 'document' AS kind, section, title, description,
+                   google_drive_url AS url, file_type, created_at
+            FROM documents
+            WHERE google_drive_url IS NOT NULL AND TRIM(google_drive_url) <> ''
+
+            UNION ALL
+
+            SELECT 'link' AS kind, section, title, description,
+                   url, 'Enlace' AS file_type, created_at
+            FROM links
+            WHERE url IS NOT NULL AND TRIM(url) <> ''
+
+            UNION ALL
+
+            SELECT 'resource-page' AS kind, section, title, description,
+                   '/' || section || '/recursos/' || slug AS url,
+                   'Página de recursos' AS file_type, created_at
+            FROM resource_pages
+          )
+          ORDER BY created_at DESC
+          LIMIT 150`,
+    args: [],
+  });
+
+  return result.rows;
+}
+
 export async function getAreaLandingContent(area: string, documentSections: string[]) {
   const client = clientOrThrow();
   const normalized = documentSections.map((item) => item.trim()).filter(Boolean);

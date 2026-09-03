@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Canciones - IAM Paraná",
     description: "Buscá tus canciones favoritas de la IAM y aprendé los acordes.",
-    url: "https://iamparana.com.ar/animacion/canciones",
+    url: "https://iamparana.com/animacion/canciones",
     images: [
       {
-        url: "https://iamparana.com.ar/assets/header/LOGOIAMPNA.svg",
+        url: "https://iamparana.com/assets/header/LOGOIAMPNA.svg",
         alt: "Logo IAM Paraná",
         width: 800,
         height: 600,

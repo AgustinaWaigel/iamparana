@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Espiritualidad",
     description: "Oraciones, guiones litúrgicos y recursos para profundizar en la espiritualidad",
-    url: "https://iamparana.com.ar/espiritualidad",
+    url: "https://iamparana.com/espiritualidad",
     images: [
       {
-        url: "https://iamparana.com.ar/logoiam.jpg",
+        url: "https://iamparana.com/logoiam.jpg",
         alt: "Logo IAM Paraná",
         width: 800,
         height: 600,

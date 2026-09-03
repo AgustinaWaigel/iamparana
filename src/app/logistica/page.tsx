@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Logística",
     description: "Resumen de gastos y transparencia en eventos realizados",
-    url: "https://iamparana.com.ar/logistica",
+    url: "https://iamparana.com/logistica",
     images: [
       {
-        url: "https://iamparana.com.ar/logoiam.jpg",
+        url: "https://iamparana.com/logoiam.jpg",
         alt: "Logo IAM Paraná",
         width: 800,
         height: 600,
