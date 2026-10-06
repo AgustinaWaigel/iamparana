@@ -17,24 +17,26 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <div className={className}>
-      <div className="relative group flex items-center bg-white rounded-full border border-stone-200 shadow-sm transition-all focus-within:border-amber-400 focus-within:ring-4 focus-within:ring-amber-400/20 focus-within:shadow-md px-4 py-3">
+      <div className="relative group flex items-center bg-white rounded-full border border-stone-300 shadow-sm transition-all hover:border-stone-400 focus-within:border-brand-brown focus-within:ring-4 focus-within:ring-brand-gold/25 focus-within:shadow-md px-4 py-3">
         <Search
           size={18}
-          className="text-stone-400 group-focus-within:text-amber-700 transition-colors shrink-0"
+          aria-hidden
+          className="text-stone-500 group-focus-within:text-brand-brown transition-colors shrink-0"
         />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent border-none text-stone-700 placeholder:text-stone-400 focus:outline-none ml-3 text-[15px]"
+          aria-label={placeholder}
+          className="w-full min-w-0 bg-transparent border-none text-brand-ink placeholder:text-stone-500 focus:outline-none ml-3 text-base sm:text-[15px]"
         />
         {value && (
           <button
             type="button"
             onClick={() => onChange('')}
             aria-label="Limpiar búsqueda"
-            className="p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+            className="-mr-1 p-1.5 rounded-full text-stone-500 hover:text-brand-ink hover:bg-stone-100 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-brown"
           >
             <X size={16} />
           </button>

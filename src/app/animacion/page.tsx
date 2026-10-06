@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Quote } from 'lucide-react';
-import { Gamepad2, Music2 } from 'lucide-react';
-import { HeroSection } from '@/app/components/common/hero-section';
+import { ArrowRight, Gamepad2, Music2 } from 'lucide-react';
+import { AreaHero } from '@/app/components/common/area-hero';
+import { AreaQuote } from '@/app/components/common/area-quote';
 import { AnimacionClient } from '@/app/animacion/components/animacion-client';
 import { AnimacionCardsGrid } from '@/app/animacion/components/animacion-cards-grid';
 import { getAreaLandingContent } from '@/server/db/admin-repository';
@@ -85,73 +85,61 @@ export default async function AnimacionPage() {
 
   return (
     <AnimacionClient>
-      <section>
-        <HeroSection
+      <div className="min-h-screen bg-brand-paper">
+        <AreaHero
+          area="animacion"
           title="Animación"
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(20, 83, 45, 0.65), rgba(22, 163, 74, 0.8)"
-          gradientClass="from-green-900 via-green-800 to-emerald-700"
           description="Aquí podrás acceder a recursos, juegos, cancionero y material actualizado para encuentros con niños y adolescentes."
-          textColor="text-white"
-        />
-      </section>
-
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <section className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-          <Link
-            href="/animacion/juegos"
-            className="no-underline rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-100 p-5 hover:shadow-md transition-all"
-          >
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white mb-3">
-              <Gamepad2 size={18} />
-            </div>
-            <h2 className="text-xl font-black text-emerald-900">Juegos</h2>
-            <p className="mt-2 text-sm text-emerald-900/80">
-              Dinámicas, propuestas y actividades para encuentros.
-            </p>
-          </Link>
-
-          <Link
-            href="/animacion/canciones"
-            className="no-underline rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-100 p-5 hover:shadow-md transition-all"
-          >
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white mb-3">
-              <Music2 size={18} />
-            </div>
-            <h2 className="text-xl font-black text-emerald-900">Canciones</h2>
-            <p className="mt-2 text-sm text-emerald-900/80">
-              Accedé al cancionero con letras y acordes para animar.
-            </p>
-          </Link>
-
-        </section>
-
-        <section className="mb-4">
-          <h2 className="text-2xl md:text-3xl font-black text-emerald-900">Recursos subidos</h2>
-          <p className="text-emerald-900/80 mt-1">
-            Buscá y abrí rápidamente materiales, enlaces y páginas de apoyo.
-          </p>
-        </section>
-
-        <AnimacionCardsGrid
-          uploadedDocuments={uploadedDocuments}
-          uploadedLinks={uploadedLinks}
-          resourcePages={resourcePages}
         />
 
-        <section className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-700 p-10 md:p-14 rounded-3xl shadow-lg text-center">
-          <Quote size={120} className="absolute text-white/5 -top-4 -left-4 -rotate-12" />
-          <div className="relative z-[5] max-w-4xl mx-auto">
-            <p className="text-2xl md:text-4xl font-bold text-green-300 leading-snug italic mb-6">
-              &ldquo;Cantar, jugar y rezar con alegría también es una forma de anunciar a Jesús.&rdquo;
-            </p>
-            <div className="w-16 h-1 bg-green-400 mx-auto mb-4 rounded-full" />
-            <p className="text-lg md:text-xl text-white font-semibold uppercase tracking-widest">
-              IAM Paraná
-            </p>
-          </div>
-        </section>
-      </main>
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <section aria-label="Accesos rápidos" className="mb-12 grid grid-cols-1 gap-4 sm:mb-16 md:grid-cols-2 md:gap-5">
+            <Link
+              href="/animacion/juegos"
+              className="group flex items-center gap-4 rounded-2xl bg-emerald-700 p-5 text-white no-underline shadow-[0_14px_30px_-18px_rgba(6,78,59,0.7)] transition-[transform,background-color] duration-300 ease-out hover:-translate-y-0.5 hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800 motion-reduce:transform-none sm:gap-5 sm:p-6"
+            >
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                <Gamepad2 size={28} strokeWidth={1.75} aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="m-0 text-left font-display text-2xl font-extrabold leading-tight text-white">Juegos</h2>
+                <p className="m-0 mt-1 max-w-none text-left text-sm leading-relaxed text-emerald-50 sm:text-base">
+                  Dinámicas, propuestas y actividades para encuentros.
+                </p>
+              </div>
+              <ArrowRight size={22} className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none" aria-hidden />
+            </Link>
+
+            <Link
+              href="/animacion/canciones"
+              className="group flex items-center gap-4 rounded-2xl bg-emerald-900 p-5 text-white no-underline shadow-[0_14px_30px_-18px_rgba(6,78,59,0.7)] transition-[transform,background-color] duration-300 ease-out hover:-translate-y-0.5 hover:bg-emerald-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800 motion-reduce:transform-none sm:gap-5 sm:p-6"
+            >
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                <Music2 size={28} strokeWidth={1.75} aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="m-0 text-left font-display text-2xl font-extrabold leading-tight text-white">Canciones</h2>
+                <p className="m-0 mt-1 max-w-none text-left text-sm leading-relaxed text-emerald-50 sm:text-base">
+                  Accedé al cancionero con letras y acordes para animar.
+                </p>
+              </div>
+              <ArrowRight size={22} className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none" aria-hidden />
+            </Link>
+          </section>
+
+          <AnimacionCardsGrid
+            uploadedDocuments={uploadedDocuments}
+            uploadedLinks={uploadedLinks}
+            resourcePages={resourcePages}
+          />
+
+          <AreaQuote
+            quote="Cantar, jugar y rezar con alegría también es una forma de anunciar a Jesús."
+            author="IAM Paraná"
+            accentClass="text-green-300"
+          />
+        </div>
+      </div>
     </AnimacionClient>
   );
 }

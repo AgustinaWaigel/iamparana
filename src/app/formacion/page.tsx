@@ -1,11 +1,11 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { Quote } from 'lucide-react';
 
 // Componentes
 import { FormacionClient } from '@/app/formacion/components/formacion-client';
 import { FormacionCardsGrid } from './components/formacion-cards-grid';
-import { HeroSection } from '@/app/components/common/hero-section';
+import { AreaHero } from '@/app/components/common/area-hero';
+import { AreaQuote } from '@/app/components/common/area-quote';
 
 // Base de Datos
 import { getAreaLandingContent } from '@/server/db/admin-repository';
@@ -75,37 +75,27 @@ export default async function FormacionPage() {
 
   return (
     <FormacionClient>
-      <section>
-        <HeroSection
+      <div className="min-h-screen bg-brand-paper">
+        <AreaHero
+          area="formacion"
           title="Formación"
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(253, 224, 71, 0.7), rgba(250, 204, 21, 0.75)"
-          gradientClass="from-yellow-600 to-yellow-500"
           description="Aquí podrás acceder a todos los recursos: presentaciones de talleres, el temario del año, la carta del Papa y mucho más."
-          textColor="text-brand-brown"
-        />
-      </section>
-
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <FormacionCardsGrid 
-          uploadedDocuments={uploadedDocuments} 
-          uploadedLinks={uploadedLinks} 
-          resourcePages={resourcePages} 
         />
 
-        <section className="relative overflow-hidden bg-brand-brown p-10 md:p-14 rounded-3xl shadow-lg text-center">
-          <Quote size={120} className="absolute text-white/5 -top-4 -left-4 -rotate-12" />
-          <div className="relative z-5 max-w-4xl mx-auto">
-            <p className="text-2xl md:text-4xl font-bold text-yellow-300 leading-snug italic mb-6">
-              &ldquo;Mi caminito es el camino de una infancia espiritual, el camino de la confianza y de la entrega absoluta.&rdquo;
-            </p>
-            <div className="w-16 h-1 bg-yellow-400 mx-auto mb-4 rounded-full" />
-            <p className="text-lg md:text-xl text-white font-semibold uppercase tracking-widest">
-              Santa Teresita
-            </p>
-          </div>
-        </section>
-      </main>
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <FormacionCardsGrid 
+            uploadedDocuments={uploadedDocuments} 
+            uploadedLinks={uploadedLinks} 
+            resourcePages={resourcePages} 
+          />
+
+          <AreaQuote
+            quote="Mi caminito es el camino de una infancia espiritual, el camino de la confianza y de la entrega absoluta."
+            author="Santa Teresita"
+            accentClass="text-yellow-300"
+          />
+        </div>
+      </div>
     </FormacionClient>
   );
 }

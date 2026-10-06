@@ -189,6 +189,7 @@ const Header: React.FC = () => {
             </li>
 
             <li className="w-full md:w-auto"><Link href="/noticias" className={navItemClass('/noticias')}>Noticias</Link></li>
+            <li className="w-full md:w-auto"><Link href="/inscripciones" className={navItemClass('/inscripciones')}>Inscripciones</Link></li>
 
             {/* --- MENÚ DE USUARIO --- */}
             {!isLoading && (

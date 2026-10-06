@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata, Viewport } from "next";
-import { HeroSection } from "@/app/components/common/hero-section";
+import { AreaHero } from '@/app/components/common/area-hero';
 
 // Componentes
 import { LogisticaClient } from "@/app/logistica/components/logistica-client";
@@ -94,24 +94,21 @@ export default async function Logistica() {
 
   return (
     <LogisticaClient>
-      <section>
-        <HeroSection
+      <div className="min-h-screen bg-brand-paper">
+        <AreaHero
+          area="logistica"
           title="Logística"
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(220, 38, 38, 0.7), rgba(239, 68, 68, 0.75)"
-          gradientClass="from-red-600 to-red-500"
           description="Es muy importante manejarse con transparencia. Aquí vas a poder encontrar los resúmenes de ingresos-egresos de los distintos eventos que hemos realizado."
-          textColor="text-white"
         />
-      </section>
 
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <LogisticaCardsGrid
-          uploadedDocuments={uploadedDocuments}
-          uploadedLinks={uploadedLinks}
-          resourcePages={resourcePages}
-        />
-      </main>
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <LogisticaCardsGrid
+            uploadedDocuments={uploadedDocuments}
+            uploadedLinks={uploadedLinks}
+            resourcePages={resourcePages}
+          />
+        </div>
+      </div>
     </LogisticaClient>
   );
 }

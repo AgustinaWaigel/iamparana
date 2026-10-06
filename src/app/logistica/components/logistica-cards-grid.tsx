@@ -1,10 +1,9 @@
 'use client';
+
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, FileText, GraduationCap, Link as LinkIcon, Pencil, Trash2, SearchX } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
-import { SearchBar } from '@/app/components/common/search-bar';
+import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
-import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 
 // --- TYPES ---
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
@@ -33,14 +32,6 @@ interface LogisticaCardsGridProps {
   uploadedDocuments: UploadedDocument[];
   uploadedLinks: UploadedLink[];
   resourcePages: ResourcePageCard[];
-}
-
-function isValidImageSource(value?: string | null): boolean {
-  if (!value) return false;
-  const src = value.trim().toLowerCase();
-  if (!src) return false;
-  if (src.startsWith('/')) return true;
-  return src.startsWith('http://') || src.startsWith('https://');
 }
 
 // --- MAIN COMPONENT ---
@@ -245,45 +236,29 @@ export function LogisticaCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   // --- RENDER ---
   return (
     <>
-      <div className="mb-8 md:mb-10 max-w-2xl mx-auto">
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Buscar documentos, informes o enlaces..."
-        />
-        <div className="mt-3 text-center text-xs font-semibold text-stone-500">
-          Mostrando {filteredCards.length} {filteredCards.length === 1 ? 'resultado' : 'resultados'}
-        </div>
-      </div>
+      <ResourceToolbar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        placeholder="Buscar documentos, informes o enlaces..."
+        resultCount={filteredCards.length}
+      />
 
       {filteredCards.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-          {filteredCards.map((card) => (
-            <ResourceCard 
-              key={card.id} 
-              card={card} 
-              isAdmin={isAdmin} 
-              onEdit={() => openEditModal(card)} 
-              onDelete={() => openDeleteModal(card)} 
+        <ResourceGrid>
+          {filteredCards.map((card, index) => (
+            <ResourceCard
+              key={card.id}
+              card={card}
+              area="logistica"
+              index={index}
+              isAdmin={isAdmin}
+              onEdit={() => openEditModal(card)}
+              onDelete={() => openDeleteModal(card)}
             />
           ))}
-        </div>
+        </ResourceGrid>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-stone-100 shadow-sm mb-16">
-          <div className="bg-red-50 p-4 rounded-full mb-4">
-            <SearchX size={40} className="text-red-700" />
-          </div>
-          <h3 className="text-xl font-bold text-red-700 mb-2">No encontramos nada</h3>
-          <p className="text-stone-500 max-w-sm">
-            No hay recursos que coincidan con &quot;{searchTerm}&quot;. Intenta con otras palabras clave.
-          </p>
-          <button 
-            onClick={() => setSearchTerm('')} 
-            className="mt-6 font-semibold text-red-800 hover:text-red-900 underline decoration-red-300 underline-offset-4"
-          >
-            Limpiar búsqueda
-          </button>
-        </div>
+        <ResourceEmptyState area="logistica" searchTerm={searchTerm} onClear={() => setSearchTerm('')} />
       )}
 
       {editDraft && (
@@ -346,63 +321,3 @@ export function LogisticaCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   );
 }
 
-// --- SUB-COMPONENTS & HELPERS ---
-
-function getCardIcon(card: CardItem, size = 60, className = '') {
-  const iconClass = `text-red-700/90 group-hover:scale-110 transition-transform duration-500 relative z-10 ${className}`;
-  if (card.kind === 'resource-page') return <GraduationCap size={size} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'document') return <FileText size={size} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'link') return <LinkIcon size={size} className={iconClass} strokeWidth={1.5} />;
-  return null;
-}
-
-function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isAdmin: boolean; onEdit: () => void; onDelete: () => void; }) {
-  const headerBg = 'bg-gradient-to-br from-red-400 to-red-600';
-  const actionBtnClass = 'bg-red-50 text-red-700 hover:bg-red-100 hover:shadow-md border-red-200';
-
-  const normalizedThumbnailUrl = getGoogleDriveProxyImageUrl(card.thumbnailUrl);
-  const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : null;
-
-  return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className={`${headerBg} h-40 flex items-center justify-center relative overflow-hidden`}>
-        
-        {isAdmin && (
-          <div className="absolute right-3 top-3 z-20 flex gap-2">
-            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }} aria-label="Editar" className="rounded-full bg-white/90 p-2 text-red-700 hover:bg-white hover:scale-110 transition-all shadow-sm">
-              <Pencil size={15} />
-            </button>
-            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }} aria-label="Eliminar" className="rounded-full bg-white/90 p-2 text-red-600 hover:bg-white hover:scale-110 transition-all shadow-sm">
-              <Trash2 size={15} />
-            </button>
-          </div>
-        )}
-
-        {thumbnailUrl ? (
-          <>
-            <img src={thumbnailUrl} alt={`Miniatura de ${card.title}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-black/15" />
-            <div className="absolute left-4 bottom-4 z-20 rounded-xl bg-white/90 p-2 shadow-sm">
-              {getCardIcon(card, 28, 'text-red-700')}
-            </div>
-          </>
-        ) : (
-          <>{getCardIcon(card)}</>
-        )}
-      </div>
-
-      <a
-        href={card.href}
-        target={card.href.startsWith('/') ? undefined : '_blank'}
-        rel={card.href.startsWith('/') ? undefined : 'noopener noreferrer'}
-        className="flex flex-1 flex-col p-4 text-left no-underline group/link"
-      >
-        <h3 className="m-0 w-full line-clamp-2 text-left text-base font-bold text-gray-900 group-hover/link:underline">{card.title}</h3>
-        <p className="m-0 mt-2 w-full flex-1 line-clamp-2 text-left text-xs leading-relaxed text-stone-600">{card.description}</p>
-        <div className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold border ${actionBtnClass} w-fit`}>
-          {card.badge}
-        </div>
-      </a>
-    </article>
-  );
-}

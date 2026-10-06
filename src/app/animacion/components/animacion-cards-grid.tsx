@@ -1,13 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, FileText, GraduationCap, Link as LinkIcon, Pencil, Trash2, SearchX } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
-import { SearchBar } from '@/app/components/common/search-bar';
+import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
-import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
-import Image from 'next/image';
 
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
 type UploadedLink = { id: number; title: string; description: string | null; thumbnail_url: string | null; url: string; icon: string | null; created_at: string; };
@@ -35,14 +31,6 @@ interface AnimacionCardsGridProps {
   uploadedDocuments: UploadedDocument[];
   uploadedLinks: UploadedLink[];
   resourcePages: ResourcePageCard[];
-}
-
-function isValidImageSource(value?: string | null): boolean {
-  if (!value) return false;
-  const src = value.trim().toLowerCase();
-  if (!src) return false;
-  if (src.startsWith('/')) return true;
-  return src.startsWith('http://') || src.startsWith('https://');
 }
 
 export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages }: AnimacionCardsGridProps) {
@@ -269,45 +257,31 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
 
   return (
     <>
-      <div className="mb-8 md:mb-10 max-w-2xl mx-auto">
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Buscar recursos, juegos, canciones o enlaces..."
-        />
-        <div className="mt-3 text-center text-xs font-semibold text-stone-500">
-          Mostrando {filteredCards.length} {filteredCards.length === 1 ? 'resultado' : 'resultados'}
-        </div>
-      </div>
+      <ResourceToolbar
+        heading="Recursos subidos"
+        description="Buscá y abrí rápidamente materiales, enlaces y páginas de apoyo."
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        placeholder="Buscar recursos, juegos, canciones o enlaces..."
+        resultCount={filteredCards.length}
+      />
 
       {filteredCards.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-          {filteredCards.map((card) => (
+        <ResourceGrid>
+          {filteredCards.map((card, index) => (
             <ResourceCard
               key={card.id}
               card={card}
+              area="animacion"
+              index={index}
               isAdmin={isAdmin}
               onEdit={() => openEditModal(card)}
               onDelete={() => openDeleteModal(card)}
             />
           ))}
-        </div>
+        </ResourceGrid>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-stone-100 shadow-sm mb-16">
-          <div className="bg-emerald-50 p-4 rounded-full mb-4">
-            <SearchX size={40} className="text-emerald-700" />
-          </div>
-          <h3 className="text-xl font-bold text-brand-brown mb-2">No encontramos nada</h3>
-          <p className="text-stone-500 max-w-sm">
-            No hay recursos que coincidan con &quot;{searchTerm}&quot;. Intenta con otras palabras clave.
-          </p>
-          <button
-            onClick={() => setSearchTerm('')}
-            className="mt-6 font-semibold text-emerald-700 hover:text-emerald-800 underline decoration-emerald-300 underline-offset-4"
-          >
-            Limpiar búsqueda
-          </button>
-        </div>
+        <ResourceEmptyState area="animacion" searchTerm={searchTerm} onClear={() => setSearchTerm('')} />
       )}
 
       {editDraft && (
@@ -370,79 +344,3 @@ export function AnimacionCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   );
 }
 
-function getCardIcon(card: CardItem, size = 60, className = '') {
-  const iconClass = `text-brand-brown/90 group-hover:scale-110 transition-transform duration-500 relative z-10 ${className}`;
-  if (card.kind === 'resource-page') return <GraduationCap size={size} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'document') return <FileText size={size} className={iconClass} strokeWidth={1.5} />;
-  if (card.kind === 'link') return <LinkIcon size={size} className={iconClass} strokeWidth={1.5} />;
-  return null;
-}
-
-function ResourceCard({ card, isAdmin, onEdit, onDelete }: { card: CardItem; isAdmin: boolean; onEdit: () => void; onDelete: () => void; }) {
-  const headerBg = {
-    green: 'bg-gradient-to-br from-green-300 to-green-500',
-  }[card.accent];
-
-  const actionBtnClass = {
-    green: 'bg-green-50 text-green-700 hover:bg-green-100 hover:shadow-md border-green-200',
-  }[card.accent];
-
-  const ActionWrapper = card.href.startsWith('/') ? Link : 'a';
-  const externalProps = card.href.startsWith('/') ? {} : { target: '_blank', rel: 'noopener noreferrer' };
-  const normalizedThumbnailUrl = getGoogleDriveProxyImageUrl(card.thumbnailUrl);
-  const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : null;
-
-  return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-100 bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className={`${headerBg} h-40 flex items-center justify-center relative overflow-hidden`}>
-        {isAdmin && (
-          <div className="absolute right-3 top-3 z-20 flex gap-2">
-            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }} aria-label="Editar" className="rounded-full bg-white/90 p-2 text-brand-brown hover:bg-white hover:scale-110 transition-all shadow-sm">
-              <Pencil size={15} />
-            </button>
-            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }} aria-label="Eliminar" className="rounded-full bg-white/90 p-2 text-red-600 hover:bg-white hover:scale-110 transition-all shadow-sm">
-              <Trash2 size={15} />
-            </button>
-          </div>
-        )}
-
-        {thumbnailUrl ? (
-          <>
-            <Image
-              src={thumbnailUrl}
-              alt={`Miniatura de ${card.title}`}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-black/15" />
-            <div className="absolute left-4 bottom-4 z-20 rounded-xl bg-white/90 p-2 shadow-sm">
-              {getCardIcon(card, 28, 'text-brand-brown')}
-            </div>
-          </>
-        ) : getCardIcon(card)}
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </div>
-
-      <div className="p-6 md:p-7 flex flex-col flex-1 bg-white">
-        <div className="mb-3">
-          <span className="inline-block px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-[10px] font-black tracking-widest uppercase">
-            {card.badge}
-          </span>
-        </div>
-        <h3 className="m-0 w-full line-clamp-2 text-left text-xl font-black leading-tight text-brand-brown">{card.title}</h3>
-        <p className="m-0 mt-3 mb-8 w-full flex-1 line-clamp-3 text-left text-sm leading-relaxed text-stone-500">{card.description}</p>
-
-        <ActionWrapper
-          href={card.href}
-          {...externalProps}
-          className={`group/btn flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 font-bold rounded-xl border transition-all no-underline ${actionBtnClass}`}
-        >
-          {card.kind === 'link' ? 'Abrir enlace' : 'Ver recurso'}
-          <ExternalLink size={16} className="opacity-70 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-        </ActionWrapper>
-      </div>
-    </article>
-  );
-}

@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { Metadata, Viewport } from "next";
-import { HeroSection } from "@/app/components/common/hero-section";
+import { AreaHero } from '@/app/components/common/area-hero';
 
 // Componentes
 import { EspiritualidadClient } from "@/app/espiritualidad/components/espiritualidad-client";
@@ -99,30 +99,22 @@ export default async function Espiritualidad() {
 
   return (
     <EspiritualidadClient>
-      <section>
-        <HeroSection
+      <div className="min-h-screen bg-brand-paper">
+        <AreaHero
+          area="espiritualidad"
           title="Espiritualidad"
-          textureUrl="/assets/textures/areasg.webp" // Cambiado de areasg.webp para mayor calidad
-          overlayColor="rgba(31, 41, 55, 0.7), rgba(55, 65, 81, 0.8)" // Grises más profundos (Slate/Gray 800)
-          gradientClass="from-gray-800 to-gray-700"
           description="En esta sección vas a encontrar oraciones y guiones para profundizar en la espiritualidad de la IAM."
-          textColor="text-white"
         />
-      </section>
 
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <div className="mx-auto mb-8 max-w-3xl text-center">
-          <p className="text-sm leading-relaxed text-stone-600 md:text-base">
-            Un espacio para encontrarnos con Jesús: elegí una oración, descargala o compartila en tu grupo de IAM.
-          </p>
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <EspiritualidadCardsGrid
+            uploadedDocuments={uploadedDocuments}
+            uploadedLinks={uploadedLinks}
+            resourcePages={resourcePages}
+            textPrayers={JSON.parse(JSON.stringify(textPrayers)) as TextPrayer[]}
+          />
         </div>
-        <EspiritualidadCardsGrid
-          uploadedDocuments={uploadedDocuments}
-          uploadedLinks={uploadedLinks}
-          resourcePages={resourcePages}
-          textPrayers={JSON.parse(JSON.stringify(textPrayers)) as TextPrayer[]}
-        />
-      </main>
+      </div>
     </EspiritualidadClient>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata, Viewport } from "next";
-import { HeroSection } from "@/app/components/common/hero-section";
+import { AreaHero } from '@/app/components/common/area-hero';
 
 // Componentes
 import { ComunicacionClient } from "@/app/comunicacion/components/comunicacion-client";
@@ -92,25 +92,21 @@ export default async function Comunicacion() {
 
   return (
     <ComunicacionClient>
-      <section>
-        <HeroSection
+      <div className="min-h-screen bg-brand-paper">
+        <AreaHero
+          area="comunicacion"
           title="Comunicación"
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(59, 130, 246, 0.7), rgba(96, 165, 250, 0.75)"
-          gradientClass="from-blue-500 to-blue-400"
           description="Aquí vas a poder encontrar recursos gráficos para ser utilizados en tus encuentros: logos, imágenes de la IAM, dibujos y mucho más."
-          textColor="text-white"
-          template="ocean"
         />
-      </section>
 
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <ComunicacionCardsGrid 
-          uploadedDocuments={uploadedDocuments} 
-          uploadedLinks={uploadedLinks} 
-          resourcePages={resourcePages} 
-        />
-      </main>
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <ComunicacionCardsGrid 
+            uploadedDocuments={uploadedDocuments} 
+            uploadedLinks={uploadedLinks} 
+            resourcePages={resourcePages} 
+          />
+        </div>
+      </div>
     </ComunicacionClient>
   );
 }
