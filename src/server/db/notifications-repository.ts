@@ -116,6 +116,24 @@ export async function getNotificationSentByEventType(eventType: string, eventId:
   };
 }
 
+/** Últimos avisos enviados, del más nuevo al más viejo. */
+export async function listNotificationsSent(limit: number): Promise<Array<{ id: number; tipo: string; titulo: string; mensaje: string; enviadoAt: string }>> {
+  const client = getTursoClient();
+  if (!client) throw new Error("Database client not available");
+
+  const result = await client.execute({
+    sql: "SELECT id, event_type, title, body, sent_at FROM notifications_sent ORDER BY id DESC LIMIT ?",
+    args: [limit],
+  });
+  return result.rows.map((row) => ({
+    id: Number(row.id),
+    tipo: String(row.event_type),
+    titulo: String(row.title),
+    mensaje: String(row.body),
+    enviadoAt: String(row.sent_at ?? ""),
+  }));
+}
+
 // Días festivos
 export async function getHolidaysForYear(year: number): Promise<HolidayDate[]> {
   const client = getTursoClient();

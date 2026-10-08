@@ -5,6 +5,7 @@ import { ExternalLink, Play, X } from "lucide-react";
 import { getGoogleDriveProxyImageUrl } from "@/lib/drive-utils";
 import { FadeInSection } from "./fade-in-section";
 import { MISION_DEL_ANIO } from "./mision-del-anio";
+import { Ondas } from "./ondas";
 import { crearTierra, type Tierra } from "./tierra-webgl";
 
 // Globo que gira con una flecha que sale de Argentina y llega al país de la misión del año.
@@ -275,14 +276,14 @@ export function MisionGlobo() {
       aria-labelledby="mision-titulo"
       className="relative isolate overflow-hidden text-white"
       style={{
-        backgroundColor: "#2a0f05",
+        backgroundColor: "#220c04",
         backgroundImage: "url('/assets/header/headerbg.webp')",
         backgroundSize: "520px",
         backgroundBlendMode: "soft-light",
       }}
     >
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_50%,rgba(246,196,69,0.18),transparent_55%),linear-gradient(to_bottom,rgba(31,11,4,0.85),rgba(31,11,4,0.95))]" />
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-6 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-6 px-4 pb-24 pt-12 sm:px-6 sm:pb-32 sm:pt-16 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
         <FadeInSection>
           <div aria-hidden className="mb-5 flex items-center gap-2.5">
             {["#2e9e4f", "#d62828", "#ffffff", "#2563eb", AMARILLO].map((color, index) => (
@@ -358,6 +359,7 @@ export function MisionGlobo() {
           </div>
         </FadeInSection>
       </div>
+      <Ondas hacia="#fbf8f3" simple />
     </section>
   );
 }

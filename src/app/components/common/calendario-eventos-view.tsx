@@ -17,6 +17,8 @@ interface Evento {
   hora_inicio?: string;
   hora_fin?: string;
   todo_el_dia?: boolean;
+  /** Si está tildado, el evento avisa al celular antes de la fecha. */
+  notificar?: boolean;
 }
 
 const COLOR_MAP: Record<string, string> = {
@@ -268,6 +270,7 @@ export default function CalendarioEventosView() {
           hora_inicio: createForm.todo_el_dia === false ? createForm.hora_inicio || undefined : undefined,
           hora_fin: createForm.todo_el_dia === false ? createForm.hora_fin || undefined : undefined,
           todo_el_dia: createForm.todo_el_dia !== false,
+          notificar: createForm.notificar === true,
         }),
       });
 
@@ -280,6 +283,7 @@ export default function CalendarioEventosView() {
       setIsCreatingFromDay(false);
       setCreateForm((prev) => ({
         ...prev,
+        notificar: false,
         evento: "",
         descripcion: "",
         hora_inicio: "",
@@ -307,6 +311,7 @@ export default function CalendarioEventosView() {
       hora_inicio: evento.hora_inicio || "",
       hora_fin: evento.hora_fin || "",
       todo_el_dia: evento.todo_el_dia !== false,
+      notificar: evento.notificar === true,
     });
     setIsEditing(false);
     setIsModalOpen(true);
@@ -338,6 +343,7 @@ export default function CalendarioEventosView() {
           hora_inicio: editForm.todo_el_dia === false ? editForm.hora_inicio || undefined : undefined,
           hora_fin: editForm.todo_el_dia === false ? editForm.hora_fin || undefined : undefined,
           todo_el_dia: editForm.todo_el_dia !== false,
+          notificar: editForm.notificar === true,
         }),
       });
 
@@ -604,6 +610,18 @@ export default function CalendarioEventosView() {
                     className="modal-input-unified"
                   />
                 </div>
+                <label className="flex items-start gap-2 rounded-xl border border-stone-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={editForm.notificar === true}
+                    onChange={(event) => setEditForm({ ...editForm, notificar: event.target.checked })}
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-stone-700">Activar notificaciones</span>
+                    <span className="block text-xs text-stone-500">Avisa al celular 7 días antes, el día anterior y el mismo día.</span>
+                  </span>
+                </label>
                 <label className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white p-2.5">
                   <input
                     type="checkbox"
@@ -739,6 +757,18 @@ export default function CalendarioEventosView() {
                     className="modal-input-unified bg-white"
                   />
                 </div>
+                <label className="flex items-start gap-2 rounded-xl border border-stone-200 bg-white p-2.5">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={createForm.notificar === true}
+                    onChange={(event) => setCreateForm({ ...createForm, notificar: event.target.checked })}
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-stone-700">Activar notificaciones</span>
+                    <span className="block text-xs text-stone-500">Avisa al celular 7 días antes, el día anterior y el mismo día.</span>
+                  </span>
+                </label>
                 <label className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white p-2.5">
                   <input
                     type="checkbox"

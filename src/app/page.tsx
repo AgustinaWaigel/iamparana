@@ -5,13 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { listCarouselItems, listNoticiasPreview } from "@/server/db/content-repository";
 import { getSessionUser } from "@/server/lib/api-utils";
-import { ArrowDown, ArrowRight, CalendarDays, ChevronRight } from "lucide-react";
+import { ArrowDown, ArrowRight, CalendarDays, ChevronRight, ClipboardPen } from "lucide-react";
 import { AREA_ICONS } from "@/app/components/common/area-icons";
 import { AREA_ORDER, AREA_THEME } from "@/app/components/common/area-theme";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
 import { OnlineUsersBoard } from "@/app/components/common/online-users-board";
 import { MisionGlobo } from "@/app/components/common/mision-globo";
+import { Ondas } from "@/app/components/common/ondas";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -46,22 +47,58 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-brand-paper">
 
-      <h1 className="sr-only">Infancia y Adolescencia Misionera de Paraná</h1>
-
       {/* ══════════════════════════════════════════
-          PORTADA — el carrusel ocupa toda la pantalla
+          PORTADA — el carrusel primero, enmarcado en una banda cálida con ondas de colores
       ══════════════════════════════════════════ */}
-      <section aria-label="Destacados" className="relative overflow-hidden bg-brand-deep">
-        <div className="portada-salida origin-top">
-          <Carousel initialItems={carouselItems} isAdmin={isAdmin} fullscreen />
+      <section
+        className="relative isolate overflow-hidden text-white"
+        style={{
+          backgroundColor: "#3a1508",
+          backgroundImage: "url('/assets/header/headerbg.webp')",
+          backgroundSize: "520px",
+          backgroundBlendMode: "soft-light",
+        }}
+      >
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_20%_0%,rgba(246,196,69,0.22),transparent_55%),linear-gradient(to_bottom,rgba(98,45,13,0.55),rgba(58,21,8,0.9))]" />
+
+        <div className="mx-auto w-full max-w-7xl px-4 pb-36 pt-5 sm:px-6 sm:pb-56 sm:pt-7">
+          <div className="hero-rise rounded-[26px] shadow-[0_34px_70px_-30px_rgba(0,0,0,0.85)] ring-1 ring-white/15" style={{ ["--d" as string]: "60ms" }}>
+            <Carousel initialItems={carouselItems} isAdmin={isAdmin} frameClass="h-[min(62svh,600px)] min-h-[400px] rounded-[26px]" />
+          </div>
+
+          <div className="mt-9 grid gap-6 sm:mt-11 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-12">
+            <div>
+              {/* Rosario misionero: un color por continente. */}
+              <div aria-hidden className="mb-4 flex items-center gap-2.5">
+                {["#2e9e4f", "#d62828", "#ffffff", "#2563eb", "#f6c445"].map((color, index) => (
+                  <span key={color} className="bead block h-3.5 w-3.5 rounded-full shadow-[0_3px_8px_rgba(0,0,0,0.35)] sm:h-4 sm:w-4" style={{ backgroundColor: color, ["--d" as string]: `${300 + index * 90}ms` }} />
+                ))}
+              </div>
+              <h1 className="m-0 text-balance text-left font-display text-[clamp(2.1rem,5.6vw,4.4rem)] font-extrabold leading-[0.98] tracking-[-0.035em] text-white">
+                <span className="hero-rise block" style={{ ["--d" as string]: "220ms" }}>Infancia y Adolescencia</span>
+                <span className="hero-rise block" style={{ ["--d" as string]: "320ms" }}>
+                  Misionera <span className="text-brand-gold">de Paraná</span>
+                </span>
+              </h1>
+            </div>
+            <div className="hero-rise flex flex-wrap gap-3 lg:justify-end lg:pb-2" style={{ ["--d" as string]: "440ms" }}>
+              <a href="#areas" className={`${HOME_BUTTON} group bg-brand-gold text-brand-deep shadow-[0_10px_24px_-10px_rgba(246,196,69,0.7)] hover:bg-brand-goldsoft focus-visible:outline-brand-gold`}>
+                Explorar recursos
+                <ArrowDown size={15} aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-y-0.5 motion-reduce:transform-none" />
+              </a>
+              <Link href="/calendario" className={`${HOME_BUTTON} border border-white/30 text-white hover:bg-white hover:text-brand-deep focus-visible:outline-brand-gold`}>
+                <CalendarDays size={15} aria-hidden />
+                Ver agenda
+              </Link>
+              <Link href="/inscripciones" className={`${HOME_BUTTON} border border-white/30 text-white hover:bg-white hover:text-brand-deep focus-visible:outline-brand-gold`}>
+                <ClipboardPen size={15} aria-hidden />
+                Inscripciones
+              </Link>
+            </div>
+          </div>
         </div>
-        <a
-          href="#mision"
-          aria-label="Seguir bajando"
-          className="absolute bottom-6 left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/40 bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-brand-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <ArrowDown size={18} aria-hidden className="motion-safe:animate-[bead-float_2.4s_ease-in-out_infinite]" />
-        </a>
+
+        <Ondas hacia="#220c04" />
       </section>
 
       {/* ══════════════════════════════════════════

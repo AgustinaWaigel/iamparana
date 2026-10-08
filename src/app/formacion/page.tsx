@@ -4,11 +4,14 @@ import { Metadata } from 'next';
 // Componentes
 import { FormacionClient } from '@/app/formacion/components/formacion-client';
 import { FormacionCardsGrid } from './components/formacion-cards-grid';
+import { EscuelaConJesus } from './components/escuela-con-jesus';
+import { Temario } from './components/temario';
 import { AreaHero } from '@/app/components/common/area-hero';
 import { AreaQuote } from '@/app/components/common/area-quote';
 
 // Base de Datos
 import { getAreaLandingContent } from '@/server/db/admin-repository';
+import { listTemario } from '@/server/db/temario-repository';
 
 export const metadata: Metadata = {
   title: 'Formación',
@@ -29,7 +32,12 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function FormacionPage() {
-  const areaContent = await getAreaLandingContent('formacion', ['formacion', 'temario', 'carta', 'otro']);
+  const [areaContent, temario] = await Promise.all([
+    getAreaLandingContent('formacion', ['formacion', 'temario', 'carta', 'otro']),
+    listTemario(),
+  ]);
+  // Fecha de hoy en Argentina, para destacar el mes en curso.
+  const [anioHoy, mesHoy] = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: 'numeric' }).format(new Date()).split('-').map(Number);
   const uploadedDocumentsRaw = areaContent.documents;
   const uploadedLinksRaw = areaContent.links;
   const resourcePagesRaw = areaContent.pages;
@@ -83,11 +91,15 @@ export default async function FormacionPage() {
         />
 
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <Temario temario={temario} anioHoy={anioHoy} mesHoy={mesHoy} />
+
           <FormacionCardsGrid 
             uploadedDocuments={uploadedDocuments} 
             uploadedLinks={uploadedLinks} 
             resourcePages={resourcePages} 
           />
+
+          <EscuelaConJesus />
 
           <AreaQuote
             quote="Mi caminito es el camino de una infancia espiritual, el camino de la confianza y de la entrega absoluta."

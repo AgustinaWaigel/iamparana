@@ -16,6 +16,8 @@ interface Evento {
   hora_inicio?: string;
   hora_fin?: string;
   todo_el_dia?: boolean;
+  /** Si está tildado, el evento avisa al celular antes de la fecha. */
+  notificar?: boolean;
 }
 
 const COLOR_OPTIONS = [
@@ -130,7 +132,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
   };
 
   const resetForm = () => {
-    setFormData({ fecha: "", evento: "", fecha_fin: "", color: "11", descripcion: "", hora_inicio: "", hora_fin: "", todo_el_dia: true });
+    setFormData({ fecha: "", evento: "", fecha_fin: "", color: "11", descripcion: "", hora_inicio: "", hora_fin: "", todo_el_dia: true, notificar: false });
     setIsAdding(false);
     setEditingId(null);
   }
@@ -214,6 +216,10 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                       <label className="flex items-center gap-3 cursor-pointer group">
                         <input type="checkbox" className="w-5 h-5 rounded-md border-stone-300 text-yellow-500 focus:ring-yellow-400" checked={formData.todo_el_dia !== false} onChange={(e) => setFormData({ ...formData, todo_el_dia: e.target.checked, hora_inicio: "", hora_fin: "" })} />
                         <span className="text-sm font-bold text-stone-700">Todo el día</span>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer group" title="Avisa al celular 7 días antes, el día anterior y el mismo día.">
+                        <input type="checkbox" className="w-5 h-5 rounded-md border-stone-300 text-yellow-500 focus:ring-yellow-400" checked={formData.notificar === true} onChange={(e) => setFormData({ ...formData, notificar: e.target.checked })} />
+                        <span className="text-sm font-bold text-stone-700">Activar notificaciones</span>
                       </label>
 
                       {!formData.todo_el_dia && (

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/app/hooks/use-session';
 import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
-import { coincideBusqueda } from '@/lib/busqueda';
+import { anioDeRecurso, coincideBusqueda } from '@/lib/busqueda';
 
 // --- TYPES ---
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; section: string; created_at: string; };
@@ -45,11 +45,25 @@ function documentBadge(section: string): string {
   return 'Recurso espiritual';
 }
 
+// Los recursos se muestran en secciones: oraciones, guiones y el resto.
+const GRUPOS = [
+  { id: 'oraciones', titulo: 'Oraciones', bajada: 'Para rezar solos o en grupo.' },
+  { id: 'guiones', titulo: 'Guiones', bajada: 'Para preparar celebraciones y momentos de oración.' },
+  { id: 'mas-recursos', titulo: 'Más recursos', bajada: 'Enlaces, páginas y otros materiales.' },
+] as const;
+
+function grupoDe(card: CardItem): (typeof GRUPOS)[number]['id'] {
+  if (card.badge === 'Oración') return 'oraciones';
+  if (card.badge === 'Guion de oración') return 'guiones';
+  return 'mas-recursos';
+}
+
 // --- MAIN COMPONENT ---
 export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, resourcePages, textPrayers }: EspiritualidadCardsGridProps) {
   const { isAdmin } = useSession();
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [anio, setAnio] = useState<number | null>(null);
   const [documentsState, setDocumentsState] = useState(uploadedDocuments);
   const [linksState, setLinksState] = useState(uploadedLinks);
   const [resourcePagesState, setResourcePagesState] = useState(resourcePages);
@@ -289,10 +303,25 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
 }, [documentsState, linksState, resourcePagesState, textPrayersState]);
 
   const filteredCards = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return cards;
-    return cards.filter((card) => coincideBusqueda(searchTerm, card.title, card.description, card.badge));
-  }, [cards, searchTerm]);
+    return cards.filter((card) =>
+      (anio === null || anioDeRecurso(card.title, card.createdAt) === anio) &&
+      coincideBusqueda(searchTerm, card.title, card.description, card.badge));
+  }, [cards, searchTerm, anio]);
+
+  // Años que tienen al menos un recurso, del más nuevo al más viejo.
+  const anios = useMemo(() => {
+    const encontrados = new Set<number>();
+    for (const card of cards) {
+      const valor = anioDeRecurso(card.title, card.createdAt);
+      if (valor !== null) encontrados.add(valor);
+    }
+    return [...encontrados].sort((a, b) => b - a);
+  }, [cards]);
+
+  // Si el año elegido se queda sin recursos (por ejemplo, al borrar el último), se vuelve a "todos".
+  useEffect(() => {
+    if (anio !== null && !anios.includes(anio)) setAnio(null);
+  }, [anio, anios]);
 
 
   // --- RENDER ---
@@ -304,26 +333,44 @@ export function EspiritualidadCardsGrid({ uploadedDocuments, uploadedLinks, reso
         onSearchChange={setSearchTerm}
         placeholder="Buscar oraciones, guiones o recursos..."
         resultCount={filteredCards.length}
+        years={anios}
+        selectedYear={anio}
+        onYearChange={setAnio}
       />
 
       {filteredCards.length > 0 ? (
-        <ResourceGrid>
-          {filteredCards.map((card, index) => (
-            <ResourceCard
-              key={card.id}
-              card={card}
-              area="espiritualidad"
-              index={index}
-              isAdmin={isAdmin}
-              onEdit={() => openEditModal(card)}
-              onDelete={() => openDeleteModal(card)}
-              onOpen={() => card.kind === 'text-prayer' && setReadingPrayer(card)}
-              fallbackThumbnail="/assets/textures/espiritualidad.webp"
-            />
-          ))}
-        </ResourceGrid>
+        GRUPOS.map((grupo) => {
+          const delGrupo = filteredCards.filter((card) => grupoDe(card) === grupo.id);
+          if (delGrupo.length === 0) return null;
+          return (
+            <section key={grupo.id} id={grupo.id} aria-labelledby={`${grupo.id}-titulo`} className="mt-10 scroll-mt-28 first-of-type:mt-0 sm:mt-14">
+              <div className="mb-5 flex items-end justify-between gap-4 border-b border-brand-brown/15 pb-3">
+                <div>
+                  <h3 id={`${grupo.id}-titulo`} className="m-0 text-left font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-ink sm:text-[28px]">{grupo.titulo}</h3>
+                  <p className="m-0 mt-1 max-w-none text-left text-base text-brand-ink/70">{grupo.bajada}</p>
+                </div>
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-brand-ink/60">{delGrupo.length}</span>
+              </div>
+              <ResourceGrid>
+                {delGrupo.map((card, index) => (
+                  <ResourceCard
+                    key={card.id}
+                    card={card}
+                    area="espiritualidad"
+                    index={index}
+                    isAdmin={isAdmin}
+                    onEdit={() => openEditModal(card)}
+                    onDelete={() => openDeleteModal(card)}
+                    onOpen={() => card.kind === 'text-prayer' && setReadingPrayer(card)}
+                    fallbackThumbnail="/assets/textures/espiritualidad.webp"
+                  />
+                ))}
+              </ResourceGrid>
+            </section>
+          );
+        })
       ) : (
-        <ResourceEmptyState area="espiritualidad" searchTerm={searchTerm} onClear={() => setSearchTerm('')} />
+        <ResourceEmptyState area="espiritualidad" searchTerm={searchTerm} onClear={() => { setSearchTerm(''); setAnio(null); }} />
       )}
 
       {editDraft && (

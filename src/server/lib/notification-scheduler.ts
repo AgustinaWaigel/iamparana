@@ -1,5 +1,6 @@
 import "server-only";
 
+import { listAgendaAvisos } from "@/server/db/agenda-avisos-repository";
 import { listAgendaEventos } from "@/server/db/content-repository";
 import { getNotificationSentByEventType, isHolidayToday } from "@/server/db/notifications-repository";
 import {
@@ -111,9 +112,11 @@ export async function checkAndSendEventNotifications(): Promise<{ sent: number; 
   let totalSent = 0;
 
   try {
-    const eventos = await listNotificationEvents();
+    // Solo avisan los eventos que tienen tildado "Activar notificaciones" en el calendario.
+    const [eventos, avisos] = await Promise.all([listNotificationEvents(), listAgendaAvisos()]);
 
     for (const evento of eventos) {
+      if (!evento.id || !avisos.has(String(evento.id))) continue;
       const sent = await checkAndSendEventNotification(evento);
       if (sent > 0) {
         sentEvents.push(evento.evento);

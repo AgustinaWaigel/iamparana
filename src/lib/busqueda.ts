@@ -18,3 +18,14 @@ export function coincideBusqueda(busqueda: string, ...campos: Array<string | num
   const texto = normalizarBusqueda(campos.filter((campo) => campo !== null && campo !== undefined).join(' '));
   return palabras.every((palabra) => texto.includes(palabra));
 }
+
+/**
+ * Año al que pertenece un recurso: el que figura en el título ("Temario 2025") o, si no tiene,
+ * el año en que se subió.
+ */
+export function anioDeRecurso(titulo: string, creado: string): number | null {
+  const enTitulo = titulo.match(/\b(?:19|20)\d{2}\b/g);
+  if (enTitulo) return Number(enTitulo[enTitulo.length - 1]);
+  const subido = Number(String(creado).slice(0, 4));
+  return subido >= 1990 && subido <= 2100 ? subido : null;
+}

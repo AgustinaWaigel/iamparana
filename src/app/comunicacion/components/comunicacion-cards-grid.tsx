@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/app/hooks/use-session';
 import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
-import { coincideBusqueda } from '@/lib/busqueda';
+import { anioDeRecurso, coincideBusqueda } from '@/lib/busqueda';
 
 // --- TYPES ---
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
@@ -41,6 +41,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   const { isAdmin } = useSession();
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [anio, setAnio] = useState<number | null>(null);
   const [documentsState, setDocumentsState] = useState(uploadedDocuments);
   const [linksState, setLinksState] = useState(uploadedLinks);
   const [resourcePagesState, setResourcePagesState] = useState(resourcePages);
@@ -230,10 +231,25 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
   }, [documentsState, linksState, resourcePagesState]);
 
   const filteredCards = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return cards;
-    return cards.filter((card) => coincideBusqueda(searchTerm, card.title, card.description, card.badge));
-  }, [cards, searchTerm]);
+    return cards.filter((card) =>
+      (anio === null || anioDeRecurso(card.title, card.createdAt) === anio) &&
+      coincideBusqueda(searchTerm, card.title, card.description, card.badge));
+  }, [cards, searchTerm, anio]);
+
+  // Años que tienen al menos un recurso, del más nuevo al más viejo.
+  const anios = useMemo(() => {
+    const encontrados = new Set<number>();
+    for (const card of cards) {
+      const valor = anioDeRecurso(card.title, card.createdAt);
+      if (valor !== null) encontrados.add(valor);
+    }
+    return [...encontrados].sort((a, b) => b - a);
+  }, [cards]);
+
+  // Si el año elegido se queda sin recursos (por ejemplo, al borrar el último), se vuelve a "todos".
+  useEffect(() => {
+    if (anio !== null && !anios.includes(anio)) setAnio(null);
+  }, [anio, anios]);
 
 
   // --- RENDER ---
@@ -244,6 +260,9 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
         onSearchChange={setSearchTerm}
         placeholder="Buscar recursos, temarios o enlaces..."
         resultCount={filteredCards.length}
+        years={anios}
+        selectedYear={anio}
+        onYearChange={setAnio}
       />
 
       {filteredCards.length > 0 ? (
@@ -261,7 +280,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
           ))}
         </ResourceGrid>
       ) : (
-        <ResourceEmptyState area="comunicacion" searchTerm={searchTerm} onClear={() => setSearchTerm('')} />
+        <ResourceEmptyState area="comunicacion" searchTerm={searchTerm} onClear={() => { setSearchTerm(''); setAnio(null); }} />
       )}
 
       {editDraft && (

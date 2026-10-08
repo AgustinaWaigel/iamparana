@@ -47,11 +47,20 @@ interface ResourceToolbarProps {
   onSearchChange: (value: string) => void;
   placeholder: string;
   resultCount: number;
+  /** Años para filtrar, del más nuevo al más viejo. Con menos de dos, el filtro no se muestra. */
+  years?: number[];
+  selectedYear?: number | null;
+  onYearChange?: (year: number | null) => void;
 }
 
-export function ResourceToolbar({ heading = 'Recursos', description, searchTerm, onSearchChange, placeholder, resultCount }: ResourceToolbarProps) {
+const YEAR_CHIP =
+  'rounded-full px-4 py-2 text-sm font-bold tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown';
+
+export function ResourceToolbar({ heading = 'Recursos', description, searchTerm, onSearchChange, placeholder, resultCount, years = [], selectedYear = null, onYearChange }: ResourceToolbarProps) {
+  const conAnios = years.length > 1 && Boolean(onYearChange);
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+    <>
+    <div className={`flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 ${conAnios ? 'mb-4' : 'mb-6 sm:mb-8'}`}>
       <div className="min-w-0">
         <h2 className="m-0 text-left font-display text-[28px] font-extrabold leading-none tracking-tight text-brand-ink sm:text-[34px]">
           {heading}
@@ -70,6 +79,25 @@ export function ResourceToolbar({ heading = 'Recursos', description, searchTerm,
         className="w-full shrink-0 sm:w-80 lg:w-96"
       />
     </div>
+    {conAnios && (
+      <div role="group" aria-label="Filtrar por año" className="mb-6 flex flex-wrap gap-2 sm:mb-8">
+        {[null, ...years].map((year) => {
+          const activo = year === selectedYear;
+          return (
+            <button
+              key={year ?? 'todos'}
+              type="button"
+              aria-pressed={activo}
+              onClick={() => onYearChange?.(year)}
+              className={`${YEAR_CHIP} ${activo ? 'bg-brand-brown text-white' : 'bg-white text-brand-ink ring-1 ring-brand-brown/15 hover:bg-brand-brown/10'}`}
+            >
+              {year ?? 'Todos los años'}
+            </button>
+          );
+        })}
+      </div>
+    )}
+    </>
   );
 }
 

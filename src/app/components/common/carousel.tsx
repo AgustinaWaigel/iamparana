@@ -22,11 +22,13 @@ interface CarouselProps {
   isAdmin?: boolean;
   /** Ocupa todo el alto de la pantalla, debajo del menú, de borde a borde. */
   fullscreen?: boolean;
+  /** Clases de alto y esquinas para reemplazar las del tamaño normal (por ejemplo, en la portada). */
+  frameClass?: string;
 }
 
 const INTERVAL = 6500;
 
-export default function Carousel({ initialItems = [], isAdmin = false, fullscreen = false }: CarouselProps) {
+export default function Carousel({ initialItems = [], isAdmin = false, fullscreen = false, frameClass }: CarouselProps) {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -135,7 +137,7 @@ export default function Carousel({ initialItems = [], isAdmin = false, fullscree
     : null;
 
   return (
-    <div className={`group relative overflow-hidden bg-stone-900 select-none ${fullscreen ? "h-[calc(100svh-5rem)] min-h-[460px]" : "h-[min(118vw,620px)] min-h-[430px] rounded-2xl sm:h-[33vw] sm:min-h-0 sm:rounded-[20px]"}`}>
+    <div className={`group relative overflow-hidden bg-stone-900 select-none ${fullscreen ? "h-[calc(100svh-5rem)] min-h-[460px]" : frameClass ?? "h-[min(118vw,620px)] min-h-[430px] rounded-2xl sm:h-[33vw] sm:min-h-0 sm:rounded-[20px]"}`}>
         {isAdmin && (
           <div className="absolute top-4 right-4 z-30">
             <CarouselAdminTools compact />

@@ -9,6 +9,9 @@ import { EspiritualidadCardsGrid } from "./components/espiritualidad-cards-grid"
 // Base de Datos
 import { getAreaLandingContent } from "@/server/db/admin-repository";
 import { listSpiritualPrayers } from "@/server/db/spiritual-prayers-repository";
+import { listFechasDelMes } from "@/server/lib/agenda-mes";
+import { FiestasDelMes } from "./components/fiestas-del-mes";
+import { RosarioMisionero } from "./components/rosario-misionero";
 
 export const revalidate = 60;
 
@@ -49,10 +52,14 @@ type ResourcePageCard = { id: number; slug: string; title: string; description: 
 type TextPrayer = { id: number; title: string; description: string | null; content: string; thumbnail_url: string | null; created_at: string; };
 
 export default async function Espiritualidad() {
-  const [areaContent, textPrayers] = await Promise.all([
+  // Fiestas y eventos del mes en curso (hora de Argentina), tomados de la agenda del sitio.
+  const [anioHoy, mesHoy, diaHoy] = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: 'numeric', day: 'numeric' }).format(new Date()).split('-').map(Number);
+  const [areaContent, textPrayers, fechas] = await Promise.all([
     getAreaLandingContent('espiritualidad', ['espiritualidad', 'recursos', 'oraciones', 'guiones']),
     listSpiritualPrayers(),
+    listFechasDelMes(anioHoy, mesHoy).catch(() => []),
   ]);
+  const nombreMes = new Intl.DateTimeFormat('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', month: 'long' }).format(new Date());
   const uploadedDocumentsRaw = areaContent.documents;
   const uploadedLinksRaw = areaContent.links;
   const resourcePagesRaw = areaContent.pages;
@@ -107,12 +114,15 @@ export default async function Espiritualidad() {
         />
 
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <FiestasDelMes mes={nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} hoy={diaHoy} fechas={fechas} />
           <EspiritualidadCardsGrid
             uploadedDocuments={uploadedDocuments}
             uploadedLinks={uploadedLinks}
             resourcePages={resourcePages}
             textPrayers={JSON.parse(JSON.stringify(textPrayers)) as TextPrayer[]}
           />
+
+          <RosarioMisionero />
         </div>
       </div>
     </EspiritualidadClient>

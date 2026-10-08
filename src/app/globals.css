@@ -100,6 +100,16 @@
   }
 }
 
+/* Ondas de colores que se mecen despacio, cada capa a su ritmo. */
+@keyframes onda {
+  from { transform: translateX(calc(var(--x, 40px) * -1)); }
+  to { transform: translateX(var(--x, 40px)); }
+}
+
+.onda {
+  animation: onda var(--t, 10s) ease-in-out infinite alternate;
+}
+
 /* ── Inscripción a un evento: cintas misioneras y cartel que corre ── */
 @keyframes evento-cinta {
   from { opacity: 0; transform: translateY(60px); }
@@ -123,6 +133,7 @@
 @media (prefers-reduced-motion: reduce) {
   .fade-section.is-visible .globo-in,
   .portada-salida,
+  .onda,
   .paralaje,
   .evento-cinta,
   .evento-marquesina,

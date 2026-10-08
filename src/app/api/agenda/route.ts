@@ -15,6 +15,7 @@ import {
   updateCalendarAgendaEvent,
 } from "@/server/lib/google-calendar-service";
 import { checkAndSendEventNotification } from "@/server/lib/notification-scheduler";
+import { listAgendaAvisos, setAgendaAviso } from "@/server/db/agenda-avisos-repository";
 
 export const revalidate = 60;
 
@@ -44,20 +45,26 @@ function buildCalendarAccessErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+/** Suma a cada evento si tiene activadas las notificaciones. */
+async function conAvisos<T extends { id?: string | number }>(eventos: T[]): Promise<Array<T & { notificar: boolean }>> {
+  const avisos = await listAgendaAvisos().catch(() => new Set<string>());
+  return eventos.map((evento) => ({ ...evento, notificar: avisos.has(String(evento.id)) }));
+}
+
 export async function GET() {
   try {
     // Primero intenta traer los eventos desde Google Calendar.
     if (isGoogleCalendarConfigured()) {
       try {
         const eventos = await listCalendarAgendaEvents();
-        return NextResponse.json(eventos);
+        return NextResponse.json(await conAvisos(eventos));
       } catch (calendarError) {
         console.error("Error al leer Google Calendar, se usa agenda local:", calendarError);
       }
     }
 
     const eventos = await listAgendaEventos();
-    return NextResponse.json(eventos);
+    return NextResponse.json(await conAvisos(eventos));
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Error leyendo agenda" }, { status: 500 });
@@ -72,6 +79,8 @@ export async function POST(req: NextRequest) {
     // El frontend manda una estructura simple y esta ruta decide dónde guardarla.
     const body = await req.json();
     const { evento, fecha, fecha_fin, color, descripcion, hora_inicio, hora_fin, todo_el_dia } = body;
+    // Sin el tilde "Activar notificaciones", el evento no avisa al celular.
+    const notificar = body.notificar === true;
 
     if (!evento || typeof evento !== "string") {
       return badRequest("Evento es requerido");
@@ -93,12 +102,15 @@ export async function POST(req: NextRequest) {
         todo_el_dia,
       });
       try {
-        await checkAndSendEventNotification(creado);
+        if (notificar) {
+          await setAgendaAviso(creado.id, true);
+          await checkAndSendEventNotification(creado);
+        }
       } catch (notificationError) {
         console.warn("El evento se creó, pero no se pudo comprobar su notificación:", notificationError);
       }
       revalidatePath("/");
-      return NextResponse.json(creado, { status: 201 });
+      return NextResponse.json({ ...creado, notificar }, { status: 201 });
     }
 
     const id = await createAgendaEvento(
@@ -112,7 +124,10 @@ export async function POST(req: NextRequest) {
       todo_el_dia
     );
     try {
-      await checkAndSendEventNotification({ id, evento, fecha });
+      if (notificar) {
+        await setAgendaAviso(id, true);
+        await checkAndSendEventNotification({ id, evento, fecha });
+      }
     } catch (notificationError) {
       console.warn("El evento se creó, pero no se pudo comprobar su notificación:", notificationError);
     }
@@ -146,6 +161,11 @@ export async function PUT(req: NextRequest) {
 
     if (!fecha || typeof fecha !== "string") {
       return badRequest("Fecha es requerida");
+    }
+
+    // El tilde se guarda solo si el formulario lo mandó: así una edición vieja no lo borra.
+    if (typeof body.notificar === "boolean") {
+      await setAgendaAviso(id, body.notificar);
     }
 
     if (isGoogleCalendarConfigured()) {
@@ -209,6 +229,8 @@ export async function DELETE(req: NextRequest) {
     if (!id || (typeof id !== "number" && typeof id !== "string")) {
       return badRequest("ID es requerido");
     }
+
+    await setAgendaAviso(id, false).catch(() => undefined);
 
     if (isGoogleCalendarConfigured()) {
       await deleteCalendarAgendaEvent(String(id));
