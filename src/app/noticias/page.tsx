@@ -6,6 +6,7 @@ import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { listNoticiasPreview } from "@/server/db/content-repository";
 import { Search, X } from "lucide-react";
 import type { Metadata } from "next";
+import { coincideBusqueda } from '@/lib/busqueda';
 
 export const metadata: Metadata = {
   title: "Noticias",
@@ -74,12 +75,7 @@ export default async function Noticias({
     : allNoticias.filter((noticia) => normalizeCategory(noticia.cat || '') === selectedCategory);
 
   if (searchQuery) {
-    const normalizedQuery = searchQuery.toLocaleLowerCase('es');
-    noticias = noticias.filter((noticia) =>
-      [noticia.title, noticia.description, noticia.cat]
-        .filter(Boolean)
-        .some((value) => String(value).toLocaleLowerCase('es').includes(normalizedQuery))
-    );
+    noticias = noticias.filter((noticia) => coincideBusqueda(searchQuery, noticia.title, noticia.description, noticia.cat));
   }
   
   // Sort by date descending

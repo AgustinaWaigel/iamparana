@@ -5,6 +5,7 @@ import { Trash2, AlertCircle, ExternalLink, CalendarDays, Link as LinkIcon } fro
 import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { coincideBusqueda } from '@/lib/busqueda';
 
 interface Link {
   id: number;
@@ -71,11 +72,7 @@ export const FormacionLinksTabla = forwardRef<() => Promise<void>, FormacionLink
       return links.filter((link) => {
         const domain = getDomainFilter(link.url);
         const matchesDomain = selectedDomain === 'all' || domain === selectedDomain;
-        const matchesTerm =
-          term.length === 0 ||
-          link.title.toLowerCase().includes(term) ||
-          (link.description || '').toLowerCase().includes(term) ||
-          link.url.toLowerCase().includes(term);
+        const matchesTerm = coincideBusqueda(term, link.title, link.description, link.url);
         return matchesDomain && matchesTerm;
       });
     }, [links, searchTerm, selectedDomain]);

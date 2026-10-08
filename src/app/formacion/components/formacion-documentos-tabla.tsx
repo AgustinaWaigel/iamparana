@@ -5,6 +5,7 @@ import { Trash2, AlertCircle, Download, CalendarDays, HardDrive, FileText } from
 import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { coincideBusqueda } from '@/lib/busqueda';
 
 interface Document {
   id: number;
@@ -64,10 +65,7 @@ export const FormacionDocumentosTabla = forwardRef<() => Promise<void>, Formacio
       const term = searchTerm.trim().toLowerCase();
       return documents.filter((doc) => {
         const matchesType = selectedType === 'all' || doc.file_type === selectedType;
-        const matchesTerm =
-          term.length === 0 ||
-          doc.title.toLowerCase().includes(term) ||
-          (doc.description || '').toLowerCase().includes(term);
+        const matchesTerm = coincideBusqueda(term, doc.title, doc.description);
         return matchesType && matchesTerm;
       });
     }, [documents, searchTerm, selectedType]);

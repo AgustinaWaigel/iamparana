@@ -19,7 +19,7 @@ export const MISION_DEL_ANIO = {
   /** De dónde sale la flecha. */
   origen: { nombre: 'Argentina', ubicacion: [-34, -64] as [number, number] },
   resumen:
-    'Desde Argentina, nuestra ayuda cruza el océano hasta Oceanía. Tocá Papúa Nueva Guinea en el globo y conocé a los chicos de allá.',
+    'Desde Argentina, nuestra ayuda cruza el océano hasta Oceanía. Tocá Papúa Nueva Guinea en el globo y conocé un poco más sobre su realidad.',
   datos: [
     { label: 'Continente', valor: 'Oceanía' },
     { label: 'Capital', valor: 'Port Moresby' },

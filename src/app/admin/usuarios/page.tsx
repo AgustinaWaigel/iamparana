@@ -7,6 +7,7 @@ import { useSessionUser } from '@/app/lib/use-session';
 import { Trash2, Edit2, Plus, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { coincideBusqueda } from '@/lib/busqueda';
 
 interface User {
   id: number;
@@ -62,12 +63,9 @@ export default function UsuariosPage() {
 
     return users.filter(u => {
       const matchesRole = !selectedRole || u.role === selectedRole;
+      // El mail se compara también tal cual: la búsqueda tolerante separa por puntos y arrobas.
       const matchesSearch =
-        term.length === 0 ||
-        (u.display_name || '').toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term) ||
-        u.role.toLowerCase().includes(term) ||
-        String(u.id).includes(term);
+        coincideBusqueda(term, u.display_name, u.email, u.role, u.id) || u.email.toLowerCase().includes(term);
 
       return matchesRole && matchesSearch;
     });

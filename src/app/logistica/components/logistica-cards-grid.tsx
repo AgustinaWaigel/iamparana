@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/app/hooks/use-session';
 import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
+import { coincideBusqueda } from '@/lib/busqueda';
 
 // --- TYPES ---
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
@@ -229,7 +230,7 @@ export function LogisticaCardsGrid({ uploadedDocuments, uploadedLinks, resourceP
   const filteredCards = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return cards;
-    return cards.filter((card) => card.title.toLowerCase().includes(term) || card.description.toLowerCase().includes(term) || card.badge.toLowerCase().includes(term));
+    return cards.filter((card) => coincideBusqueda(searchTerm, card.title, card.description, card.badge));
   }, [cards, searchTerm]);
 
 

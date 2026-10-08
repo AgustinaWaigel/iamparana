@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { coincideBusqueda } from '@/lib/busqueda';
 
 interface Cancion {
   titulo: string;
@@ -24,10 +25,7 @@ export function useCancionero(): void {
         mostrarCanciones(canciones);
 
         buscador.addEventListener("input", () => {
-          const filtro = buscador.value.toLowerCase();
-          const filtradas = canciones.filter((cancion) =>
-            cancion.titulo.toLowerCase().includes(filtro)
-          );
+          const filtradas = canciones.filter((cancion) => coincideBusqueda(buscador.value, cancion.titulo));
           mostrarCanciones(filtradas);
         });
       })

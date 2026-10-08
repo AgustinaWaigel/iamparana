@@ -8,6 +8,7 @@ import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { AdminActionButton } from '@/app/components/common/admin-action-button';
 import { SectionNote } from '@/app/components/common/area-sections';
+import { coincideBusqueda } from '@/lib/busqueda';
 
 type Cancion = {
   title: string;
@@ -58,10 +59,7 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
 
   const cancionesFiltradas = useMemo(() => {
     return songsState
-      .filter((c) =>
-        c.title.toLowerCase().includes(busqueda.toLowerCase()) ||
-        (c.artist || '').toLowerCase().includes(busqueda.toLowerCase())
-      )
+      .filter((c) => coincideBusqueda(busqueda, c.title, c.artist))
       .sort((a, b) => a.title.localeCompare(b.title));
   }, [busqueda, songsState]);
 
