@@ -144,6 +144,9 @@ export default function RegistroPage() {
             </svg>
             Continuar con Google
           </a>
+          <p className="m-0 max-w-none text-center text-xs leading-relaxed text-stone-500">
+            Al crear tu cuenta aceptás la <Link href="/privacidad" className="font-bold text-brand-brown underline">política de privacidad</Link>.
+          </p>
         </form>
 
         <div className="mt-6 text-center text-sm text-stone-500">

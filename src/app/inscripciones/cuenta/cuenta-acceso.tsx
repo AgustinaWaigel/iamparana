@@ -115,6 +115,9 @@ export function CuentaAcceso({ emailUsuario }: CuentaAccesoProps = {}) {
             Usar otro email
           </button>
         </div>
+        <p className="m-0 mt-5 max-w-none text-left text-xs leading-relaxed text-brand-ink/60">
+          Cómo cuidamos los datos de tu familia: <a href="/privacidad" target="_blank" rel="noopener" className="font-bold text-brand-brown underline">política de privacidad</a>.
+        </p>
       </form>
     );
   }
@@ -151,6 +154,9 @@ export function CuentaAcceso({ emailUsuario }: CuentaAccesoProps = {}) {
           {busy && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden />}
           {busy ? 'Enviando...' : 'Enviarme el código'}
         </button>
+        <p className="m-0 mt-5 max-w-none text-left text-xs leading-relaxed text-brand-ink/60">
+          Cómo cuidamos los datos de tu familia: <a href="/privacidad" target="_blank" rel="noopener" className="font-bold text-brand-brown underline">política de privacidad</a>.
+        </p>
       </form>
     );
   }

@@ -14,6 +14,7 @@ const SITE_LINKS = [
   { label: 'Calendario', href: '/calendario' },
   { label: 'Inscripciones', href: '/inscripciones' },
   { label: 'Info Institucional', href: '/institucional' },
+  { label: 'Política de privacidad', href: '/privacidad' },
 ];
 
 const LINK_CLASS =

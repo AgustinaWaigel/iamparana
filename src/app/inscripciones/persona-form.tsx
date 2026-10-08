@@ -351,7 +351,8 @@ export function PersonaForm({ persona, grupos, esTitular, pedirConsentimiento, o
             className="mt-1 h-5 w-5 shrink-0 rounded border-stone-400 accent-brand-brown"
           />
           <span className="text-sm leading-relaxed text-brand-ink/85">
-            Tengo 17 años o más y doy mi consentimiento para que IAM Paraná guarde estos datos, y los de los menores a mi cargo que cargue en esta cuenta, con el único fin de organizar la inscripción y el cuidado de las personas en sus eventos.
+            Tengo 17 años o más y doy mi consentimiento para que IAM Paraná guarde estos datos, y los de los menores a mi cargo que cargue en esta cuenta, con el único fin de organizar la inscripción y el cuidado de las personas en sus eventos, como explica la{' '}
+            <a href="/privacidad" target="_blank" rel="noopener" className="font-bold text-brand-brown underline">política de privacidad</a>.
           </span>
         </label>
       ),
