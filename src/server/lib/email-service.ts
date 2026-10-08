@@ -1,6 +1,7 @@
 import "server-only";
 import { google } from "googleapis";
 import nodemailer from "nodemailer";
+import { CONTACTO_EMAIL } from "@/lib/contacto";
 
 // El envío usa la API de Gmail por HTTPS con una credencial que solo puede ENVIAR
 // correo (permiso gmail.send). Antes se usaba SMTP con la credencial de Drive, que
@@ -29,7 +30,8 @@ function createTransporter() {
 
   return {
     async sendMail(message: { from: string; to: string; subject: string; html: string; text: string; attachments?: Array<{ filename: string; content: Buffer; contentType: string }> }) {
-      const built = await builder.sendMail(message);
+      // Las respuestas van al mail de contacto, no a la cuenta que envía.
+      const built = await builder.sendMail({ replyTo: CONTACTO_EMAIL, ...message });
       await gmail.users.messages.send({
         userId: "me",
         requestBody: { raw: (built.message as Buffer).toString("base64url") },

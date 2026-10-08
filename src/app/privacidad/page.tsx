@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { CONTACTO_EMAIL } from "@/lib/contacto";
 import { ArrowRight, ChevronDown, EyeOff, HeartPulse, Lock, ShieldCheck, UserCheck } from "lucide-react";
 
 // Política de privacidad. Describe lo que el sitio hace de verdad: si cambia cómo se guardan
@@ -79,14 +80,7 @@ function TomarElControl({ acciones }: { acciones: { href: string; texto: string 
 }
 
 export default function PrivacidadPage() {
-  // El mail para pedidos de privacidad: uno propio si se configura, si no el mismo desde el que salen los avisos.
-  const contacto = process.env.CONTACTO_PRIVACIDAD || process.env.GMAIL_FROM || null;
-  const Mail = () =>
-    contacto ? (
-      <a href={`mailto:${contacto}`} className={`break-all ${LINK}`}>{contacto}</a>
-    ) : (
-      <span className="font-bold">el mail de contacto de IAM Paraná</span>
-    );
+  const Mail = () => <a href={`mailto:${CONTACTO_EMAIL}`} className={`break-all ${LINK}`}>{CONTACTO_EMAIL}</a>;
 
   return (
     <div className="min-h-screen bg-brand-paper">
