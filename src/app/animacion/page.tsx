@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2, Music2 } from 'lucide-react';
+import { ArrowRight, Gamepad2, Music2, PlaySquare } from 'lucide-react';
 import { AreaHero } from '@/app/components/common/area-hero';
 import { AreaQuote } from '@/app/components/common/area-quote';
 import { AnimacionClient } from '@/app/animacion/components/animacion-client';
@@ -125,6 +125,62 @@ export default async function AnimacionPage() {
               </div>
               <ArrowRight size={22} className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none" aria-hidden />
             </Link>
+          </section>
+
+          {/* Música y videos oficiales de IAM Paraná */}
+          <section aria-labelledby="musica-videos" className="mb-12 overflow-hidden rounded-3xl bg-emerald-900 p-5 text-white shadow-[0_24px_48px_-28px_rgba(6,78,59,0.8)] sm:mb-16 sm:p-8 lg:p-10">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 id="musica-videos" className="m-0 text-left font-display text-[clamp(1.9rem,4.5vw,2.75rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-white">
+                ¡Rezá cantando!
+              </h2>
+              <p className="m-0 max-w-md text-left text-base leading-relaxed text-emerald-50/90">
+                Las canciones del Equipo de Animación para escuchar en cualquier momento, y los videos del canal de IAM Paraná.
+              </p>
+            </div>
+
+            <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
+              <div>
+                <iframe
+                  title="Canciones de IAM Paraná en Spotify"
+                  src="https://open.spotify.com/embed/artist/74E30fNeM3IfOifV9JiCux?utm_source=generator&theme=0"
+                  width="100%"
+                  height="380"
+                  loading="lazy"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  className="block w-full rounded-2xl border-0 bg-emerald-950"
+                />
+                <a
+                  href="https://open.spotify.com/intl-es/artist/74E30fNeM3IfOifV9JiCux"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <Music2 size={16} aria-hidden /> Abrir en Spotify
+                </a>
+              </div>
+
+              <div>
+                <div className="aspect-video overflow-hidden rounded-2xl bg-emerald-950">
+                  <iframe
+                    title="Videos de IAM Paraná en YouTube"
+                    src="https://www.youtube-nocookie.com/embed/videoseries?list=UUShR66tuvm-N-I5ZUZ6Oo6Q"
+                    loading="lazy"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                    className="block h-full w-full border-0"
+                  />
+                </div>
+                <a
+                  href="https://www.youtube.com/@IAMArq.Paran%C3%A1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <PlaySquare size={16} aria-hidden /> Ver todos los videos en YouTube
+                </a>
+              </div>
+            </div>
           </section>
 
           <AnimacionCardsGrid

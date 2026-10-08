@@ -338,54 +338,74 @@ export async function moveResourceSection(id: number, direction: "up" | "down") 
   });
 }
 
-async function getDocumentsBySectionKey(sectionKey: string): Promise<SectionDocument[]> {
-  const client = clientOrThrow();
-  const result = await client.execute({
-    sql: `SELECT id, title, description, google_drive_url, file_type, file_size, created_at
-          FROM documents
-          WHERE section = ?
-          ORDER BY created_at DESC`,
-    args: [sectionKey],
-  });
-
-  return result.rows as unknown as SectionDocument[];
-}
-
-async function getLinksBySectionKey(sectionKey: string): Promise<SectionLink[]> {
-  const client = clientOrThrow();
-  const result = await client.execute({
-    sql: `SELECT id, title, description, url, icon, created_at
-          FROM links
-          WHERE section = ?
-          ORDER BY created_at DESC`,
-    args: [sectionKey],
-  });
-
-  return result.rows as unknown as SectionLink[];
-}
-
 export async function getResourcePageWithContent(slug: string): Promise<{
   page: ResourcePage;
   sections: ResourceSectionWithContent[];
 } | null> {
-  const page = await getResourcePageBySlug(slug);
+  // Un solo viaje a la base: página, secciones y todo su contenido van en el mismo batch.
+  // (Antes eran 2 consultas más una ronda por sección, encadenadas.)
+  const client = clientOrThrow();
+  const sectionKeysOfPage = `SELECT rs.section_key FROM resource_sections rs
+                             JOIN resource_pages rp ON rp.id = rs.page_id
+                             WHERE rp.slug = ?`;
+
+  const [pageResult, sectionsResult, documentsResult, linksResult] = await client.batch([
+    {
+      sql: `SELECT p.id, p.slug, p.title, p.section, p.description, p.thumbnail_url, p.texture_url, p.created_by_user_id, p.created_at,
+                   COALESCE(s.template, 'gold') as template
+            FROM resource_pages p
+            LEFT JOIN resource_page_styles s ON s.page_id = p.id
+            WHERE p.slug = ?
+            LIMIT 1`,
+      args: [slug],
+    },
+    {
+      sql: `SELECT rs.id, rs.page_id, rs.slug, rs.title, rs.section_key, rs.position
+            FROM resource_sections rs
+            JOIN resource_pages rp ON rp.id = rs.page_id
+            WHERE rp.slug = ?
+            ORDER BY rs.position ASC, rs.created_at ASC`,
+      args: [slug],
+    },
+    {
+      sql: `SELECT id, section, title, description, google_drive_url, file_type, file_size, created_at
+            FROM documents
+            WHERE section IN (${sectionKeysOfPage})
+            ORDER BY created_at DESC`,
+      args: [slug],
+    },
+    {
+      sql: `SELECT id, section, title, description, url, icon, created_at
+            FROM links
+            WHERE section IN (${sectionKeysOfPage})
+            ORDER BY created_at DESC`,
+      args: [slug],
+    },
+  ], "read");
+
+  const page = (pageResult.rows[0] as unknown as ResourcePage) ?? null;
   if (!page) return null;
 
-  const sections = await listResourceSections(page.id);
-  const sectionsWithContent: ResourceSectionWithContent[] = [];
+  // Agrupa las filas por clave de sección conservando el orden de la consulta.
+  const groupBySection = <T,>(rows: unknown[]): Map<string, T[]> => {
+    const groups = new Map<string, T[]>();
+    for (const row of rows) {
+      const { section, ...item } = row as { section: string } & Record<string, unknown>;
+      const group = groups.get(section);
+      if (group) group.push(item as T);
+      else groups.set(section, [item as T]);
+    }
+    return groups;
+  };
 
-  for (const section of sections) {
-    const [documents, links] = await Promise.all([
-      getDocumentsBySectionKey(section.section_key),
-      getLinksBySectionKey(section.section_key),
-    ]);
+  const documentsBySection = groupBySection<SectionDocument>(documentsResult.rows);
+  const linksBySection = groupBySection<SectionLink>(linksResult.rows);
 
-    sectionsWithContent.push({
-      ...section,
-      documents,
-      links,
-    });
-  }
+  const sectionsWithContent: ResourceSectionWithContent[] = (sectionsResult.rows as unknown as ResourceSection[]).map((section) => ({
+    ...section,
+    documents: documentsBySection.get(section.section_key) ?? [],
+    links: linksBySection.get(section.section_key) ?? [],
+  }));
 
   return {
     page,

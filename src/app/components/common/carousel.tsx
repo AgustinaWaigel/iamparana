@@ -20,11 +20,13 @@ export interface CarouselItem {
 interface CarouselProps {
   initialItems?: any[];
   isAdmin?: boolean;
+  /** Ocupa todo el alto de la pantalla, debajo del menú, de borde a borde. */
+  fullscreen?: boolean;
 }
 
 const INTERVAL = 6500;
 
-export default function Carousel({ initialItems = [], isAdmin = false }: CarouselProps) {
+export default function Carousel({ initialItems = [], isAdmin = false, fullscreen = false }: CarouselProps) {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -102,7 +104,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
 
   if (items.length === 0) {
     return (
-      <div className="aspect-[21/9] bg-stone-900 flex items-center justify-center">
+      <div className={`${fullscreen ? "h-[calc(100svh-5rem)] min-h-[420px]" : "aspect-[21/9]"} bg-stone-900 flex items-center justify-center`}>
         <span className="text-stone-500 font-semibold text-sm">Sin imágenes cargadas</span>
       </div>
     );
@@ -133,7 +135,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
     : null;
 
   return (
-    <div className="group relative h-[min(118vw,620px)] min-h-[430px] overflow-hidden rounded-2xl bg-stone-900 select-none sm:h-[33vw] sm:min-h-0 sm:rounded-[20px]">
+    <div className={`group relative overflow-hidden bg-stone-900 select-none ${fullscreen ? "h-[calc(100svh-5rem)] min-h-[460px]" : "h-[min(118vw,620px)] min-h-[430px] rounded-2xl sm:h-[33vw] sm:min-h-0 sm:rounded-[20px]"}`}>
         {isAdmin && (
           <div className="absolute top-4 right-4 z-30">
             <CarouselAdminTools compact />
@@ -170,7 +172,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
         {activeItem && (activeItem.title || activeItem.description || activeItem.link) && (
           <div
             key={displayActive}
-            className="absolute inset-x-0 bottom-0 z-20 p-5 pb-8 sm:p-8 md:p-11 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700"
+            className={`absolute inset-x-0 bottom-0 z-20 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-700 ${fullscreen ? "mx-auto max-w-7xl px-5 pb-24 sm:px-8 md:pb-28" : "p-5 pb-8 sm:p-8 md:p-11"}`}
           >
             <div className="flex max-w-2xl flex-col items-start text-left pointer-events-auto">
               {activeItem.tag && (
@@ -180,9 +182,9 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
                 </span>
               )}
               {activeItem.title && (
-                <h1 className="m-0 mb-2 w-full text-left font-display text-[clamp(1.5rem,7vw,2rem)] sm:mb-3 sm:text-[34px] md:text-[40px] font-extrabold text-white leading-[1.06] drop-shadow-sm text-balance">
+                <h2 className={`m-0 mb-2 w-full text-left font-display font-extrabold text-white leading-[1.04] drop-shadow-sm text-balance sm:mb-3 ${fullscreen ? "text-[clamp(2rem,8vw,2.6rem)] tracking-[-0.03em] sm:text-[48px] md:text-[64px]" : "text-[clamp(1.5rem,7vw,2rem)] sm:text-[34px] md:text-[40px]"}`}>
                   {activeItem.title}
-                </h1>
+                </h2>
               )}
               {activeItem.description && (
                 <p className="m-0 mb-4 line-clamp-3 w-full max-w-2xl text-left text-sm leading-relaxed text-white/90 sm:mb-5 sm:line-clamp-none md:text-[15px]">
@@ -192,7 +194,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               {activeItem.link && (
                 <a
                   href={activeItem.link}
-                  className="group/btn inline-flex items-center gap-2 rounded-full bg-white text-brand-deep hover:bg-white/90 px-6 py-2.5 text-sm font-black shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none"
+                  className="group/btn inline-flex items-center gap-2 rounded-full bg-white text-brand-deep hover:bg-white/90 px-6 py-2.5 text-sm font-black shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   {activeItem.buttonText || "Ver más"}
                   <ChevronRight size={15} className="transition-transform duration-200 group-hover/btn:translate-x-0.5" />
@@ -209,7 +211,7 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               type="button"
               aria-label="Imagen anterior"
               onClick={() => handleManual(goPrev)}
-              className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus:outline-none sm:left-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+              className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white sm:left-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
             >
               <ChevronLeft size={18} />
             </button>
@@ -217,13 +219,13 @@ export default function Carousel({ initialItems = [], isAdmin = false }: Carouse
               type="button"
               aria-label="Imagen siguiente"
               onClick={() => handleManual(goNext)}
-              className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus:outline-none sm:right-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+              className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/25 text-white opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white sm:right-4 sm:h-10 sm:w-10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
             >
               <ChevronRight size={18} />
             </button>
 
             {/* Indicadores con barra de progreso */}
-            <div className="absolute right-5 top-5 z-20 flex items-center gap-1.5 sm:bottom-7 sm:right-8 sm:top-auto md:right-11">
+            <div className={`absolute z-20 flex items-center gap-1.5 ${fullscreen ? "bottom-10 right-5 sm:right-8 md:right-11" : "right-5 top-5 sm:bottom-7 sm:right-8 sm:top-auto md:right-11"}`}>
               {items.map((_, i) => (
                 <button
                   key={`dot-${i}`}

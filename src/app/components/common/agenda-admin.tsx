@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/use-session";
 import { X, Calendar, Plus, Trash2, Pencil, Clock, Palette, AlertCircle, Loader2 } from "lucide-react";
 import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
+import { InscripcionConfigPanel } from "@/app/components/common/inscripcion-config-panel";
 
 interface Evento {
   id?: string | number;
@@ -178,6 +179,7 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
               
               {/* Formulario Estilo Formación */}
               {(isAdding || editingId) ? (
+                <>
                 <form onSubmit={handleSubmit} className="mb-8 space-y-5 animate-in zoom-in-95 duration-300">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-black text-brand-brown uppercase tracking-widest flex items-center gap-2">
@@ -243,6 +245,10 @@ export default function AgendaAdmin({ eventosVisibles, eventosFuturos, onEventoC
                     </button>
                   </div>
                 </form>
+                {editingId
+                  ? <InscripcionConfigPanel eventoId={editingId} />
+                  : <p className="mb-8 rounded-2xl border border-dashed border-stone-200 p-4 text-sm text-stone-500">Para activar la inscripción, primero guardá el evento y después abrilo con el lápiz.</p>}
+                </>
               ) : (
                 <button onClick={() => setIsAdding(true)} className="w-full mb-8 py-4 border-2 border-dashed border-stone-200 text-stone-500 rounded-[1.5rem] font-bold hover:bg-stone-50 hover:border-yellow-400 hover:text-yellow-700 transition-all flex items-center justify-center gap-2 group">
                   <Plus size={20} className="group-hover:rotate-90 transition-transform"/> Agregar Nuevo Evento

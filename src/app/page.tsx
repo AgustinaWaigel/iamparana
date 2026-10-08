@@ -5,10 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { listCarouselItems, listNoticiasPreview } from "@/server/db/content-repository";
 import { getSessionUser } from "@/server/lib/api-utils";
-import { CalendarDays, ChevronRight } from "lucide-react";
+import { ArrowDown, ArrowRight, CalendarDays, ChevronRight } from "lucide-react";
+import { AREA_ICONS } from "@/app/components/common/area-icons";
+import { AREA_ORDER, AREA_THEME } from "@/app/components/common/area-theme";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
 import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-buttons";
 import { OnlineUsersBoard } from "@/app/components/common/online-users-board";
+import { MisionGlobo } from "@/app/components/common/mision-globo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,6 +21,9 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+const HOME_BUTTON =
+  "inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold no-underline transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown";
 
 interface Noticia {
   slug: string;
@@ -40,11 +46,63 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-brand-paper">
 
+      <h1 className="sr-only">Infancia y Adolescencia Misionera de Paraná</h1>
+
       {/* ══════════════════════════════════════════
-          1. HERO — Carrusel (banda contenida)
+          PORTADA — el carrusel ocupa toda la pantalla
       ══════════════════════════════════════════ */}
-      <section className="w-full px-3 sm:px-8 pt-8">
-        <Carousel initialItems={carouselItems} isAdmin={isAdmin} />
+      <section aria-label="Destacados" className="relative overflow-hidden bg-brand-deep">
+        <div className="portada-salida origin-top">
+          <Carousel initialItems={carouselItems} isAdmin={isAdmin} fullscreen />
+        </div>
+        <a
+          href="#mision"
+          aria-label="Seguir bajando"
+          className="absolute bottom-6 left-1/2 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/40 bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-brand-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <ArrowDown size={18} aria-hidden className="motion-safe:animate-[bead-float_2.4s_ease-in-out_infinite]" />
+        </a>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          MISIÓN DEL AÑO — el país al que ayudamos, en un globo
+      ══════════════════════════════════════════ */}
+      <div id="mision" className="scroll-mt-20">
+        <MisionGlobo />
+      </div>
+
+      {/* ══════════════════════════════════════════
+          ÁREAS — accesos a las cinco secciones de recursos
+      ══════════════════════════════════════════ */}
+      <section id="areas" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 pt-12 sm:px-6 sm:pt-16">
+        <FadeInSection>
+        <h2 className="pop-in m-0 mb-6 text-left font-display text-[32px] font-extrabold leading-none tracking-tight text-brand-ink sm:text-[40px]">
+          Recursos por área
+        </h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+          {AREA_ORDER.map((key, index) => {
+            const area = AREA_THEME[key];
+            const Icon = AREA_ICONS[key];
+            return (
+              <Link
+                key={key}
+                href={area.href}
+                style={{ backgroundImage: 'url("/assets/textures/areasg.webp")', backgroundSize: '420px', ["--d" as string]: `${120 + index * 80}ms` }}
+                className={`pop-in group flex items-center gap-4 rounded-2xl bg-blend-multiply p-5 no-underline shadow-[0_14px_30px_-20px_rgba(58,21,8,0.55)] transition-[transform,background-color] duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transform-none sm:last:col-span-2 lg:min-h-[230px] lg:flex-col lg:items-start lg:gap-0 lg:last:col-span-1 ${area.tile}`}
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black/10 transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transform-none">
+                  <Icon size={24} strokeWidth={2} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1 lg:mt-5">
+                  <span className="block font-display text-[22px] font-extrabold leading-tight">{area.label}</span>
+                  <span className="mt-1 block text-sm leading-snug opacity-90">{area.summary}</span>
+                </span>
+                <ArrowRight size={20} aria-hidden className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none lg:mt-4" />
+              </Link>
+            );
+          })}
+        </div>
+        </FadeInSection>
       </section>
 
       <OnlineUsersBoard />
@@ -52,17 +110,12 @@ export default async function HomePage() {
       {/* ══════════════════════════════════════════
           2. NOTICIAS (protagonistas, ancho completo)
       ══════════════════════════════════════════ */}
-      <section className="mx-auto w-full px-3 sm:px-8 pt-8 sm:pt-12 pb-10 sm:pb-14">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-14">
         <FadeInSection>
           <div className="mb-8 flex items-end justify-between gap-6">
-            <div>
-              <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-brand-gold">
-                Lo último
-              </span>
-              <h2 className="font-display mt-1.5 text-[32px] sm:text-[40px] font-extrabold leading-none tracking-tight text-brand-ink">
-                Noticias
-              </h2>
-            </div>
+            <h2 className="m-0 font-display text-[32px] font-extrabold leading-none tracking-tight text-brand-ink sm:text-[40px]">
+              Noticias
+            </h2>
             <Link
               href="/noticias"
               className="hidden sm:inline-flex items-center gap-2 rounded-full border border-brand-brown/20 px-4 py-2 text-[13.5px] font-bold text-brand-brown transition-colors hover:bg-brand-brown hover:text-white no-underline"
@@ -79,7 +132,8 @@ export default async function HomePage() {
               {noticias.slice(0, 5).map((item, index) => (
                 <div
                   key={item.slug}
-                  className={`group relative min-w-0 ${index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}`}
+                  style={{ ["--d" as string]: `${index * 90}ms` }}
+                  className={`pop-in group relative min-w-0 ${index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}`}
                 >
                   <article className={`flex h-full flex-col overflow-hidden bg-white shadow-md ring-1 ring-brand-brown/10 transition-all hover:-translate-y-1 hover:shadow-xl ${index === 0 ? "min-h-[480px] rounded-3xl" : "min-h-[250px] rounded-2xl"}`}>
                     <Link href={`/noticias/${item.slug}`} className="flex h-full flex-col no-underline">
@@ -90,7 +144,7 @@ export default async function HomePage() {
                             alt={item.title}
                             fill
                             sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="paralaje object-cover"
                           />
                         )}
                       </div>
@@ -123,9 +177,16 @@ export default async function HomePage() {
             </div>
           )}
         </FadeInSection>
+
+        <div className="mt-6 sm:hidden">
+          <Link href="/noticias" className={`${HOME_BUTTON} w-full justify-center border border-brand-brown/20 text-brand-brown hover:bg-brand-brown hover:text-white`}>
+            Ver todas
+            <ChevronRight size={15} aria-hidden />
+          </Link>
+        </div>
       </section>
 
-      <div className="mx-auto w-full px-3 sm:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="h-px w-full bg-gradient-to-r from-transparent via-brand-brown/20 to-transparent" />
       </div>
 
@@ -142,17 +203,12 @@ export default async function HomePage() {
         }}
       >
         <div className="absolute inset-0 bg-brand-deep/80" />
-        <div className="relative mx-auto max-w-[1180px] px-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
           <FadeInSection>
             <div className="mb-9 flex items-end justify-between gap-6">
-              <div>
-                <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-brand-gold">
-                  Próximas fechas
-                </span>
-                <h2 className="font-display mt-1.5 text-[32px] sm:text-[40px] font-extrabold leading-none tracking-tight text-white">
-                  Agenda misionera
-                </h2>
-              </div>
+              <h2 className="m-0 font-display text-[32px] font-extrabold leading-none tracking-tight text-white sm:text-[40px]">
+                Agenda misionera
+              </h2>
               <Link
                 href="/calendario"
                 className="hidden sm:inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[13.5px] font-bold text-white backdrop-blur transition-colors hover:bg-white/20 no-underline"
@@ -166,6 +222,13 @@ export default async function HomePage() {
           <FadeInSection delay={80}>
             <AgendaHomeDark />
           </FadeInSection>
+
+          <div className="mt-6 sm:hidden">
+            <Link href="/calendario" className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-bold text-white no-underline transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold">
+              <CalendarDays size={15} aria-hidden />
+              Calendario completo
+            </Link>
+          </div>
         </div>
       </section>
 

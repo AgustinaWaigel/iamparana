@@ -2,9 +2,10 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { marked, Renderer } from 'marked';
 import ChordTransposer from '@/app/components/common/chordtransposer';
-import { HeroSection } from '@/app/components/common/hero-section';
+import Link from 'next/link';
+import { AreaHero, AreaPage } from '@/app/components/common/area-hero';
 import { getAllCanciones, getCancionBySlug } from '@/server/content/canciones';
-import { Music } from 'lucide-react';
+import { ArrowLeft, Music } from 'lucide-react';
 
 const renderer = new Renderer();
 renderer.code = function ({ text, lang }: { text: string; lang?: string }): string {
@@ -31,7 +32,7 @@ function parseAcordes(content: string): string {
   const parsedLines = lines.map((line) => {
     // Regex mejorada para capturar acordes incluso al final de palabras o solos
     return line.replace(/\[([^\]]+)\]([^\s\n]*)/g, (_match, acorde, silaba) => {
-      return `<span class="notamusical"><span class="Chord font-black text-emerald-900 bg-emerald-300/25 px-1 rounded" data-original="${acorde}">${acorde}</span>${silaba}</span>`;
+      return `<span class="notamusical"><span class="Chord font-black bg-brand-brown/5 px-1 rounded" data-original="${acorde}">${acorde}</span>${silaba}</span>`;
     });
   });
   return parsedLines.join('\n');
@@ -53,45 +54,50 @@ export default async function CancionPage(props: { params: Promise<{ slug: strin
 
   return (
     <>
-      <section>
-        <HeroSection
-          title={cancion.title}
-          textureUrl="/assets/textures/areasg.webp"
-          overlayColor="rgba(20, 83, 45, 0.65), rgba(22, 163, 74, 0.8)"
-          gradientClass="from-green-900 via-green-800 to-emerald-700"
-          description={cancion.artist || ''}
-          textColor="text-white"
-        />
-      </section>
-
-      <main className="max-w-7xl mx-auto px-4 pb-8 md:pb-10">
-        <section className="mx-auto max-w-3xl">
-          
-          {/* TRANSPOSER FLOTANTE O FIJO */}
-          <div className="sticky top-20 z-30 mb-10 mt-10">
-            <div className="bg-white border border-emerald-200 p-4 rounded-2xl shadow-sm">
-              <ChordTransposer />
-            </div>
+      <AreaPage
+        narrow
+        hero={
+          <AreaHero
+            area="animacion"
+            title={cancion.title}
+            description={cancion.artist || ''}
+            crumbs={[{ label: 'Canciones', href: '/animacion/canciones' }]}
+          />
+        }
+      >
+        {/* TRANSPOSER FLOTANTE O FIJO */}
+        <div className="sticky top-[5.5rem] z-30 mb-10">
+          <div className="rounded-2xl bg-white p-4 shadow-[0_14px_30px_-18px_rgba(58,21,8,0.45)] ring-1 ring-brand-brown/10">
+            <ChordTransposer />
           </div>
+        </div>
 
-          <div 
-            className="prose prose-stone max-w-none 
-                       prose-pre:bg-transparent prose-pre:p-0
-                       text-emerald-950 leading-relaxed
-                       font-medium text-lg md:text-xl"
+        <div
+          className="prose prose-stone max-w-none
+                     prose-pre:bg-transparent prose-pre:p-0
+                     text-brand-ink leading-relaxed
+                     font-medium text-lg md:text-xl"
+        >
+          <div
+            className="contenido-cancion whitespace-pre-wrap font-sans"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+
+        <div className="mt-16 flex flex-col items-center gap-5 border-t border-brand-brown/15 pt-10">
+          <div className="flex items-center gap-3 text-emerald-800">
+            <Music size={20} aria-hidden />
+            <p className="m-0 max-w-none text-sm font-bold uppercase tracking-[0.16em]">Fin de la canción</p>
+          </div>
+          <Link
+            href="/animacion/canciones"
+            className="inline-flex items-center gap-2 rounded-full border border-brand-brown/20 px-4 py-2 text-sm font-bold text-brand-brown no-underline transition-colors hover:bg-brand-brown hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown"
           >
-            <div
-              className="contenido-cancion whitespace-pre-wrap font-sans"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-          </div>
-
-          <div className="mt-20 pt-10 border-t border-emerald-200 flex flex-col items-center gap-4 opacity-70">
-            <Music className="text-emerald-700" size={32} />
-            <p className="text-xs font-black uppercase tracking-widest text-emerald-700/70">Fin de la canción</p>
-          </div>
-        </section>
-      </main>
+            <ArrowLeft size={15} aria-hidden />
+            Volver al cancionero
+          </Link>
+        </div>
+      </AreaPage>
 
       {/* CSS ADICIONAL PARA LOS ACORDES */}
       <style dangerouslySetInnerHTML={{ __html: `

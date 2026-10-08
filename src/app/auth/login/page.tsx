@@ -20,6 +20,38 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ message: '', isError: false });
   const [showPassword, setShowPassword] = useState(false);
+  // Segundo paso de los administradores: el código que les llega por email.
+  const [paso, setPaso] = useState<'credenciales' | 'codigo'>('credenciales');
+  const [codigo, setCodigo] = useState('');
+
+  // Al volver de Google: un admin llega directo al paso del código; un error, con su aviso.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paso') === 'codigo') setPaso('codigo');
+    const error = params.get('error');
+    if (error === 'google') setStatus({ message: 'No pudimos iniciar sesión con Google. Probá de nuevo o entrá con tu email y contraseña.', isError: true });
+    if (error === 'inactiva') setStatus({ message: 'Esa cuenta está desactivada.', isError: true });
+  }, []);
+
+  const handleCodigo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ message: '', isError: false });
+    try {
+      const res = await fetch('/api/auth/login/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'El código no es correcto.');
+      setStatus({ message: '¡Bienvenido! Redirigiendo...', isError: false });
+      setTimeout(() => { window.location.href = '/'; }, 800);
+    } catch (err) {
+      setStatus({ message: err instanceof Error ? err.message : 'El código no es correcto.', isError: true });
+      setLoading(false);
+    }
+  };
 
   // Verificar sesión inicial de forma simple
   const checkSession = useCallback(async () => {
@@ -68,6 +100,14 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
+
+      if (data.requires2fa) {
+        setPaso('codigo');
+        setCodigo('');
+        setLoading(false);
+        setStatus({ message: 'Te mandamos un código de 6 dígitos a tu email. Ingresalo para terminar de entrar.', isError: false });
+        return;
+      }
 
       setStatus({ message: '¡Bienvenido! Redirigiendo...', isError: false });
 
@@ -154,6 +194,47 @@ export default function LoginPage() {
               <Link href="/auth/registro" className="font-semibold text-amber-700 hover:text-amber-900">Creá una cuenta</Link>
             </div>
 
+            {paso === 'codigo' ? (
+            <form onSubmit={handleCodigo} className="p-7 space-y-4">
+              <div className="space-y-1.5">
+                <label htmlFor="login-codigo" className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Código de ingreso
+                </label>
+                <input
+                  id="login-codigo"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  required
+                  autoFocus
+                  value={codigo}
+                  onChange={e => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all text-stone-700 text-center text-2xl font-bold tracking-[0.4em] tabular-nums disabled:opacity-60"
+                />
+                <p className="text-xs text-stone-500 leading-relaxed">
+                  Es un paso extra para quienes administran el sitio. El código llega a tu email y vale 10 minutos.
+                </p>
+              </div>
+
+              {status.message && (
+                <div className={`flex items-center gap-2 p-3 rounded-xl text-xs ${status.isError ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'}`}>
+                  {status.isError && <AlertCircle size={14} className="shrink-0" />}
+                  <span className="font-medium">{status.message}</span>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading || codigo.length !== 6} className="btn-primary w-full py-3.5 mt-1">
+                <div className="flex items-center justify-center gap-2">
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : <span>Entrar</span>}
+                </div>
+              </button>
+              <button type="button" disabled={loading} onClick={() => { setPaso('credenciales'); setStatus({ message: '', isError: false }); }} className="w-full text-center text-xs font-semibold text-amber-700 hover:text-amber-900">
+                Volver a iniciar sesión
+              </button>
+            </form>
+            ) : (
             <form onSubmit={handleLogin} className="p-7 space-y-4">
               {/* Email */}
               <div className="space-y-1.5">
@@ -261,7 +342,26 @@ export default function LoginPage() {
                   )}
                 </div>
               </button>
+
+              <div className="flex items-center gap-3 pt-1">
+                <div className="h-px flex-1 bg-stone-200" />
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">o</span>
+                <div className="h-px flex-1 bg-stone-200" />
+              </div>
+              <a
+                href="/api/auth/google"
+                className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-stone-200 bg-white py-3 text-sm font-semibold text-stone-700 no-underline transition-colors hover:bg-stone-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.500-4.800 7.200l7.500 5.800c4.400-4.100 7.200-10.100 7.200-17.500z" />
+                  <path fill="#FBBC05" d="M10.500 28.600c-.500-1.400-.800-3-.800-4.600s.300-3.200.800-4.600l-7.900-6.200C1 16.500 0 20.100 0 24s1 7.500 2.600 10.800l7.900-6.200z" />
+                  <path fill="#34A853" d="M24 48c6.500 0 11.900-2.100 15.900-5.800l-7.500-5.800c-2.100 1.400-4.800 2.300-8.400 2.300-6.300 0-11.600-4.100-13.500-9.900l-7.900 6.200C6.500 42.600 14.600 48 24 48z" />
+                </svg>
+                Continuar con Google
+              </a>
             </form>
+            )}
           </div>
 
           {/* Footer */}

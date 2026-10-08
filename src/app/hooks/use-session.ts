@@ -84,7 +84,9 @@ export async function refreshSession(): Promise<SessionState> {
 }
 
 export function useSession(): SessionState {
-  const [state, setState] = useState<SessionState>({
+  // Si la sesión ya se cargó antes (otra página, otro componente), se usa desde el primer render:
+  // así el menú de usuario no desaparece y reaparece en cada cambio de página.
+  const [state, setState] = useState<SessionState>(() => cachedSession ?? {
     user: null,
     isLoading: true,
     isAdmin: false,

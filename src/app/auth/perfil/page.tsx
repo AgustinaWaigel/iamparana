@@ -1,270 +1,219 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Eye, EyeOff, ShieldCheck, User, Mail, Lock, MapPin } from 'lucide-react';
-import Link from 'next/link';
+import { Eye, EyeOff, KeyRound, Loader2 } from 'lucide-react';
 import { refreshSession, useSession } from '@/app/hooks/use-session';
+import { CARD_CLASS, ERROR_CLASS, HELP_CLASS, INPUT_CLASS, LABEL_CLASS, NOTICE_CLASS, PRIMARY_BUTTON, SECONDARY_BUTTON, TEXT_BUTTON } from '@/app/inscripciones/ui';
+import { PerfilAnimador } from './perfil-animador';
 
-type MessageState = { type: 'success' | 'error'; text: string } | null;
+// Perfil del usuario del sitio: sus datos, si es animador/a de una IAM y su contraseña.
+// Cada bloque se guarda por separado.
 
-type ProfileInputProps = {
-  label: string;
-  name: string;
-  type?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  icon?: React.ReactNode;
-  isPassword?: boolean;
-  showPassword?: boolean;
-  onTogglePassword?: () => void;
+type Seccion = 'datos' | 'clave';
+type MessageState = { seccion: Seccion; type: 'success' | 'error'; text: string } | null;
+
+const ROL_LABEL: Record<string, string> = {
+  admin: 'Administrador/a',
+  miembro: 'Miembro',
+  equipo: 'Equipo',
+  redactor: 'Redactor/a',
+  coordinador: 'Coordinador/a',
+  animador: 'Animador/a',
 };
+
+const H2 = 'm-0 text-left font-display text-xl font-bold text-brand-ink';
 
 export default function PerfilPage() {
   const router = useRouter();
   const { user, isLoading } = useSession();
-  
-  const [formData, setFormData] = useState({
-    nombre: '',
-    email: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  
+
+  const [formData, setFormData] = useState({ nombre: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [message, setMessage] = useState<MessageState>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saving, setSaving] = useState<Seccion | null>(null);
+  // Los campos de contraseña aparecen solo si la persona quiere cambiarla.
+  const [cambiandoClave, setCambiandoClave] = useState(false);
 
-  // Sincronizar datos del usuario al cargar
   useEffect(() => {
     if (!isLoading && !user) {
       router.replace('/auth/login');
     } else if (user) {
-      setFormData(prev => ({
-        ...prev,
-        nombre: user.nombre || '',
-        email: user.email || '',
-      }));
+      setFormData((prev) => ({ ...prev, nombre: user.nombre || '', email: user.email || '' }));
     }
   }, [user, isLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (message) setMessage(null); // Limpiar mensajes al escribir
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (message) setMessage(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Validaciones de negocio
-    if (formData.newPassword) {
-      if (formData.newPassword.length < 6) {
-        setMessage({ type: 'error', text: 'La nueva contraseña debe tener al menos 6 caracteres.' });
-        setIsSubmitting(false);
-        return;
-      }
-      if (formData.newPassword !== formData.confirmPassword) {
-        setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden.' });
-        setIsSubmitting(false);
-        return;
-      }
-      if (!formData.currentPassword) {
-        setMessage({ type: 'error', text: 'Ingresa tu contraseña actual para autorizar el cambio.' });
-        setIsSubmitting(false);
-        return;
-      }
+  const guardar = async (seccion: Seccion) => {
+    if (seccion === 'clave') {
+      if (formData.newPassword.length < 6) return setMessage({ seccion, type: 'error', text: 'La contraseña nueva tiene que tener al menos 6 caracteres.' });
+      if (formData.newPassword !== formData.confirmPassword) return setMessage({ seccion, type: 'error', text: 'Las dos contraseñas nuevas no coinciden.' });
+      if (!formData.currentPassword) return setMessage({ seccion, type: 'error', text: 'Escribí tu contraseña actual para autorizar el cambio.' });
     }
 
+    setSaving(seccion);
+    setMessage(null);
     try {
-      const payload = {
-        nombre: formData.nombre,
-        email: formData.email,
-        ...(formData.newPassword && {
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
-      };
-
       const response = await fetch('/api/auth/update-profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          email: formData.email,
+          ...(seccion === 'clave' && { currentPassword: formData.currentPassword, newPassword: formData.newPassword }),
+        }),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) throw new Error(result.message || 'Error al actualizar');
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || 'No se pudo guardar.');
 
       await refreshSession();
-      setMessage({ type: 'success', text: 'Perfil actualizado con éxito.' });
-      setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      setMessage({ seccion, type: 'success', text: seccion === 'clave' ? 'Listo, cambiaste tu contraseña.' : 'Listo, guardamos tus datos.' });
+      if (seccion === 'clave') {
+        setFormData((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+        setCambiandoClave(false);
+      }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error inesperado al actualizar perfil.';
-      setMessage({ type: 'error', text: errorMessage });
+      setMessage({ seccion, type: 'error', text: err instanceof Error ? err.message : 'No se pudo guardar.' });
     } finally {
-      setIsSubmitting(false);
+      setSaving(null);
     }
   };
 
-  if (isLoading) return <LoadingScreen />;
+  const aviso = (seccion: Seccion) =>
+    message?.seccion === seccion ? (
+      <p role={message.type === 'error' ? 'alert' : 'status'} className={message.type === 'error' ? ERROR_CLASS : NOTICE_CLASS}>{message.text}</p>
+    ) : null;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-brand-paper">
+        <p className="flex items-center gap-2 text-base font-semibold text-brand-ink/70"><Loader2 size={20} className="animate-spin motion-reduce:animate-none" aria-hidden /> Cargando tu perfil…</p>
+      </div>
+    );
+  }
   if (!user) return null;
 
+  const inicial = (user.nombre || user.email || '?').trim().charAt(0).toUpperCase();
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-amber-50 px-4 pb-12 pt-20 text-brand-brown md:pb-20">
-      <div className="mx-auto max-w-2xl">
-        {/* Top Bar */}
-        <div className="mb-10 flex items-center justify-between">
-          <Link href="/" className="group flex items-center gap-2 text-brand-brown/80 transition-colors hover:text-brand-brown">
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="font-medium">Volver</span>
-          </Link>
-          <h1 className="text-2xl font-black text-brand-brown md:text-3xl">Configuración de Perfil</h1>
+    <div className="min-h-screen bg-brand-paper">
+      <div className="mx-auto max-w-2xl px-4 pb-20 pt-16 sm:px-6 sm:pt-20">
+        {/* ── Quién sos ── (el botón "Volver" ya lo pone el sitio arriba) */}
+        <div className="flex items-center gap-4">
+          <span aria-hidden className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-brown font-display text-2xl font-extrabold text-white">{inicial}</span>
+          <div className="min-w-0">
+            <h1 className="m-0 truncate text-left font-display text-[clamp(1.75rem,6vw,2.5rem)] font-extrabold leading-tight tracking-[-0.03em] text-brand-ink">{user.nombre || 'Mi perfil'}</h1>
+            <p className="m-0 mt-1 flex max-w-none flex-wrap items-center gap-2 text-left text-sm text-brand-ink/70">
+              <span className="break-all">{user.email}</span>
+              <span className="rounded-full bg-brand-cream px-2.5 py-0.5 text-xs font-bold text-brand-brown">{ROL_LABEL[user.role] ?? user.role}</span>
+            </p>
+          </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-brand-brown/15 bg-white shadow-xl">
-          {/* Badge de Rol */}
-          <div className="flex items-center gap-4 border-b border-brand-brown/10 bg-amber-50/70 p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-brown/10 text-brand-brown">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-brown/60">Nivel de Acceso</p>
-              <p className="font-black uppercase tracking-tighter text-brand-brown">{user.role}</p>
-            </div>
-          </div>
-          <div className="border-b border-brand-brown/10 bg-stone-50 p-6">
-            <div className="flex items-center gap-2 text-sm font-bold text-brand-brown"><MapPin size={16} /> Participación</div>
-            <p className="mt-2 text-sm text-stone-600">{user.isAnimator ? 'Animador/a de IAM' : 'Miembro de IAM'}</p>
-            <div className="mt-3 flex flex-wrap gap-2">{(user.areas || []).length ? user.areas!.map((area) => <span key={area} className="rounded-full bg-brand-brown/10 px-3 py-1 text-xs font-bold capitalize text-brand-brown">{area}</span>) : <span className="text-sm text-stone-500">No tenés áreas asignadas.</span>}</div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
-            {message && (
-              <div className={`animate-in fade-in slide-in-from-top-2 rounded-xl border p-4 text-sm font-bold ${
-                message.type === 'success' ? 'border-green-300 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-700'
-              }`}>
-                {message.text}
+        <div className="mt-8 space-y-5">
+          {/* ── Tus datos ── */}
+          <section aria-labelledby="perfil-datos" className={`${CARD_CLASS} p-6 sm:p-7`}>
+            <h2 id="perfil-datos" className={H2}>Tus datos</h2>
+            <form onSubmit={(e) => { e.preventDefault(); void guardar('datos'); }} className="mt-5 space-y-4">
+              <div>
+                <label htmlFor="perfil-nombre" className={LABEL_CLASS}>Nombre y apellido</label>
+                <input id="perfil-nombre" name="nombre" className={INPUT_CLASS} value={formData.nombre} onChange={handleInputChange} autoComplete="name" maxLength={80} required />
               </div>
-            )}
-
-            {/* Datos Personales */}
-            <div className="grid gap-6">
-              <ProfileInput 
-                label="Nombre Completo" 
-                name="nombre" 
-                icon={<User size={18}/>}
-                value={formData.nombre} 
-                onChange={handleInputChange} 
-              />
-              <ProfileInput 
-                label="Correo Electrónico" 
-                name="email" 
-                type="email" 
-                icon={<Mail size={18}/>}
-                value={formData.email} 
-                onChange={handleInputChange} 
-              />
-            </div>
-
-            <div className="h-px bg-gradient-to-r from-transparent via-brand-brown/20 to-transparent"></div>
-
-            {/* Password Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 text-brand-brown">
-                <Lock size={18} />
-                <h2 className="font-bold">Seguridad</h2>
+              <div>
+                <label htmlFor="perfil-email" className={LABEL_CLASS}>Email</label>
+                <input id="perfil-email" name="email" type="email" className={INPUT_CLASS} value={formData.email} onChange={handleInputChange} autoComplete="email" required />
+                <p className={HELP_CLASS}>Es el que usás para entrar. Si entrás con Google, tiene que ser el de tu cuenta de Google.</p>
               </div>
+              {aviso('datos')}
+              <button type="submit" disabled={saving !== null} className={PRIMARY_BUTTON}>
+                {saving === 'datos' && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden />}
+                {saving === 'datos' ? 'Guardando…' : 'Guardar mis datos'}
+              </button>
+            </form>
+          </section>
 
-              <div className="grid gap-4">
-                <ProfileInput 
-                  label="Contraseña Actual" 
-                  name="currentPassword" 
-                  type={showPasswords.current ? 'text' : 'password'}
-                  value={formData.currentPassword} 
-                  onChange={handleInputChange}
-                  isPassword
-                  showPassword={showPasswords.current}
-                  onTogglePassword={() => setShowPasswords(p => ({...p, current: !p.current}))}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ProfileInput 
-                    label="Nueva Contraseña" 
-                    name="newPassword" 
-                    type={showPasswords.new ? 'text' : 'password'}
-                    value={formData.newPassword} 
-                    onChange={handleInputChange}
-                    isPassword
-                    showPassword={showPasswords.new}
-                    onTogglePassword={() => setShowPasswords(p => ({...p, new: !p.new}))}
-                  />
-                  <ProfileInput 
-                    label="Confirmar Nueva" 
-                    name="confirmPassword" 
-                    type={showPasswords.confirm ? 'text' : 'password'}
-                    value={formData.confirmPassword} 
-                    onChange={handleInputChange}
-                    isPassword
-                    showPassword={showPasswords.confirm}
-                    onTogglePassword={() => setShowPasswords(p => ({...p, confirm: !p.confirm}))}
-                  />
+          {/* ── Animador/a ── */}
+          <PerfilAnimador />
+
+          {/* ── Áreas (las asigna el equipo) ── */}
+          {(user.areas || []).length > 0 && (
+            <section aria-labelledby="perfil-areas" className={`${CARD_CLASS} p-6 sm:p-7`}>
+              <h2 id="perfil-areas" className={H2}>Tus áreas</h2>
+              <ul className="m-0 mt-4 flex list-none flex-wrap gap-2 p-0">
+                {user.areas!.map((area) => <li key={area} className="rounded-full bg-brand-cream px-3 py-1 text-sm font-bold capitalize text-brand-brown">{area}</li>)}
+              </ul>
+            </section>
+          )}
+
+          {/* ── Contraseña ── */}
+          <section aria-labelledby="perfil-clave" className={`${CARD_CLASS} p-6 sm:p-7`}>
+            <h2 id="perfil-clave" className={H2}>Contraseña</h2>
+            <p className={`${HELP_CLASS} mt-1`}>Si entrás con Google no necesitás una.</p>
+            {!cambiandoClave && aviso('clave') && <div className="mt-4">{aviso('clave')}</div>}
+
+            {!cambiandoClave ? (
+              <button type="button" onClick={() => { setCambiandoClave(true); setMessage(null); }} className={`${SECONDARY_BUTTON} mt-5`}>
+                <KeyRound size={16} aria-hidden /> Cambiar contraseña
+              </button>
+            ) : (
+              <form onSubmit={(e) => { e.preventDefault(); void guardar('clave'); }} className="mt-5 space-y-4 duration-300 ease-out animate-in fade-in-0 slide-in-from-top-2 motion-reduce:animate-none">
+                <CampoClave id="perfil-clave-actual" name="currentPassword" label="Contraseña actual" autoComplete="current-password" value={formData.currentPassword} onChange={handleInputChange} visible={showPasswords.current} onToggle={() => setShowPasswords((p) => ({ ...p, current: !p.current }))} autoFocus />
+                <p className={`${HELP_CLASS} -mt-2`}>¿No la sabés? Pedí una nueva con «¿Olvidaste tu contraseña?» en la pantalla de inicio de sesión.</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <CampoClave id="perfil-clave-nueva" name="newPassword" label="Contraseña nueva" autoComplete="new-password" value={formData.newPassword} onChange={handleInputChange} visible={showPasswords.new} onToggle={() => setShowPasswords((p) => ({ ...p, new: !p.new }))} />
+                  <CampoClave id="perfil-clave-repetir" name="confirmPassword" label="Repetí la nueva" autoComplete="new-password" value={formData.confirmPassword} onChange={handleInputChange} visible={showPasswords.confirm} onToggle={() => setShowPasswords((p) => ({ ...p, confirm: !p.confirm }))} />
                 </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary w-full py-4"
-            >
-              <Save size={20} />
-              {isSubmitting ? 'Procesando...' : 'Actualizar Perfil'}
-            </button>
-          </form>
+                {aviso('clave')}
+                <div className="flex flex-wrap items-center gap-4">
+                  <button type="submit" disabled={saving !== null || !formData.newPassword} className={PRIMARY_BUTTON}>
+                    {saving === 'clave' && <Loader2 size={18} className="animate-spin motion-reduce:animate-none" aria-hidden />}
+                    {saving === 'clave' ? 'Cambiando…' : 'Guardar contraseña nueva'}
+                  </button>
+                  <button type="button" disabled={saving !== null} onClick={() => { setCambiandoClave(false); setMessage(null); setFormData((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' })); }} className={TEXT_BUTTON}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            )}
+          </section>
         </div>
       </div>
     </div>
   );
 }
 
-// --- Subcomponentes Auxiliares ---
-
-function ProfileInput({ label, name, type = 'text', value, onChange, icon, isPassword, showPassword, onTogglePassword }: ProfileInputProps) {
-  return (
-    <div className="space-y-2">
-      <label className="ml-1 text-xs font-bold uppercase tracking-wider text-brand-brown/70">{label}</label>
-      <div className="relative group">
-        {icon && <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-brown/50 transition-colors group-focus-within:text-brand-brown">{icon}</div>}
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`w-full rounded-xl border border-brand-brown/20 bg-white py-3 text-brand-brown transition-all placeholder:text-brand-brown/35 focus:border-brand-brown/50 focus:outline-none focus:ring-4 focus:ring-brand-brown/10 ${icon ? 'pl-11' : 'px-4'} ${isPassword ? 'pr-12' : 'pr-4'}`}
-        />
-        {isPassword && (
-          <button
-            type="button"
-            onClick={onTogglePassword}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-brand-brown/60 transition-all hover:bg-brand-brown/10 hover:text-brand-brown"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        )}
-      </div>
-    </div>
-  );
+interface CampoClaveProps {
+  id: string;
+  name: string;
+  label: string;
+  autoComplete: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  visible: boolean;
+  onToggle: () => void;
+  autoFocus?: boolean;
 }
 
-function LoadingScreen() {
+function CampoClave({ id, name, label, autoComplete, value, onChange, visible, onToggle, autoFocus }: CampoClaveProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-brand-brown/20 border-t-brand-brown"></div>
-        <p className="font-medium text-brand-brown/70">Sincronizando perfil...</p>
+    <div>
+      <label htmlFor={id} className={LABEL_CLASS}>{label}</label>
+      <div className="relative">
+        <input id={id} name={name} type={visible ? 'text' : 'password'} className={`${INPUT_CLASS} pr-12`} value={value} onChange={onChange} autoComplete={autoComplete} autoFocus={autoFocus} />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={visible ? `Ocultar ${label.toLowerCase()}` : `Mostrar ${label.toLowerCase()}`}
+          aria-pressed={visible}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-brand-ink/50 transition-colors hover:bg-brand-cream hover:text-brand-brown focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-brown"
+        >
+          {visible ? <EyeOff size={18} aria-hidden /> : <Eye size={18} aria-hidden />}
+        </button>
       </div>
     </div>
   );

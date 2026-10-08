@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "@/app/hooks/use-session";
 import { DeleteConfirmModal } from "@/app/components/common/delete-confirm-modal";
+import { InscripcionConfigPanel } from "@/app/components/common/inscripcion-config-panel";
 
 // Vista completa del calendario: muestra el mes, distribuye eventos por día y abre un modal de detalle.
 interface Evento {
@@ -663,6 +664,12 @@ export default function CalendarioEventosView() {
                     Cancelar
                   </button>
                 </div>
+
+                {selectedEvento.id !== undefined && selectedEvento.id !== null && (
+                  <div className="pt-3">
+                    <InscripcionConfigPanel eventoId={selectedEvento.id} />
+                  </div>
+                )}
               </div>
             )}
           </div>

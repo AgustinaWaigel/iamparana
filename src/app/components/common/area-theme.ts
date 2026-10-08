@@ -7,6 +7,10 @@ export type AreaKey = 'formacion' | 'animacion' | 'espiritualidad' | 'comunicaci
 export interface AreaTheme {
   label: string;
   href: string;
+  /** Bajada corta del área; es la misma descripción que usa cada página. */
+  summary: string;
+  /** Mosaico de color pleno (accesos del inicio). */
+  tile: string;
   /** Capas de color que se multiplican sobre la textura de la portada. */
   heroOverlay: string;
   heroText: string;
@@ -27,6 +31,8 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
   formacion: {
     label: 'Formación',
     href: '/formacion',
+    summary: 'Materiales, documentos y propuestas de formación para animadores.',
+    tile: 'bg-yellow-400 text-brand-brown hover:bg-yellow-300 focus-visible:outline-brand-brown',
     heroOverlay: 'rgba(250, 204, 21, 0.92), rgba(234, 179, 8, 0.92)',
     heroText: 'text-brand-brown',
     heroTabIdle: 'bg-brand-brown/10 text-brand-brown hover:bg-brand-brown/20',
@@ -39,6 +45,8 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
   animacion: {
     label: 'Animación',
     href: '/animacion',
+    summary: 'Juegos, canciones, dinámicas y recursos para animar encuentros.',
+    tile: 'bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:outline-emerald-800',
     heroOverlay: 'rgba(20, 83, 45, 0.92), rgba(21, 128, 61, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',
@@ -51,6 +59,8 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
   espiritualidad: {
     label: 'Espiritualidad',
     href: '/espiritualidad',
+    summary: 'Oraciones, guiones litúrgicos y recursos para profundizar en la espiritualidad.',
+    tile: 'bg-stone-700 text-white hover:bg-stone-800 focus-visible:outline-stone-800',
     heroOverlay: 'rgba(41, 37, 36, 0.92), rgba(87, 83, 78, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/20 text-white hover:bg-black/30',
@@ -63,6 +73,8 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
   comunicacion: {
     label: 'Comunicación',
     href: '/comunicacion',
+    summary: 'Documentos, enlaces y recursos gráficos para la comunicación.',
+    tile: 'bg-blue-700 text-white hover:bg-blue-800 focus-visible:outline-blue-800',
     heroOverlay: 'rgba(30, 64, 175, 0.92), rgba(37, 99, 235, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',
@@ -75,6 +87,8 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
   logistica: {
     label: 'Logística',
     href: '/logistica',
+    summary: 'Resumen de gastos y transparencia en eventos realizados.',
+    tile: 'bg-red-700 text-white hover:bg-red-800 focus-visible:outline-red-800',
     heroOverlay: 'rgba(153, 27, 27, 0.92), rgba(220, 38, 38, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',

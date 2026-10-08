@@ -2,11 +2,12 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Music, Hash } from 'lucide-react';
+import { ChevronRight, Music } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { AdminActionButton } from '@/app/components/common/admin-action-button';
+import { SectionNote } from '@/app/components/common/area-sections';
 
 type Cancion = {
   title: string;
@@ -150,62 +151,63 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
 
   return (
     <>
-      <section className="relative w-full max-w-5xl mx-auto">
-        <div className="pointer-events-none absolute -top-16 right-8 h-48 w-48 rounded-full bg-emerald-200/40 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-6 h-56 w-56 rounded-full bg-amber-200/40 blur-3xl" />
-
-        <div className="relative space-y-6">
-          <div className="rounded-3xl border border-emerald-100/80 bg-white/90 p-4 shadow-sm backdrop-blur md:p-6">
-            <SearchBar
-              value={busqueda}
-              onChange={setBusqueda}
-              placeholder="Buscar por título o artista..."
-            />
-
-            <div className="mt-4 flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-700">
-                <Hash size={12} /> {songsState.length} canciones
-              </div>
-              {isAdmin && (
-                <AdminActionButton action="add" label="Nueva Canción" onClick={openCreateModal} />
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {cancionesFiltradas.map((cancion) => (
-              <div
-                key={cancion.slug}
-                className="group relative flex items-center justify-between overflow-hidden rounded-3xl border border-emerald-100/70 bg-white/90 p-4 shadow-[0_18px_40px_-30px_rgba(16,185,129,0.6)] transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_22px_50px_-28px_rgba(16,185,129,0.75)] md:p-5"
-              >
-                <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-emerald-300 via-emerald-500 to-emerald-700 opacity-0 transition-opacity group-hover:opacity-100" />
-
-                <Link href={`/animacion/canciones/${cancion.slug}`} className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-700 group-hover:bg-emerald-100 transition-colors">
-                      <Music size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-lg md:text-xl font-black text-emerald-950 leading-tight line-clamp-2">
-                        {cancion.title}
-                      </h3>
-                      <p className="text-[11px] font-bold text-emerald-700/80 mt-1 uppercase tracking-widest">
-                        {cancion.artist || 'Artista desconocido'}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-
-                {isAdmin && (
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <AdminActionButton action="edit" compact onClick={() => openEditModal(cancion)} />
-                    <AdminActionButton action="delete" compact onClick={() => { setDeleteError(''); setDeleteDraft(cancion); }} />
-                  </div>
-                )}
-              </div>
-            ))}
+      <section className="mx-auto w-full max-w-3xl">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <SearchBar
+            value={busqueda}
+            onChange={setBusqueda}
+            placeholder="Buscar por título o artista..."
+            className="w-full sm:flex-1"
+          />
+          <div className="flex shrink-0 items-center justify-between gap-3">
+            <p className="m-0 max-w-none text-left text-sm font-semibold tabular-nums text-brand-ink/60">
+              {songsState.length} {songsState.length === 1 ? 'canción' : 'canciones'}
+            </p>
+            {isAdmin && (
+              <AdminActionButton action="add" label="Nueva Canción" onClick={openCreateModal} />
+            )}
           </div>
         </div>
+
+        <ul className="m-0 list-none overflow-hidden rounded-2xl bg-white p-0 shadow-[0_10px_28px_-20px_rgba(58,21,8,0.4)] ring-1 ring-brand-brown/10 empty:hidden">
+          {cancionesFiltradas.map((cancion) => (
+            <li
+              key={cancion.slug}
+              className="group relative flex items-center gap-2 border-t border-brand-brown/10 transition-colors first:border-t-0 hover:bg-emerald-50"
+            >
+              <Link
+                href={`/animacion/canciones/${cancion.slug}`}
+                className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3.5 no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700 sm:px-5"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+                  <Music size={18} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-[17px] font-bold leading-snug text-brand-ink line-clamp-2">
+                    {cancion.title}
+                  </span>
+                  <span className="mt-0.5 block text-sm text-brand-ink/60">
+                    {cancion.artist || 'Artista desconocido'}
+                  </span>
+                </span>
+                <ChevronRight size={18} aria-hidden className="shrink-0 text-emerald-800 transition-transform duration-300 ease-out group-hover:translate-x-0.5 motion-reduce:transform-none" />
+              </Link>
+
+              {isAdmin && (
+                <div className="flex gap-1 pr-3 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                  <AdminActionButton action="edit" compact onClick={() => openEditModal(cancion)} />
+                  <AdminActionButton action="delete" compact onClick={() => { setDeleteError(''); setDeleteDraft(cancion); }} />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {cancionesFiltradas.length === 0 && (
+          <SectionNote>
+            {busqueda.trim() ? `No encontramos canciones que coincidan con "${busqueda}".` : 'Todavía no hay canciones cargadas.'}
+          </SectionNote>
+        )}
       </section>
 
       {/* MODAL EDITOR */}

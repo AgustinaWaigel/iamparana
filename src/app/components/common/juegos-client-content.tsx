@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PlayCircle } from 'lucide-react';
 import { JuegosEditor } from './juegos-editor';
+import { AreaSection, SectionNote } from './area-sections';
 import type { Juego } from '@/server/content/juegos';
 
 // Este componente muestra los juegos agrupados por categoría y activa el editor para admins.
@@ -63,54 +65,42 @@ export function JuegosClientContent({ juegos: initialJuegos }: JuegosClientConte
       <JuegosEditor onRefresh={handleRefresh} />
 
       {juegos.length === 0 ? (
-        <div className="text-center py-10 text-stone-500">
-          No hay juegos disponibles aun.
-        </div>
+        <SectionNote>No hay juegos disponibles aun.</SectionNote>
       ) : (
-        <div className="space-y-10">
-          {Object.values(juegosPorSeccion).map((section) => (
-            <section
-              key={section.id ?? section.title}
-              className="rounded-3xl border border-emerald-100/70 bg-white/90 shadow-sm backdrop-blur"
-            >
-              <div className="flex items-center justify-between gap-4 px-6 pt-6">
-                <h2 className="text-lg md:text-xl font-black text-emerald-900 tracking-tight">
-                  {section.title}
-                </h2>
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-700/70">
-                  {section.items.length} juegos
-                </span>
-              </div>
-
-              <div className="grid gap-4 p-6 sm:grid-cols-2">
-                {section.items.map((juego) => (
-                  <article
-                    key={juego.id}
-                    className="group relative rounded-2xl border border-emerald-100/70 bg-emerald-50/40 p-4 transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100/70"
-                  >
-                    <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-400 via-emerald-600 to-green-700 opacity-0 transition-opacity group-hover:opacity-100" />
-                    <h3 className="text-base md:text-lg font-black text-emerald-950 leading-tight">
-                      {juego.title}
-                    </h3>
-                    <p className="text-sm text-emerald-900/75 mt-2 leading-relaxed">
-                      {juego.description}
-                    </p>
-                    {juego.youtubeId && (
-                      <a
-                        href={`https://www.youtube.com/watch?v=${juego.youtubeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-emerald-800"
-                      >
-                        Ver en YouTube
-                      </a>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        Object.values(juegosPorSeccion).map((section) => (
+          <AreaSection
+            key={section.id ?? section.title}
+            title={section.title}
+            meta={`${section.items.length} ${section.items.length === 1 ? 'juego' : 'juegos'}`}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              {section.items.map((juego) => (
+                <article
+                  key={juego.id}
+                  className="flex flex-col rounded-2xl bg-white p-5 shadow-[0_10px_28px_-20px_rgba(58,21,8,0.4)] ring-1 ring-brand-brown/10"
+                >
+                  <h3 className="m-0 text-left font-display text-lg font-bold leading-snug text-brand-ink">
+                    {juego.title}
+                  </h3>
+                  <p className="m-0 mt-2 max-w-none flex-1 text-left text-[15px] leading-relaxed text-brand-ink/70">
+                    {juego.description}
+                  </p>
+                  {juego.youtubeId && (
+                    <a
+                      href={`https://www.youtube.com/watch?v=${juego.youtubeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center gap-2 self-start rounded-full bg-emerald-700 px-4 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800"
+                    >
+                      <PlayCircle size={16} aria-hidden />
+                      Ver en YouTube
+                    </a>
+                  )}
+                </article>
+              ))}
+            </div>
+          </AreaSection>
+        ))
       )}
     </>
   );

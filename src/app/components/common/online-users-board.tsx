@@ -22,12 +22,11 @@ export function OnlineUsersBoard() {
   }, []);
 
   useEffect(() => {
+    // Se consulta al entrar y cuando se registra la propia visita; ya no se repite cada 30 s.
     load().catch(() => undefined);
-    const interval = window.setInterval(() => load().catch(() => undefined), 30_000);
     const refresh = () => load().catch(() => undefined);
     window.addEventListener("presence-updated", refresh);
     return () => {
-      window.clearInterval(interval);
       window.removeEventListener("presence-updated", refresh);
     };
   }, [load]);
@@ -35,7 +34,7 @@ export function OnlineUsersBoard() {
   const visibleUsers = users.slice(0, 8);
 
   return (
-    <aside className="mx-auto mt-6 w-full px-3 sm:px-8" aria-label="Usuarios conectados">
+    <aside className="mx-auto mt-10 w-full max-w-7xl px-4 sm:mt-14 sm:px-6" aria-label="Usuarios conectados">
       <div className="flex flex-col gap-4 rounded-2xl border border-brand-brown/10 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-brand-brown/10 text-brand-brown">

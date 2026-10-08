@@ -15,6 +15,7 @@ import {
   hashSessionToken,
   verifyPassword,
 } from "@/server/lib/auth-security";
+import { iniciar2fa, requiere2fa } from "@/server/lib/auth-2fa";
 
 // Configuración de Rate Limit (Requiere variables de entorno de Upstash)
 const ratelimit = new Ratelimit({
@@ -82,6 +83,17 @@ export async function POST(req: Request) {
         { error: "Credenciales inválidas" }, 
         { status: 401 }
       );
+    }
+
+    // Los administradores no entran solo con la contraseña: falta el código que les llega por email.
+    if (requiere2fa(user)) {
+      try {
+        await iniciar2fa(user);
+      } catch (error) {
+        console.error("❌ Login 2FA Error:", error instanceof Error ? error.name : "error");
+        return NextResponse.json({ error: "No pudimos enviarte el código de ingreso. Probá de nuevo en unos minutos." }, { status: 502 });
+      }
+      return NextResponse.json({ requires2fa: true });
     }
 
     // 1. Limpieza de sesiones previas (Seguridad de Sesión)
