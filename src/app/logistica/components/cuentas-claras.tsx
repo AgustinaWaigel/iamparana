@@ -22,9 +22,11 @@ const CONTORNO = 2 * Math.PI * RADIO;
 const CAMPO = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-base text-brand-ink placeholder:text-stone-400 focus:border-brand-brown focus:outline-none focus:ring-4 focus:ring-brand-gold/25';
 const ETIQUETA = 'mb-1 block text-sm font-bold text-brand-ink';
 
-function fechaLarga(ymd: string) {
-  const [year, month, day] = ymd.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+/** "2026-10" → "Octubre de 2026". */
+function nombreDelMes(mes: string) {
+  const [year, month] = mes.split('-').map(Number);
+  const nombre = new Date(year, month - 1, 15).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1);
 }
 
 const suma = (movimientos: Movimiento[], tipo: Movimiento['tipo']) => movimientos.filter((item) => item.tipo === tipo).reduce((total, item) => total + item.monto, 0);
@@ -51,6 +53,19 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
 
   const actual = rendiciones.find((item) => item.id === elegida) ?? rendiciones[0] ?? null;
 
+  // Lo que había en la cuenta al empezar cada mes: lo que cargó el equipo o, si no cargó nada,
+  // lo que quedó del mes anterior. Se calcula del mes más viejo al más nuevo.
+  const habiaPorMes = useMemo(() => {
+    const porId = new Map<string, number>();
+    let quedo = 0;
+    for (const item of [...rendiciones].sort((a, b) => a.mes.localeCompare(b.mes))) {
+      const habia = item.saldoInicial ?? quedo;
+      porId.set(item.id, habia);
+      quedo = habia + suma(item.movimientos, 'ingreso') - suma(item.movimientos, 'egreso');
+    }
+    return porId;
+  }, [rendiciones]);
+
   const { entro, salio, porciones, ingresos } = useMemo(() => {
     const movimientos = actual?.movimientos ?? [];
     const egresos = agrupar(movimientos, 'egreso');
@@ -73,7 +88,9 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
 
   if (!actual && !puedeEditar) return null;
 
-  const saldo = entro - salio;
+  const habia = actual ? (habiaPorMes.get(actual.id) ?? 0) : 0;
+  const saldo = habia + entro - salio;
+  const mesActual = actual ? nombreDelMes(actual.mes) : '';
   const porcentaje = (monto: number) => (salio > 0 ? Math.round((monto / salio) * 100) : 0);
 
   return (
@@ -81,7 +98,7 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 id="cuentas-titulo" className="m-0 text-left font-display text-[clamp(1.9rem,4.6vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-brand-ink">Cuentas claras</h2>
-          <p className="m-0 mt-3 max-w-xl text-left text-base leading-relaxed text-brand-ink/75 sm:text-lg">Cuánto entró, cuánto salió y en qué se usó la plata de cada evento.</p>
+          <p className="m-0 mt-3 max-w-xl text-left text-base leading-relaxed text-brand-ink/75 sm:text-lg">Mes por mes: cuánto había en la cuenta, cuánto entró, cuánto salió y en qué se usó.</p>
         </div>
         {puedeEditar && (
           <div className="flex flex-wrap gap-2">
@@ -91,7 +108,7 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
               </button>
             )}
             <button type="button" onClick={() => setEditando('nueva')} className="inline-flex items-center gap-1.5 rounded-full bg-brand-brown px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-brand-wood focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown">
-              <Plus size={15} aria-hidden /> Cargar un evento
+              <Plus size={15} aria-hidden /> Cargar un mes
             </button>
           </div>
         )}
@@ -104,7 +121,7 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
       ) : (
         <>
           {rendiciones.length > 1 && (
-            <div role="group" aria-label="Elegir el evento" className="mt-5 flex flex-wrap gap-2">
+            <div role="group" aria-label="Elegir el mes" className="mt-5 flex flex-wrap gap-2">
               {rendiciones.map((item) => (
                 <button
                   key={item.id}
@@ -113,17 +130,20 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
                   onClick={() => { setElegida(item.id); setActiva(null); }}
                   className={`rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown ${item.id === actual.id ? 'bg-red-600 text-white' : 'bg-white text-brand-ink ring-1 ring-brand-brown/15 hover:bg-red-50'}`}
                 >
-                  {item.evento}
+                  {nombreDelMes(item.mes)}
                 </button>
               ))}
             </div>
           )}
 
           <div className="mt-5 rounded-[28px] bg-white p-5 ring-1 ring-brand-brown/10 sm:p-8">
-            <h3 className="m-0 text-left font-display text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl">{actual.evento}</h3>
-            <p className="m-0 mt-1 max-w-none text-left text-sm text-brand-ink/65">{fechaLarga(actual.fecha)}</p>
+            <h3 className="m-0 text-left font-display text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl">{mesActual}</h3>
 
-            <dl className="m-0 mt-5 grid gap-3 sm:grid-cols-3">
+            <dl className="m-0 mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl bg-brand-cream p-4">
+                <dt className="text-sm font-bold text-brand-ink/70">Había en la cuenta</dt>
+                <dd className="m-0 mt-1 font-display text-3xl font-extrabold tabular-nums text-brand-ink">{formatMonto(habia)}</dd>
+              </div>
               <div className="rounded-2xl bg-brand-cream p-4">
                 <dt className="text-sm font-bold text-brand-ink/70">Entró</dt>
                 <dd className="m-0 mt-1 font-display text-3xl font-extrabold tabular-nums text-brand-ink">{formatMonto(entro)}</dd>
@@ -133,7 +153,7 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
                 <dd className="m-0 mt-1 font-display text-3xl font-extrabold tabular-nums text-brand-ink">{formatMonto(salio)}</dd>
               </div>
               <div className="rounded-2xl bg-brand-deep p-4 text-white">
-                <dt className="text-sm font-bold text-white/75">{saldo >= 0 ? 'Quedó' : 'Faltó'}</dt>
+                <dt className="text-sm font-bold text-white/75">{saldo >= 0 ? 'Queda en la cuenta' : 'Falta'}</dt>
                 <dd className="m-0 mt-1 font-display text-3xl font-extrabold tabular-nums">{formatMonto(Math.abs(saldo))}</dd>
               </div>
             </dl>
@@ -142,7 +162,7 @@ export function CuentasClaras({ rendiciones }: { rendiciones: Rendicion[] }) {
               <div className="mt-8 grid items-center gap-6 lg:grid-cols-[minmax(0,17rem)_1fr] lg:gap-10">
                 <h4 className="m-0 text-left font-display text-xl font-extrabold text-brand-ink lg:col-span-2">En qué se gastó</h4>
                 <div className="relative mx-auto w-full max-w-[15rem]" onMouseLeave={() => setActiva(null)}>
-                  <svg viewBox="0 0 200 200" role="img" aria-label={`Gastos de ${actual.evento}: ${porciones.map((item) => `${item.concepto} ${porcentaje(item.monto)} por ciento`).join(', ')}`} className="block w-full -rotate-90">
+                  <svg viewBox="0 0 200 200" role="img" aria-label={`Gastos de ${mesActual}:${porciones.map((item) => `${item.concepto} ${porcentaje(item.monto)} por ciento`).join(', ')}`} className="block w-full -rotate-90">
                     {porciones.map((item, index) => {
                       const { inicio, largo } = item;
                       return (
@@ -222,8 +242,9 @@ type Fila = { tipo: Movimiento['tipo']; concepto: string; monto: string };
 function EditorRendicion({ inicial, onCerrar, onGuardada }: { inicial: Rendicion | null; onCerrar: () => void; onGuardada: (id: string | null) => void }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [evento, setEvento] = useState(inicial?.evento ?? '');
-  const [fecha, setFecha] = useState(inicial?.fecha ?? '');
+  const [mes, setMes] = useState(inicial?.mes ?? '');
+  // Vacío = se toma lo que quedó del mes anterior.
+  const [saldoInicial, setSaldoInicial] = useState(inicial?.saldoInicial === null || inicial?.saldoInicial === undefined ? '' : String(inicial.saldoInicial));
   const [nota, setNota] = useState(inicial?.nota ?? '');
   const [filas, setFilas] = useState<Fila[]>(() =>
     inicial ? inicial.movimientos.map((item) => ({ tipo: item.tipo, concepto: item.concepto, monto: String(item.monto) })) : [{ tipo: 'ingreso', concepto: 'Inscripciones', monto: '' }, { tipo: 'egreso', concepto: '', monto: '' }],
@@ -258,7 +279,7 @@ function EditorRendicion({ inicial, onCerrar, onGuardada }: { inicial: Rendicion
     event.preventDefault();
     // Las filas vacías se ignoran; las que están a medias las rechaza el servidor con su explicación.
     const movimientos = filas.filter((fila) => fila.concepto.trim() || fila.monto.trim()).map((fila) => ({ tipo: fila.tipo, concepto: fila.concepto.trim(), monto: Number(fila.monto) }));
-    pedir('PUT', { id: inicial?.id, evento, fecha, nota, movimientos });
+    pedir('PUT', { id: inicial?.id, mes, saldoInicial: saldoInicial.trim() === '' ? null : Number(saldoInicial), nota, movimientos });
   };
 
   return (
@@ -271,21 +292,22 @@ function EditorRendicion({ inicial, onCerrar, onGuardada }: { inicial: Rendicion
     >
       <form onSubmit={guardar} className="flex max-h-[calc(100svh-1.5rem)] flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-brand-brown/10 px-5 py-4 sm:px-7">
-          <h2 id="rendicion-titulo" className="m-0 text-left font-display text-2xl font-extrabold text-brand-ink">{inicial ? 'Editar la rendición' : 'Cargar un evento'}</h2>
+          <h2 id="rendicion-titulo" className="m-0 text-left font-display text-2xl font-extrabold text-brand-ink">{inicial ? `Editar ${nombreDelMes(inicial.mes)}` : 'Cargar un mes'}</h2>
           <button type="button" onClick={onCerrar} disabled={ocupado} aria-label="Cerrar" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-brown/10 text-brand-brown transition-colors hover:bg-brand-brown hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown">
             <X size={20} aria-hidden />
           </button>
         </div>
 
         <div className="space-y-5 overflow-y-auto px-5 py-5 sm:px-7">
-          <div className="grid gap-4 sm:grid-cols-[1fr_11rem]">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="rendicion-evento" className={ETIQUETA}>Evento</label>
-              <input id="rendicion-evento" required maxLength={120} value={evento} onChange={(e) => setEvento(e.target.value)} className={CAMPO} />
+              <label htmlFor="rendicion-mes" className={ETIQUETA}>Mes</label>
+              <input id="rendicion-mes" type="month" required value={mes} onChange={(e) => setMes(e.target.value)} className={CAMPO} />
             </div>
             <div>
-              <label htmlFor="rendicion-fecha" className={ETIQUETA}>Fecha</label>
-              <input id="rendicion-fecha" type="date" required value={fecha} onChange={(e) => setFecha(e.target.value)} className={CAMPO} />
+              <label htmlFor="rendicion-saldo" className={ETIQUETA}>Lo que ya había en la cuenta</label>
+              <input id="rendicion-saldo" inputMode="numeric" pattern="-?[0-9]*" maxLength={11} value={saldoInicial} onChange={(e) => setSaldoInicial(e.target.value.replace(/(?!^-)[^0-9]/g, ''))} placeholder="Se toma del mes anterior" aria-describedby="rendicion-saldo-ayuda" className={`${CAMPO} tabular-nums`} />
+              <p id="rendicion-saldo-ayuda" className="m-0 mt-1 max-w-none text-left text-xs text-brand-ink/65">En pesos, al empezar el mes. Si lo dejás vacío, se usa lo que quedó del mes anterior.</p>
             </div>
           </div>
 
@@ -299,7 +321,7 @@ function EditorRendicion({ inicial, onCerrar, onGuardada }: { inicial: Rendicion
                     <option value="ingreso">Entró</option>
                     <option value="egreso">Salió</option>
                   </select>
-                  <input aria-label={`Concepto del movimiento ${index + 1}`} maxLength={80} value={fila.concepto} onChange={(e) => cambiar(index, 'concepto', e.target.value)} placeholder={fila.tipo === 'ingreso' ? 'Por ejemplo: Inscripciones' : 'Por ejemplo: Comida'} className={`${CAMPO} col-span-2 sm:col-span-1`} />
+                  <input aria-label={`Concepto del movimiento ${index + 1}`} maxLength={80} value={fila.concepto} onChange={(e) => cambiar(index, 'concepto', e.target.value)} placeholder={fila.tipo === 'ingreso' ? 'Por ejemplo: Inscripciones del campamento' : 'Por ejemplo: Comida del encuentro'} className={`${CAMPO} col-span-2 sm:col-span-1`} />
                   <input aria-label={`Monto del movimiento ${index + 1}`} inputMode="numeric" pattern="[0-9]*" maxLength={10} value={fila.monto} onChange={(e) => cambiar(index, 'monto', e.target.value.replace(/\D/g, ''))} placeholder="Monto" className={`${CAMPO} tabular-nums`} />
                   <button type="button" aria-label={`Quitar el movimiento ${index + 1}`} onClick={() => setFilas((prev) => prev.filter((_, i) => i !== index))} className="flex h-11 w-11 items-center justify-center rounded-full text-brand-brown transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-brown">
                     <Trash2 size={17} aria-hidden />

@@ -17,6 +17,7 @@ import { datosDeHoy } from "@/app/components/common/hoy-datos";
 import { InstalarApp } from "@/app/components/common/instalar-app";
 import { INSCRIPCIONES_PUBLICAS } from "@/lib/inscripciones-publicas";
 import { evangelioDelDia } from "@/server/lib/evangelio-del-dia";
+import { colorDeCategoria, fechaLargaNoticia, nombreDeCategoria } from "@/app/noticias/formato";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -101,7 +102,7 @@ export default async function HomePage() {
                 <CalendarDays size={15} aria-hidden />
                 Ver agenda
               </Link>
-              {(INSCRIPCIONES_PUBLICAS || isAdmin) && (
+              {INSCRIPCIONES_PUBLICAS && (
                 <Link href="/inscripciones" className={`${HOME_BUTTON} border border-white/30 text-white hover:bg-white hover:text-brand-deep focus-visible:outline-brand-gold`}>
                   <ClipboardPen size={15} aria-hidden />
                   Inscripciones
@@ -142,38 +143,42 @@ export default async function HomePage() {
                   style={{ ["--d" as string]: `${index * 90}ms` }}
                   className={`pop-in group relative min-w-0 ${index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}`}
                 >
-                  <article className={`flex h-full flex-col overflow-hidden bg-white shadow-md ring-1 ring-brand-brown/10 transition-all hover:-translate-y-1 hover:shadow-xl ${index === 0 ? "min-h-[480px] rounded-3xl" : "min-h-[250px] rounded-2xl"}`}>
-                    <Link href={`/noticias/${item.slug}`} className="flex h-full flex-col no-underline">
-                      <div className={`relative shrink-0 overflow-hidden bg-gray-200 ${index === 0 ? "h-64 lg:flex-1" : "h-32"}`}>
+                  <article className={`flex h-full flex-col overflow-hidden bg-white transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transform-none ${index === 0 ? "min-h-[480px] rounded-[28px] shadow-[0_26px_50px_-30px_rgba(58,21,8,0.8)]" : "rounded-2xl shadow-[0_14px_28px_-22px_rgba(58,21,8,0.7)]"}`}>
+                    <Link href={`/noticias/${item.slug}`} className="flex h-full flex-col no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown">
+                      <div className={`relative shrink-0 overflow-hidden bg-brand-cream ${index === 0 ? "h-64 lg:flex-1" : "h-36"}`}>
                         {getGoogleDriveImageUrl(item.image) && (
                           <Image
                             src={getGoogleDriveImageUrl(item.image) || ''}
-                            alt={item.title}
+                            alt=""
                             fill
                             sizes={index === 0 ? "(max-width: 1024px) 100vw, 50vw" : "(max-width: 1024px) 50vw, 25vw"}
                             className="paralaje object-cover"
                           />
                         )}
+                        {index === 0 && <span className="absolute left-4 top-4 rounded-full bg-yellow-400 px-3.5 py-1.5 text-xs font-extrabold text-brand-deep shadow-[0_8px_14px_-8px_rgba(58,21,8,0.9)]">Lo último</span>}
                       </div>
                       <div className={`flex flex-1 flex-col ${index === 0 ? "p-6 sm:p-7" : "p-4"}`}>
-                        {item.cat && (
-                          <span className="mb-2 text-[10px] font-bold uppercase tracking-wider text-brand-brown/65">
-                            {item.cat}
+                        {item.cat?.trim() && (
+                          <span className={`inline-flex self-start rounded-full px-3 py-1 text-xs font-extrabold ${colorDeCategoria(item.cat)}`}>
+                            {nombreDeCategoria(item.cat)}
                           </span>
                         )}
-                        <h3 className={`m-0 line-clamp-2 font-bold leading-tight text-brand-brown transition-colors group-hover:text-brand-gold ${index === 0 ? "text-2xl sm:text-3xl" : "text-base"}`}>
+                        <h3 className={`m-0 mt-3 text-left font-display font-extrabold text-brand-ink ${index === 0 ? "line-clamp-3 text-balance text-[clamp(1.6rem,3vw,2.25rem)] leading-[1.06] tracking-[-0.02em]" : "line-clamp-3 text-lg leading-snug"}`}>
                           {item.title}
                         </h3>
                         {index === 0 && (
-                          <p className="m-0 mt-3 line-clamp-3 w-full text-left text-sm leading-relaxed text-gray-600 sm:text-base">
+                          <p className="m-0 mt-3 line-clamp-3 w-full max-w-none text-left text-base leading-relaxed text-brand-ink/80">
                             {item.description}
                           </p>
                         )}
-                        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-4">
-                          <p className="m-0 text-left text-xs font-semibold text-gray-500">
-                            {new Date(item.date).toLocaleDateString('es-AR')}
+                        <div className={`mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 ${index === 0 ? "pt-6" : "pt-4"}`}>
+                          <p className="m-0 max-w-none text-left text-sm font-medium text-brand-ink/70">
+                            {fechaLargaNoticia(item.date)}
                           </p>
-                          <span className="text-sm font-bold text-brand-brown">Leer más →</span>
+                          <span className="inline-flex items-center gap-2 rounded-full bg-brand-deep px-4 py-2.5 text-sm font-extrabold text-white">
+                            Leer la noticia
+                            <ArrowRight size={16} aria-hidden className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
+                          </span>
                         </div>
                       </div>
                     </Link>
@@ -238,6 +243,26 @@ export default async function HomePage() {
                   </a>
                 )}
               </figure>
+              {/* Invitación a rezar el Rosario Misionero: lleva directo al rosario de Espiritualidad. */}
+              <Link
+                href="/espiritualidad#rosario"
+                className="pop-in group flex flex-1 flex-col rounded-[22px] bg-stone-800 p-5 text-white no-underline transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold motion-reduce:transform-none sm:p-6"
+                style={{ ["--d" as string]: "280ms" }}
+              >
+                <span aria-hidden className="flex items-center gap-2">
+                  {["#34b560", "#e2453c", "#ffffff", "#4f8df7", "#f6c445"].map((color) => (
+                    <span key={color} className="h-3.5 w-3.5 rounded-full transition-transform duration-300 ease-out group-hover:scale-125 motion-reduce:transform-none" style={{ backgroundColor: color }} />
+                  ))}
+                </span>
+                <span className="mt-3 block text-balance font-display text-xl font-extrabold leading-tight sm:text-2xl">Recemos juntos el Rosario Misionero</span>
+                <span className="mt-1.5 block text-sm leading-relaxed text-white/80">Cinco misterios, uno por cada continente, para rezar cuenta por cuenta.</span>
+                <span className="mt-auto block pt-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-stone-900">
+                    Rezar ahora
+                    <ArrowRight size={15} aria-hidden className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
+                  </span>
+                </span>
+              </Link>
               <InstalarApp className="pop-in flex-1 ring-1 ring-white/15" />
             </div>
           </FadeInSection>
@@ -312,6 +337,12 @@ export default async function HomePage() {
                 <span className="min-w-0 flex-1 lg:mt-5">
                   <span className="block font-display text-[22px] font-extrabold leading-tight">{area.label}</span>
                   <span className="mt-1 block text-sm leading-snug opacity-90">{area.summary}</span>
+                  {/* Lo que hay adentro del área, para saber a dónde ir sin entrar a probar. */}
+                  <span className="mt-3 flex flex-wrap gap-1.5">
+                    {area.incluye.map((item) => (
+                      <span key={item} className="rounded-full bg-black/15 px-2.5 py-1 text-xs font-bold leading-tight">{item}</span>
+                    ))}
+                  </span>
                 </span>
                 <ArrowRight size={20} aria-hidden className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none lg:mt-4" />
               </Link>

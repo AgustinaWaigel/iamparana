@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronRight, Music } from 'lucide-react';
 import { useSession } from '@/app/hooks/use-session';
 import { SearchBar } from '@/app/components/common/search-bar';
+import { Paginacion } from '@/app/components/common/paginacion';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { AdminActionButton } from '@/app/components/common/admin-action-button';
 import { SectionNote } from '@/app/components/common/area-sections';
@@ -41,9 +42,14 @@ function normalizeSlug(value: string) {
     .replace(/-+/g, '-');
 }
 
+const CANCIONES_POR_PAGINA = 20;
+
 export default function CancionesLista({ canciones }: { canciones: Cancion[] }) {
   const { isAdmin } = useSession();
-  const [busqueda, setBusqueda] = useState('');
+  const [busqueda, setBusquedaTexto] = useState('');
+  const [pagina, setPagina] = useState(1);
+  // Al buscar se vuelve a la primera página.
+  const setBusqueda = (valor: string) => { setBusquedaTexto(valor); setPagina(1); };
   const [songsState, setSongsState] = useState(canciones);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -62,6 +68,9 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
       .filter((c) => coincideBusqueda(busqueda, c.title, c.artist))
       .sort((a, b) => a.title.localeCompare(b.title));
   }, [busqueda, songsState]);
+
+  const paginas = Math.ceil(cancionesFiltradas.length / CANCIONES_POR_PAGINA);
+  const paginaActual = Math.min(pagina, Math.max(1, paginas));
 
   const openCreateModal = () => {
     setEditingSlug(null);
@@ -168,7 +177,7 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
         </div>
 
         <ul className="m-0 list-none overflow-hidden rounded-2xl bg-white p-0 shadow-[0_10px_28px_-20px_rgba(58,21,8,0.4)] ring-1 ring-brand-brown/10 empty:hidden">
-          {cancionesFiltradas.map((cancion) => (
+          {cancionesFiltradas.slice((paginaActual - 1) * CANCIONES_POR_PAGINA, paginaActual * CANCIONES_POR_PAGINA).map((cancion) => (
             <li
               key={cancion.slug}
               className="group relative flex items-center gap-2 border-t border-brand-brown/10 transition-colors first:border-t-0 hover:bg-emerald-50"
@@ -200,6 +209,8 @@ export default function CancionesLista({ canciones }: { canciones: Cancion[] }) 
             </li>
           ))}
         </ul>
+
+        <Paginacion pagina={paginaActual} paginas={paginas} onCambiar={(nueva) => { setPagina(nueva); window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }} de="canciones" className="mt-6" />
 
         {cancionesFiltradas.length === 0 && (
           <SectionNote>

@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { Children, useRef, useState, type ReactNode } from 'react';
+import { Paginacion } from '@/app/components/common/paginacion';
 import { ArrowRight, ArrowUpRight, BookOpen, FileText, Heart, Link2, Pencil, SearchX, Trash2, FolderOpen, type LucideIcon } from 'lucide-react';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
@@ -101,8 +102,37 @@ export function ResourceToolbar({ heading = 'Recursos', description, searchTerm,
   );
 }
 
+/** Cuántos recursos se ven por página en las grillas de las áreas. */
+const POR_PAGINA = 12;
+
+/** Grilla de recursos de un área. Si hay más de una página de tarjetas, las reparte en páginas sola. */
 export function ResourceGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">{children}</div>;
+  const tarjetas = Children.toArray(children);
+  const [pagina, setPagina] = useState(1);
+  // Al buscar o filtrar cambia la cantidad de tarjetas: se vuelve a la primera página.
+  const [cantidad, setCantidad] = useState(tarjetas.length);
+  if (cantidad !== tarjetas.length) {
+    setCantidad(tarjetas.length);
+    setPagina(1);
+  }
+  const grilla = useRef<HTMLDivElement>(null);
+  const paginas = Math.ceil(tarjetas.length / POR_PAGINA);
+  const actual = Math.min(pagina, Math.max(1, paginas));
+
+  const cambiar = (nueva: number) => {
+    setPagina(nueva);
+    // La página nueva empieza arriba de la grilla, no donde quedó el botón.
+    grilla.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
+
+  return (
+    <>
+      <div ref={grilla} className="grid scroll-mt-28 grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        {tarjetas.slice((actual - 1) * POR_PAGINA, actual * POR_PAGINA)}
+      </div>
+      <Paginacion pagina={actual} paginas={paginas} onCambiar={cambiar} de="recursos" className="mt-8" />
+    </>
+  );
 }
 
 interface ResourceEmptyStateProps {

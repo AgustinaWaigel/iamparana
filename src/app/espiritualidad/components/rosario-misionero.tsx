@@ -165,7 +165,7 @@ export function RosarioMisionero() {
   const anillo = (cuenta: string) => (paso.cuenta === cuenta ? { stroke: '#ffffff', strokeWidth: 1.6 } : {});
 
   return (
-    <section aria-labelledby="rosario-titulo" className="relative mt-14 scroll-mt-24 overflow-clip rounded-[28px] bg-stone-800 px-4 py-8 text-white shadow-[0_26px_50px_-28px_rgba(28,25,23,0.9)] sm:mt-20 sm:px-10 sm:py-12">
+    <section id="rosario" aria-labelledby="rosario-titulo" className="relative mt-14 scroll-mt-24 overflow-clip rounded-[28px] bg-stone-800 px-4 py-8 text-white shadow-[0_26px_50px_-28px_rgba(28,25,23,0.9)] sm:mt-20 sm:px-10 sm:py-12">
       <div aria-hidden className="absolute inset-0 opacity-25 transition-[background] duration-700 motion-reduce:transition-none" style={{ background: `radial-gradient(circle at 22% 40%, ${acento}, transparent 55%)` }} />
 
       <div className="relative">

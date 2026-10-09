@@ -2,7 +2,10 @@ import { getAllNoticiasSlugs, getNoticiaBySlug } from '@/server/content/noticias
 import { Metadata } from 'next';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-import Novedades from '@/app/components/common/novedades';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { listNoticiasPreview } from '@/server/db/content-repository';
+import { colorDeCategoria, fechaLargaNoticia, nombreDeCategoria } from '@/app/noticias/formato';
 import { NoticiaGaleriaView } from '@/app/noticias/components/noticia-galeria-view';
 import { notFound } from 'next/navigation';
 import { getGoogleDriveImageUrl } from '@/lib/drive-utils';
@@ -64,7 +67,7 @@ export default async function NoticiaPage(props: Props) {
 
   const { frontmatter, content } = noticia;
   const { title, date, description, image, cat, bajada } = frontmatter;
-  const categoryLabel = typeof cat === 'string' && cat.trim().length > 0 ? cat.trim().toUpperCase() : 'NACIONAL';
+  const categoria = typeof cat === 'string' && cat.trim().length > 0 ? cat.trim() : 'Nacional';
 
   let bloques: BloqueContenido[] = [];
   try {
@@ -74,181 +77,166 @@ export default async function NoticiaPage(props: Props) {
     bloques = [{ id: 'old-content', type: 'text', value: content }];
   }
 
+  // Cuánto lleva leerla, contando solo el texto.
+  const palabras = bloques.filter((bloque) => bloque.type === 'text').map((bloque) => bloque.value).join(' ').split(/\s+/).filter(Boolean).length;
+  const minutos = Math.max(1, Math.round(palabras / 200));
+  const portada = getGoogleDriveImageUrl(image);
+  const enlace = `https://iamparana.com.ar/noticias/${params.slug}`;
+  const otras = ((await listNoticiasPreview().catch(() => [])) as Array<{ slug: string; title: string; image: string; date: string; cat?: string }>)
+    .filter((item) => item.slug !== params.slug)
+    .slice(0, 3);
+
+  const FOCO = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown';
+  const FOTO = 'h-auto w-full rounded-2xl object-cover shadow-[0_18px_36px_-24px_rgba(58,21,8,0.7)]';
+
   return (
     <NoticiasClient>
-      <main className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-16">
-        <article className="relative w-full bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-5 md:p-10">
-          
-          <NoticiasAdminButtons 
-            noticia={{
-              slug: params.slug,
-              title: title,
-              description: description,
-              image: image,
-              date: date
-            }} 
-            alwaysVisible={true} 
-          />
+      <main className="min-h-screen w-full bg-brand-paper pb-20 pt-16 sm:pt-20">
+        <article className="relative mx-auto w-full max-w-3xl px-4 sm:px-6">
+          <NoticiasAdminButtons noticia={{ slug: params.slug, title, description, image, date }} alwaysVisible={true} />
 
-          <span className="inline-flex rounded-full bg-brand-brown/10 px-3 py-1 text-brand-brown font-bold text-xs uppercase tracking-wider mb-3">
-          {categoryLabel}
-        </span>
+          <Link href="/noticias" className={`inline-flex items-center gap-1.5 rounded-full py-1 text-sm font-bold text-brand-brown no-underline hover:underline ${FOCO}`}>
+            <ArrowLeft size={16} aria-hidden /> Todas las noticias
+          </Link>
 
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[#6b3f24] mb-4 break-words leading-tight">
-          {title}
-        </h1>
+          <header className="mt-5">
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${colorDeCategoria(categoria)}`}>{nombreDeCategoria(categoria)}</span>
+            <h1 className="m-0 mt-4 text-balance text-left font-display text-[clamp(2.1rem,6vw,3.5rem)] font-extrabold leading-[1.03] tracking-[-0.03em] text-brand-ink [overflow-wrap:anywhere]">
+              {title}
+            </h1>
+            <p className="m-0 mt-5 max-w-none whitespace-pre-wrap text-left text-lg leading-relaxed text-brand-ink/80 sm:text-xl [overflow-wrap:anywhere]">
+              {bajada || description}
+            </p>
+            <p className="m-0 mt-5 max-w-none text-left text-sm font-medium text-brand-ink/70">
+              {fechaLargaNoticia(date)}{palabras > 0 && ` · ${minutos} min de lectura`}
+            </p>
+          </header>
 
-        <p className="text-lg text-gray-700 mb-4 break-words whitespace-pre-wrap leading-relaxed">
-          {bajada || description}
-        </p>
+          {/* Imagen principal de la noticia. */}
+          {portada && (
+            <Image src={portada} alt="" width={1600} height={900} priority sizes="(max-width: 768px) 100vw, 768px" className={`mt-8 ${FOTO}`} />
+          )}
 
-        <p className="text-sm text-gray-500 mb-6 font-medium">
-          Publicado el {new Date(date).toLocaleDateString('es-AR')}
-        </p>
-
-        <hr className="w-full border-t border-gray-200 my-8" />
-
-        {/* Imagen principal de la noticia. */}
-        {getGoogleDriveImageUrl(image) && (
-          <div className="w-full mb-10">
-            <Image
-              src={getGoogleDriveImageUrl(image) || ''}
-              alt={title}
-              width={1600}
-              height={900}
-              sizes="(max-width: 1024px) 100vw, 960px"
-              className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        )}
-
-        {/* Contenido principal de la noticia: bloques de texto e imágenes. */}
-        <div className="space-y-6 text-gray-800 w-full break-words text-base leading-7">
-          {bloques.map((bloque) => {
-            if (bloque.type === 'text') {
-              return (
-                <div key={bloque.id} className="break-words">
+          {/* Contenido principal de la noticia: bloques de texto e imágenes. */}
+          <div className="mt-9 w-full text-left text-lg leading-8 text-brand-ink [overflow-wrap:anywhere]">
+            {bloques.map((bloque) => {
+              if (bloque.type === 'text') {
+                return (
                   <ReactMarkdown
+                    key={bloque.id}
                     rehypePlugins={[rehypeRaw]}
                     components={{
-                      h1: ({ children }) => <h1 className="text-3xl font-bold text-[#3a2a1c] mt-6 mb-3 leading-tight">{children}</h1>,
-                      h2: ({ children }) => <h2 className="text-2xl font-bold text-[#3a2a1c] mt-6 mb-3 leading-tight">{children}</h2>,
-                      h3: ({ children }) => <h3 className="text-xl font-bold text-[#3a2a1c] mt-5 mb-2 leading-tight">{children}</h3>,
-                      h4: ({ children }) => <h4 className="text-lg font-bold text-[#3a2a1c] mt-4 mb-2 leading-tight">{children}</h4>,
-                      p: ({ children }) => <p className="mb-4 leading-7 text-gray-800">{children}</p>,
-                      ul: ({ children }) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
-                      ol: ({ children }) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
-                      li: ({ children }) => <li className="mb-1">{children}</li>,
+                      // Dentro de la nota no puede haber otro h1: los títulos del texto bajan un nivel.
+                      h1: ({ children }) => <h2 className="m-0 mb-3 mt-10 text-left font-display text-3xl font-extrabold leading-tight text-brand-ink">{children}</h2>,
+                      h2: ({ children }) => <h2 className="m-0 mb-3 mt-10 text-left font-display text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl">{children}</h2>,
+                      h3: ({ children }) => <h3 className="m-0 mb-2 mt-8 text-left font-display text-xl font-extrabold leading-tight text-brand-ink sm:text-2xl">{children}</h3>,
+                      h4: ({ children }) => <h4 className="m-0 mb-2 mt-6 text-left font-display text-lg font-extrabold leading-tight text-brand-ink">{children}</h4>,
+                      p: ({ children }) => <p className="m-0 mb-5 max-w-none text-left text-lg leading-8 text-brand-ink">{children}</p>,
+                      ul: ({ children }) => <ul className="m-0 mb-5 list-disc space-y-1.5 pl-6">{children}</ul>,
+                      ol: ({ children }) => <ol className="m-0 mb-5 list-decimal space-y-1.5 pl-6">{children}</ol>,
+                      li: ({ children }) => <li className="pl-1">{children}</li>,
+                      // Las citas van como frase destacada, sin la barra al costado.
                       blockquote: ({ children }) => (
-                        <blockquote className="border-l-4 border-[#d6b680] bg-[#faf7f1] px-4 py-2 my-4 text-gray-700">
+                        <blockquote className="mx-0 my-8 max-w-none rounded-2xl border-0 bg-yellow-400 px-6 py-5 font-display text-xl font-extrabold not-italic leading-snug text-brand-deep [&_p]:m-0 [&_p]:text-xl [&_p]:font-extrabold [&_p]:leading-snug [&_p]:text-brand-deep">
                           {children}
                         </blockquote>
                       ),
                       a: ({ href, children }) => (
-                        <a href={href} className="text-blue-700 underline hover:text-blue-900">
+                        <a href={href} className={`font-bold text-blue-800 underline underline-offset-2 hover:text-blue-950 ${FOCO}`}>
                           {children}
                         </a>
                       ),
                       img: ({ src, alt }) => {
                         const imageUrl = getGoogleDriveImageUrl(typeof src === 'string' ? src : '');
                         return imageUrl ? (
-                          <Image
-                            src={imageUrl}
-                            alt={alt || 'Imagen de la noticia'}
-                            width={1400}
-                            height={788}
-                            sizes="(max-width: 1024px) 100vw, 900px"
-                            className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100 my-6"
-                            loading="lazy"
-                          />
+                          <Image src={imageUrl} alt={alt || ''} width={1400} height={788} sizes="(max-width: 768px) 100vw, 768px" className={`my-8 ${FOTO}`} loading="lazy" />
                         ) : null;
                       },
                     }}
                   >
                     {bloque.value}
                   </ReactMarkdown>
-                </div>
-              );
-            }
+                );
+              }
 
-            if (bloque.type === 'image') {
-              const imageUrl = getGoogleDriveImageUrl(bloque.value);
-              if (!imageUrl) return null;
-              return (
-                <div key={bloque.id} className="w-full my-8">
-                  <Image
-                    src={imageUrl}
-                    alt="Imagen de la noticia"
-                    width={1400}
-                    height={788}
-                    sizes="(max-width: 1024px) 100vw, 900px"
-                    className="w-full h-auto object-cover rounded-xl shadow-sm border border-gray-100"
-                    loading="lazy"
-                  />
-                </div>
-              );
-            }
+              if (bloque.type === 'image') {
+                const imageUrl = getGoogleDriveImageUrl(bloque.value);
+                if (!imageUrl) return null;
+                return <Image key={bloque.id} src={imageUrl} alt="" width={1400} height={788} sizes="(max-width: 768px) 100vw, 768px" className={`my-8 ${FOTO}`} loading="lazy" />;
+              }
 
-            return null;
-          })}
-        </div>
+              return null;
+            })}
+          </div>
 
-        {/* Galería asociada a la noticia. */}
-        <div className="mt-12">
-          <NoticiaGaleriaView slug={params.slug} />
-        </div>
+          {/* Galería asociada a la noticia. */}
+          <div className="mt-12">
+            <NoticiaGaleriaView slug={params.slug} />
+          </div>
 
-        <NewsEngagement slug={params.slug} />
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-deep px-6 py-5 text-white">
+            <h2 className="m-0 text-left font-display text-xl font-extrabold text-white">Compartí esta noticia</h2>
+            <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+              <li>
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${enlace}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-brand-deep no-underline transition-colors hover:bg-brand-goldsoft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/assets/socialmedia/whatsapp.webp" alt="" className="h-5 w-5 object-contain" />
+                  WhatsApp
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(enlace)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-brand-deep no-underline transition-colors hover:bg-brand-goldsoft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/assets/socialmedia/facebook.webp" alt="" className="h-5 w-5 object-contain" />
+                  Facebook
+                </a>
+              </li>
+            </ul>
+          </div>
 
-        <hr className="w-full border-t border-gray-200 my-10" />
+          <NewsEngagement slug={params.slug} />
+        </article>
 
-        <div className="bg-gradient-to-br from-[#fff8f2] to-white p-8 rounded-2xl text-center border border-[#eadfd5] shadow-sm">
-          <h3 className="text-xs font-bold text-brand-brown/80 uppercase tracking-widest mb-6">
-            Compartí esta noticia
-          </h3>
-
-          <ul className="flex justify-center gap-5 items-center">
-            <li>
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://iamparana.com.ar/noticias/${params.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
-                title="Compartir en Facebook"
-              >
-                <img
-                  src="/assets/socialmedia/facebook.webp"
-                  alt="Facebook"
-                  className="w-8 h-8 transition-transform duration-300 group-hover:scale-110 object-contain"
-                />
-              </a>
-            </li>
-            <li>
-              <a
-                href={`https://api.whatsapp.com/send?text=¡Mirá esta noticia! https://iamparana.com.ar/noticias/${params.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-center w-14 h-14 bg-white rounded-full shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
-                title="Compartir en WhatsApp"
-              >
-                <img
-                  src="/assets/socialmedia/whatsapp.webp"
-                  alt="WhatsApp"
-                  className="w-8 h-8 transition-transform duration-300 group-hover:scale-110 object-contain"
-                />
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* Otras noticias para seguir navegando por el sitio. */}
-        <section className="mt-16">
-          <h2 className="text-2xl font-bold text-brand-brown mb-6">Más noticias</h2>
-          <Novedades currentSlug={params.slug} />
-        </section>
-      </article>
+        {/* Otras noticias para seguir leyendo. */}
+        {otras.length > 0 && (
+          <section aria-labelledby="mas-noticias" className="mx-auto mt-16 w-full max-w-7xl px-4 sm:px-6">
+            <div className="flex items-end justify-between gap-4">
+              <h2 id="mas-noticias" className="m-0 text-left font-display text-[clamp(1.9rem,4.6vw,3rem)] font-extrabold leading-none tracking-[-0.03em] text-brand-ink">Más noticias</h2>
+              <Link href="/noticias" className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-brand-brown/25 px-4 py-2 text-sm font-bold text-brand-brown no-underline transition-colors hover:bg-brand-brown hover:text-white ${FOCO}`}>
+                Ver todas <ArrowRight size={15} aria-hidden />
+              </Link>
+            </div>
+            <ul className="m-0 mt-6 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {otras.map((item) => {
+                const imagen = getGoogleDriveImageUrl(item.image);
+                return (
+                  <li key={item.slug} className="sm:last:hidden lg:last:block">
+                    <Link href={`/noticias/${item.slug}`} className={`group flex h-full flex-col overflow-hidden rounded-2xl bg-white no-underline shadow-[0_14px_28px_-22px_rgba(58,21,8,0.7)] transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transform-none ${FOCO}`}>
+                      <div className="relative aspect-[16/10] overflow-hidden bg-brand-cream">
+                        {imagen && <Image src={imagen} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transform-none" />}
+                      </div>
+                      <div className="flex flex-1 flex-col p-5">
+                        {item.cat?.trim() && <span className={`inline-flex self-start rounded-full px-3 py-1 text-xs font-extrabold ${colorDeCategoria(item.cat)}`}>{nombreDeCategoria(item.cat)}</span>}
+                        <h3 className="m-0 mt-3 line-clamp-3 text-left font-display text-xl font-extrabold leading-snug text-brand-ink">{item.title}</h3>
+                        <p className="m-0 mt-auto max-w-none pt-4 text-left text-sm font-medium text-brand-ink/65">{fechaLargaNoticia(item.date)}</p>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
       </main>
     </NoticiasClient>
   );

@@ -3,14 +3,15 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAreaWrite, badRequest, serverError } from "@/app/api/admin/_shared/auth";
 import { recordAuditEvent } from "@/server/db/audit-repository";
-import { deleteRendicion, saveRendicion } from "@/server/db/rendiciones-repository";
+import { deleteRendicion, MesRepetidoError, saveRendicion } from "@/server/db/rendiciones-repository";
 
-// Cuentas claras: guarda o borra la rendición de un evento. Solo el equipo de Logística y los administradores.
+// Cuentas claras: guarda o borra la rendición de un mes. Solo el equipo de Logística y los administradores.
 
 const rendicionSchema = z.object({
   id: z.string().trim().regex(/^[0-9a-f]{24}$/).optional(),
-  evento: z.string().trim().min(2, "Poné el nombre del evento.").max(120),
-  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Elegí la fecha del evento."),
+  mes: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Elegí el mes."),
+  /** Lo que ya había en la cuenta; null = se toma lo que quedó del mes anterior. */
+  saldoInicial: z.number().int("Los montos van sin centavos.").min(-1_000_000_000).max(1_000_000_000).nullable().default(null),
   nota: z.string().trim().max(600).default(""),
   movimientos: z
     .array(
@@ -33,10 +34,11 @@ export async function PUT(req: Request) {
     if (!parsed.success) return badRequest(parsed.error.issues[0]?.message || "Revisá los datos.");
 
     const id = await saveRendicion(parsed.data, auth.user.id);
-    await recordAuditEvent({ actor: auth.user, action: parsed.data.id ? "update" : "create", entityType: "rendicion", area: "logistica", metadata: { evento: parsed.data.evento, movimientos: parsed.data.movimientos.length } });
+    await recordAuditEvent({ actor: auth.user, action: parsed.data.id ? "update" : "create", entityType: "rendicion", area: "logistica", metadata: { mes: parsed.data.mes, movimientos: parsed.data.movimientos.length } });
     revalidatePath("/logistica");
     return NextResponse.json({ ok: true, id });
   } catch (error) {
+    if (error instanceof MesRepetidoError) return badRequest(error.message);
     console.error(error);
     return serverError();
   }

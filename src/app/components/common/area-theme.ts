@@ -9,6 +9,8 @@ export interface AreaTheme {
   href: string;
   /** Bajada corta del área; es la misma descripción que usa cada página. */
   summary: string;
+  /** Lo que hay adentro del área, en pocas palabras: se muestra en los accesos del inicio. Mantenerlo al día. */
+  incluye: string[];
   /** Mosaico de color pleno (accesos del inicio). */
   tile: string;
   /** Capas de color que se multiplican sobre la textura de la portada. */
@@ -32,6 +34,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     label: 'Formación',
     href: '/formacion',
     summary: 'Materiales, documentos y propuestas de formación para animadores.',
+    incluye: ['Temas del año', 'Escuela con Jesús', 'Materiales'],
     tile: 'bg-yellow-400 text-brand-brown hover:bg-yellow-300 focus-visible:outline-brand-brown',
     heroOverlay: 'rgba(250, 204, 21, 0.92), rgba(234, 179, 8, 0.92)',
     heroText: 'text-brand-brown',
@@ -46,6 +49,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     label: 'Animación',
     href: '/animacion',
     summary: 'Juegos, canciones, dinámicas y recursos para animar encuentros.',
+    incluye: ['Canciones', 'Juegos', 'Música y videos'],
     tile: 'bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:outline-emerald-800',
     heroOverlay: 'rgba(20, 83, 45, 0.92), rgba(21, 128, 61, 0.9)',
     heroText: 'text-white',
@@ -60,6 +64,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     label: 'Espiritualidad',
     href: '/espiritualidad',
     summary: 'Oraciones, guiones litúrgicos y recursos para profundizar en la espiritualidad.',
+    incluye: ['Rosario Misionero', 'Oraciones', 'Guiones', 'Fiestas del mes'],
     tile: 'bg-stone-700 text-white hover:bg-stone-800 focus-visible:outline-stone-800',
     heroOverlay: 'rgba(41, 37, 36, 0.92), rgba(87, 83, 78, 0.9)',
     heroText: 'text-white',
@@ -74,6 +79,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     label: 'Comunicación',
     href: '/comunicacion',
     summary: 'Documentos, enlaces y recursos gráficos para la comunicación.',
+    incluye: ['Recursos gráficos', 'Merch', 'Fotos de eventos', 'Mandá tu noticia'],
     tile: 'bg-blue-700 text-white hover:bg-blue-800 focus-visible:outline-blue-800',
     heroOverlay: 'rgba(30, 64, 175, 0.92), rgba(37, 99, 235, 0.9)',
     heroText: 'text-white',
@@ -88,6 +94,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     label: 'Logística',
     href: '/logistica',
     summary: 'Resumen de gastos y transparencia en eventos realizados.',
+    incluye: ['Cuentas claras', 'Documentos'],
     tile: 'bg-red-700 text-white hover:bg-red-800 focus-visible:outline-red-800',
     heroOverlay: 'rgba(153, 27, 27, 0.92), rgba(220, 38, 38, 0.9)',
     heroText: 'text-white',
