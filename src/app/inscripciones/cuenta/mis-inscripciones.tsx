@@ -5,12 +5,16 @@ import type { EventoAgenda } from '@/server/lib/inscripciones-eventos';
 import { formatMonto } from '../montos';
 import { CARD_CLASS, ESTADO_LABEL, ROL_LABEL, TEXT_BUTTON, formatFecha } from '../ui';
 import { ImagenRevocar } from './imagen-revocar';
+import { PersonaAvatar } from '../persona-avatar';
 
 // A quiénes inscribió esta cuenta, evento por evento, con el estado de cada autorización.
+
 
 interface MisInscripcionesProps {
   inscripciones: InscripcionConFirmas[];
   eventos: Map<string, EventoAgenda>;
+  /** Ids de las personas en el orden de la cuenta: de ahí sale el color de cada una. */
+  orden?: string[];
 }
 
 const ESTADO_CLASS: Record<string, string> = {
@@ -19,7 +23,7 @@ const ESTADO_CLASS: Record<string, string> = {
   lista_espera: 'bg-stone-200 text-stone-800',
 };
 
-export function MisInscripciones({ inscripciones, eventos }: MisInscripcionesProps) {
+export function MisInscripciones({ inscripciones, eventos, orden = [] }: MisInscripcionesProps) {
   // Se agrupa por evento, con los más próximos primero; los que ya no están en la agenda van al final.
   const grupos = new Map<string, InscripcionConFirmas[]>();
   for (const item of inscripciones) grupos.set(item.eventoId, [...(grupos.get(item.eventoId) ?? []), item]);
@@ -56,7 +60,10 @@ export function MisInscripciones({ inscripciones, eventos }: MisInscripcionesPro
                   {items.map((item) => (
                     <li key={item.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                       <div className="min-w-0">
-                        <p className="m-0 max-w-none text-left text-base font-bold text-brand-ink">{item.nombre} {item.apellido}</p>
+                        <p className="m-0 flex max-w-none items-center gap-2 text-left text-base font-bold text-brand-ink">
+                          {orden.includes(item.personaId) && <PersonaAvatar nombre={item.nombre} indice={orden.indexOf(item.personaId)} size="sm" />}
+                          {item.nombre} {item.apellido}
+                        </p>
                         <p className="m-0 mt-0.5 max-w-none text-left text-sm text-brand-ink/65">
                           {ROL_LABEL[item.rol] ?? item.rol}{item.monto !== null ? ` · ${formatMonto(item.monto)}` : ''}
                         </p>

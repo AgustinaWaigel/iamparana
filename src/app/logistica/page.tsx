@@ -8,6 +8,8 @@ import { LogisticaCardsGrid } from "./components/logistica-cards-grid";
 
 // Base de Datos
 import { getAreaLandingContent } from "@/server/db/admin-repository";
+import { listRendiciones } from "@/server/db/rendiciones-repository";
+import { CuentasClaras } from "./components/cuentas-claras";
 
 export const revalidate = 60;
 
@@ -21,10 +23,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Logística",
     description: "Resumen de gastos y transparencia en eventos realizados",
-    url: "https://iamparana.com/logistica",
+    url: "https://iamparana.com.ar/logistica",
     images: [
       {
-        url: "https://iamparana.com/logoiam.jpg",
+        url: "https://iamparana.com.ar/logoiam.jpg",
         alt: "Logo IAM Paraná",
         width: 800,
         height: 600,
@@ -47,7 +49,10 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; section: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function Logistica() {
-  const areaContent = await getAreaLandingContent('logistica', ['logistica', 'presupuestos', 'rendiciones', 'inventario']);
+  const [areaContent, rendiciones] = await Promise.all([
+    getAreaLandingContent('logistica', ['logistica', 'presupuestos', 'rendiciones', 'inventario']),
+    listRendiciones().catch(() => []),
+  ]);
   const uploadedDocumentsRaw = areaContent.documents;
   const uploadedLinksRaw = areaContent.links;
   const resourcePagesRaw = areaContent.pages;
@@ -102,6 +107,8 @@ export default async function Logistica() {
         />
 
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <CuentasClaras rendiciones={rendiciones} />
+
           <LogisticaCardsGrid
             uploadedDocuments={uploadedDocuments}
             uploadedLinks={uploadedLinks}

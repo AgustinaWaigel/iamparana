@@ -10,6 +10,7 @@ import { InscripcionConfigPanel } from "@/app/components/common/inscripcion-conf
 import { listBajasEvento, listInscriptosEvento, listPagosEvento, type BajaAdmin, type InscriptoAdmin } from "@/server/db/inscripciones-admin-repository";
 import { requireAdminPage } from "@/server/lib/admin-page";
 import { EventoDetalles } from "./evento-detalles";
+import { EventoInfoEditor } from "./evento-info-editor";
 import { PagosPanel } from "./pagos-panel";
 import { getEventoConInscripcion } from "@/server/lib/inscripciones-eventos";
 import { edadEnEvento, filtrar, grupoDe, parseFiltros, respuestaDe, respuestasPorPregunta, resumir, tablaLogistica, type Conteo, type FiltroKey, type Filtros } from "@/server/lib/inscripciones-resumen";
@@ -120,6 +121,7 @@ export default async function AdminEventoPage({
         {vista === "config" ? (
           <div className="mt-6 max-w-3xl">
             <EventoDetalles eventoId={eventoId} />
+            <div className="my-6"><EventoInfoEditor eventoId={eventoId} /></div>
             <InscripcionConfigPanel eventoId={eventoId} />
           </div>
         ) : vista === "pagos" ? (

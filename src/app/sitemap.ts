@@ -1,10 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { getAllNoticiasSlugs } from '@/server/content/noticias';
 
-const baseUrl = 'https://iamparana.com';
+const baseUrl = 'https://iamparana.com.ar';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routes = ['', '/noticias', '/inscripciones', '/calendario', '/animacion', '/animacion/juegos', '/animacion/canciones', '/formacion', '/comunicacion', '/espiritualidad', '/logistica', '/institucional', '/privacidad'];
+  const routes = ['', '/noticias', '/inscripciones', '/calendario', '/animacion', '/animacion/juegos', '/animacion/canciones', '/formacion', '/comunicacion', '/espiritualidad', '/logistica', '/privacidad', '/quienes-somos', '/comunicacion/merch'];
   const newsSlugs = await getAllNoticiasSlugs().catch(() => []);
 
   return [

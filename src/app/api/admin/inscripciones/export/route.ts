@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AREA_LABEL, ESTADO_LABEL, ROL_LABEL } from "@/app/inscripciones/ui";
 import { recordAuditEvent } from "@/server/db/audit-repository";
-import { listInscriptosEvento } from "@/server/db/inscripciones-admin-repository";
+import { listInscriptosEvento, listPagosEvento } from "@/server/db/inscripciones-admin-repository";
 import { requirePermission } from "@/server/lib/api-utils";
 import { getEventoConInscripcion } from "@/server/lib/inscripciones-eventos";
 import { edadEnEvento } from "@/server/lib/inscripciones-resumen";
@@ -30,12 +30,15 @@ export async function GET(request: NextRequest) {
   try {
     const evento = await getEventoConInscripcion(eventoId);
     if (!evento) return NextResponse.json({ error: "No encontramos ese evento." }, { status: 404 });
-    const inscriptos = await listInscriptosEvento(eventoId);
+    const [inscriptos, pagos] = await Promise.all([listInscriptosEvento(eventoId), listPagosEvento(eventoId)]);
+    const pagoDe = new Map(pagos.map((pago) => [pago.inscripcionId, pago]));
+    const PAGO: Record<string, string> = { pagado: "Pagó", exento: "No paga", pendiente: "Debe" };
+    const MEDIO: Record<string, string> = { transferencia: "Transferencia", efectivo: "Efectivo" };
 
     const preguntas = evento.config.preguntas;
     const header = [
       "Apellido", "Nombre", "Edad en el evento", "Sexo", "Participa como", "Área", "IAM", "Ciudad", "Grado", "Estado",
-      "Autorización", "Uso de imagen", "Monto", "Dieta especial", "Alergias", "Lleva su comida", "Enfermedad o condición",
+      "Autorización", "Uso de imagen", "Monto", "Pago", "Medio de pago", "Dieta especial", "Alergias", "Lleva su comida", "Enfermedad o condición",
       ...preguntas.map((pregunta) => pregunta.texto),
     ];
     const rows = inscriptos.map((row) => [
@@ -52,6 +55,8 @@ export async function GET(request: NextRequest) {
       row.firmaEventoId ? "Firmada" : "Sin firmar",
       row.imagen === null ? "Falta responder" : row.imagen ? "Autorizado" : "No autorizado",
       row.monto ?? "",
+      PAGO[pagoDe.get(row.inscripcionId)?.pagoEstado ?? ""] ?? "",
+      MEDIO[pagoDe.get(row.inscripcionId)?.pagoMedio ?? ""] ?? "",
       row.salud?.dieta?.tiene ? row.salud.dieta.detalle : "",
       row.salud?.alergias?.tiene ? row.salud.alergias.detalle : "",
       row.respuestas.lleva_comida === "si" ? "Sí" : "",

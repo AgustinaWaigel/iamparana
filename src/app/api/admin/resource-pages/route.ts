@@ -20,6 +20,7 @@ function revalidateResourcePages() {
   revalidatePath('/logistica');
   revalidatePath('/logistica/recursos');
   revalidatePath('/institucional');
+  revalidatePath('/quienes-somos');
   revalidatePath('/institucional/recursos');
 }
 

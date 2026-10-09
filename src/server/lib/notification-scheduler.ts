@@ -8,6 +8,7 @@ import {
   listCalendarAgendaEvents,
 } from "@/server/lib/google-calendar-service";
 import { sendNotificationToAll } from "./push-notification-service";
+import { listEventosConfigurados } from "./inscripciones-eventos";
 
 type NotificationEvent = {
   id?: string | number;
@@ -125,6 +126,56 @@ export async function checkAndSendEventNotifications(): Promise<{ sent: number; 
     }
   } catch (error) {
     console.error("Error checking events for notifications:", error);
+  }
+
+  return { sent: totalSent, events: sentEvents };
+}
+
+/**
+ * Avisos de inscripciones, para cada evento con la inscripción habilitada:
+ * el día que abre, tres días antes de que cierre y el último día. Cada aviso sale una sola vez.
+ */
+export async function checkAndSendInscripcionNotifications(): Promise<{ sent: number; events: string[] }> {
+  const sentEvents: string[] = [];
+  let totalSent = 0;
+
+  try {
+    for (const evento of await listEventosConfigurados()) {
+      if (evento.estado === "apagada" || evento.estado === "finalizado") continue;
+      const { abreAt, cierraAt } = evento.config;
+      const paraCerrar = cierraAt ? getDaysUntilDate(cierraAt) : null;
+
+      let aviso: { tipo: string; title: string; body: string } | null = null;
+      if (abreAt && getDaysUntilDate(abreAt) === 0) {
+        aviso = { tipo: "insc_abre", title: "¡Abrieron las inscripciones!", body: `Ya te podés anotar a ${evento.evento}. Entrá al sitio para inscribirte.` };
+      } else if (paraCerrar === 3) {
+        aviso = { tipo: "insc_cierra_3", title: "Quedan 3 días para inscribirte", body: `Las inscripciones a ${evento.evento} cierran en tres días. ¡No te quedes afuera!` };
+      } else if (paraCerrar === 0) {
+        aviso = { tipo: "insc_cierra_hoy", title: "Hoy es el último día", body: `Hoy cierran las inscripciones a ${evento.evento}.` };
+      }
+      if (!aviso) continue;
+
+      const eventId = getNotificationEventId(evento.id);
+      if (await getNotificationSentByEventType(aviso.tipo, eventId)) continue;
+      const sent = await sendNotificationToAll(
+        {
+          title: aviso.title,
+          body: aviso.body,
+          icon: "/icon-192x192.png",
+          badge: "/icon-192x192.png",
+          tag: `${aviso.tipo}-${eventId}`,
+          data: { url: `/inscripciones/${encodeURIComponent(evento.id)}` },
+        },
+        aviso.tipo,
+        eventId,
+      );
+      if (sent > 0) {
+        sentEvents.push(evento.evento);
+        totalSent += sent;
+      }
+    }
+  } catch (error) {
+    console.error("Error checking inscriptions for notifications:", error);
   }
 
   return { sent: totalSent, events: sentEvents };

@@ -15,6 +15,8 @@ import { CuentaAcceso, CuentaSalir } from "../cuenta/cuenta-acceso";
 import { InscripcionFlow } from "../inscripcion-flow";
 import { CARD_CLASS, ESTADO_LABEL, ROL_LABEL, formatFecha } from "../ui";
 import { EventoHero } from "./evento-hero";
+import { EventoInfoPublica } from "./evento-info";
+import { EVENTO_INFO_VACIA, getEventoInfo } from "@/server/db/evento-info-repository";
 
 // Inscripción a un evento. Todo se decide en el servidor: si el evento está abierto,
 // quién es la cuenta y qué personas puede ver. El navegador recibe solo eso.
@@ -33,6 +35,8 @@ export default async function InscripcionEventoPage({ params }: { params: Promis
 
   const estado = estadoInscripcion(evento, evento.config);
   const abierta = estado === "abierta";
+  // Información práctica (lugar, qué llevar, cómo pagar): si no se puede leer, la página sigue sin ella.
+  const info = await getEventoInfo(evento.id).catch(() => EVENTO_INFO_VACIA);
   const { abreAt, cierraAt } = evento.config;
   const motivo =
     estado === "proxima" && abreAt ? `La inscripción a este evento abre el ${formatFecha(abreAt)}.`
@@ -56,6 +60,7 @@ export default async function InscripcionEventoPage({ params }: { params: Promis
         abreAt={abreAt}
         cierraAt={cierraAt}
       />
+      {estado !== "finalizado" && <EventoInfoPublica eventoId={evento.id} info={info} montos={evento.config.montos} cierraAt={cierraAt} />}
       <div id="inscripcion" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
         {esAdmin && (
           <p className="m-0 mb-8 flex max-w-none flex-wrap gap-x-5 gap-y-2 rounded-xl border border-dashed border-brand-brown/30 px-4 py-3 text-left text-sm font-bold">

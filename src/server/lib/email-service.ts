@@ -29,7 +29,7 @@ function createTransporter() {
   const builder = nodemailer.createTransport({ streamTransport: true, buffer: true, newline: "unix" });
 
   return {
-    async sendMail(message: { from: string; to: string; subject: string; html: string; text: string; attachments?: Array<{ filename: string; content: Buffer; contentType: string }> }) {
+    async sendMail(message: { from: string; to: string; subject: string; html: string; text: string; replyTo?: string; attachments?: Array<{ filename: string; content: Buffer; contentType: string }> }) {
       // Las respuestas van al mail de contacto, no a la cuenta que envía.
       const built = await builder.sendMail({ replyTo: CONTACTO_EMAIL, ...message });
       await gmail.users.messages.send({
@@ -222,7 +222,7 @@ function inscripcionesNoticeHtml(title: string, paragraphs: string[]) {
 }
 
 function inscripcionesSiteUrl() {
-  return (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://iamparana.com").replace(/\/$/, "");
+  return (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "https://iamparana.com.ar").replace(/\/$/, "");
 }
 
 /** Aviso al email anterior cuando una cuenta familiar cambia su email de acceso. */
@@ -324,5 +324,72 @@ export async function sendAdminLoginCodeEmail(to: string, code: string, minutes:
     subject: `${code} es tu código de ingreso — IAM Paraná`,
     html: inscripcionesNoticeHtml("Código de ingreso", paragraphs),
     text: paragraphs.join("\n\n"),
+  });
+}
+
+function escaparHtml(texto: string) {
+  return texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** Le avisa a Comunicación que alguien propuso una noticia desde el sitio. */
+export async function sendNoticiaPropuestaEmail(datos: { nombre: string; iam: string; contacto: string; titulo: string; texto: string; fotos: string }) {
+  const from = process.env.GMAIL_FROM;
+  if (!from) throw new Error("GMAIL_FROM no configurado");
+
+  const campos: Array<[string, string]> = [
+    ["De", datos.nombre],
+    ["IAM o comunidad", datos.iam],
+    ["Contacto", datos.contacto],
+    ["Título", datos.titulo],
+    ["Fotos", datos.fotos || "No mandó enlace"],
+  ];
+  const text = `${campos.map(([nombre, valor]) => `${nombre}: ${valor}`).join("\n")}\n\n${datos.texto}`;
+  // Todo lo que escribió la persona va escapado: llega como texto, nunca como HTML.
+  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#2c1d11;max-width:560px">
+<h1 style="font-size:20px;margin:0 0 16px">Propuesta de noticia</h1>
+${campos.map(([nombre, valor]) => `<p style="margin:0 0 6px"><strong>${nombre}:</strong> ${escaparHtml(valor)}</p>`).join("")}
+<p style="margin:18px 0 0;white-space:pre-wrap">${escaparHtml(datos.texto)}</p>
+</div>`;
+  const esEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.contacto);
+
+  await createTransporter().sendMail({
+    from: `"Sitio IAM Paraná" <${from}>`,
+    to: CONTACTO_EMAIL,
+    // Si dejó un mail, al responder le llega directo a esa persona.
+    ...(esEmail ? { replyTo: datos.contacto } : {}),
+    subject: `Propuesta de noticia: ${datos.titulo.slice(0, 80)}`,
+    html,
+    text,
+  });
+}
+
+/** Le avisa al equipo que alguien quiere empezar una IAM en su parroquia. */
+export async function sendNuevaIamEmail(datos: { nombre: string; contacto: string; parroquia: string; ciudad: string; mensaje: string }) {
+  const from = process.env.GMAIL_FROM;
+  if (!from) throw new Error("GMAIL_FROM no configurado");
+
+  const campos: Array<[string, string]> = [
+    ["De", datos.nombre],
+    ["Contacto", datos.contacto],
+    ["Parroquia, capilla o colegio", datos.parroquia],
+    ["Ciudad", datos.ciudad],
+  ];
+  const text = `${campos.map(([nombre, valor]) => `${nombre}: ${valor}`).join("\n")}\n\n${datos.mensaje || "(Sin mensaje)"}`;
+  // Todo lo que escribió la persona va escapado: llega como texto, nunca como HTML.
+  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#2c1d11;max-width:560px">
+<h1 style="font-size:20px;margin:0 0 16px">Quieren empezar una IAM</h1>
+${campos.map(([nombre, valor]) => `<p style="margin:0 0 6px"><strong>${nombre}:</strong> ${escaparHtml(valor)}</p>`).join("")}
+<p style="margin:18px 0 0;white-space:pre-wrap">${escaparHtml(datos.mensaje || "(Sin mensaje)")}</p>
+</div>`;
+  const esEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.contacto);
+
+  await createTransporter().sendMail({
+    from: `"Sitio IAM Paraná" <${from}>`,
+    to: CONTACTO_EMAIL,
+    // Si dejó un mail, al responder le llega directo a esa persona.
+    ...(esEmail ? { replyTo: datos.contacto } : {}),
+    subject: `Quieren empezar una IAM: ${datos.parroquia.slice(0, 60)} (${datos.ciudad.slice(0, 40)})`,
+    html,
+    text,
   });
 }

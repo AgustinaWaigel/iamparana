@@ -166,6 +166,8 @@ export default function PrivacidadPage() {
 
             <h3 className={H3}>Otras funciones</h3>
             <ul className={UL}>
+              <li><strong>Si nos escribís para empezar una IAM:</strong> tu nombre, tu parroquia, tu ciudad y el mail o teléfono que dejes le llegan por mail al equipo, para poder responderte. No se guardan en el sitio.</li>
+              <li><strong>Si nos mandás una noticia:</strong> tu nombre, tu IAM, el mail o teléfono que dejes y lo que escribas le llegan por mail al equipo de Comunicación. No se guardan en el sitio.</li>
               <li><strong>Notificaciones:</strong> si las activás, guardamos el permiso que da tu navegador para mandarte avisos.</li>
               <li><strong>Chat con IA:</strong> lo que escribís se envía a un servicio de inteligencia artificial para generar la respuesta, y no lo guardamos. El chat no tiene acceso a las inscripciones ni a los datos de nadie. No escribas datos personales en el chat.</li>
             </ul>
@@ -241,6 +243,8 @@ export default function PrivacidadPage() {
                 <li><strong>Upstash:</strong> cuenta los intentos para entrar y frena abusos. Para eso guarda por poco tiempo un identificador de la conexión.</li>
                 <li><strong>Groq:</strong> genera las respuestas del chat con IA.</li>
                 <li><strong>Simple Analytics y Vercel Analytics:</strong> cuentan visitas sin cookies y sin identificarte.</li>
+                <li><strong>OpenStreetMap:</strong> las imágenes del mapa de «Quiénes somos» vienen de ese servicio, que al mostrarlas recibe la dirección de tu conexión, como cualquier sitio web.</li>
+                <li><strong>Google Maps:</strong> en la página de un evento, el mapa del lugar se carga solo si tocás «Ver el mapa».</li>
                 <li><strong>YouTube y Spotify:</strong> los videos y la música de algunas páginas vienen de esos servicios, que tienen sus propias políticas. En el inicio, el video recién se carga cuando tocás reproducir.</li>
               </ul>
             </MasDetalles>

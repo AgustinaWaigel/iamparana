@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, BellRing, ChevronDown, ClipboardPen, FileClock, LogOut, UserRound, Users, UsersRound } from 'lucide-react';
+import { Bell, BellRing, ChevronDown, ClipboardPen, FileClock, LayoutGrid, LogOut, UserRound, Users, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -207,6 +207,7 @@ const Header: React.FC = () => {
               </ul>
             </li>
 
+            <li className="w-full md:w-auto"><Link href="/quienes-somos" className={navItemClass('/quienes-somos')}>Quiénes somos</Link></li>
             <li className="w-full md:w-auto"><Link href="/noticias" className={navItemClass('/noticias')}>Noticias</Link></li>
 
             {/* --- MENÚ DE USUARIO --- */}
@@ -266,6 +267,7 @@ const Header: React.FC = () => {
                         {user.role === 'admin' && (
                           <div className="border-t border-brand-brown/10 p-1.5">
                             <p className="m-0 max-w-none px-3 pb-1 pt-2 text-left text-xs font-bold text-brand-ink/50">Administración</p>
+                            <Link href="/admin" className={USER_ITEM} onClick={() => setUserMenuOpen(false)}><LayoutGrid size={17} aria-hidden /> Panel</Link>
                             <Link href="/admin/inscripciones" className={USER_ITEM} onClick={() => setUserMenuOpen(false)}><ClipboardPen size={17} aria-hidden /> Inscripciones</Link>
                             <Link href="/admin/notificaciones" className={USER_ITEM} onClick={() => setUserMenuOpen(false)}><BellRing size={17} aria-hidden /> Avisos al celular</Link>
                             <Link href="/admin/usuarios" className={USER_ITEM} onClick={() => setUserMenuOpen(false)}><Users size={17} aria-hidden /> Usuarios</Link>

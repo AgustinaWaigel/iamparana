@@ -11,6 +11,7 @@ import { FirmaPad } from './firma-pad';
 import { GRADOS, grupoDeGrado } from './grados';
 import { formatMonto, hayMontos, montoPara } from './montos';
 import { PasoAPasoVista, opcionClass, primerPendiente, usePasoAPaso, type Paso } from './paso-a-paso';
+import { PersonaAvatar, colorPersona } from './persona-avatar';
 import { CONDICIONES, CondicionesCampos, condicionSinResponder, type Condiciones } from './salud-campos';
 import { AREA_LABEL, CARD_CLASS, ESTADO_LABEL, HELP_CLASS, INPUT_CLASS, LABEL_CLASS, ROL_LABEL, SECONDARY_BUTTON, TEXT_BUTTON, ageOn, formatFecha, postJson } from './ui';
 
@@ -156,8 +157,9 @@ export function InscripcionFlow({ eventoId, eventoFecha, config, personas, grupo
       ayuda: 'Marcá a todos los que van. A quien ya está inscripto le podés modificar los datos o darlo de baja.',
       contenido: (
         <div className="space-y-3">
-          {personas.map((persona) => {
+          {personas.map((persona, indice) => {
             const elegida = Boolean(seleccion[persona.id]);
+            const color = colorPersona(indice).fondo;
             const previa = estadoActual.get(persona.id);
             const edad = edadDe(persona);
             const monto = hayMontos(config.montos) && !persona.soloContacto ? montoDe(persona) : null;
@@ -165,10 +167,11 @@ export function InscripcionFlow({ eventoId, eventoFecha, config, personas, grupo
             if (previa) {
               // Ya está inscripto: no se vuelve a tildar, se modifica o se da de baja.
               return (
-                <div key={persona.id} className={`rounded-xl border p-4 ${elegida ? 'border-brand-brown bg-brand-cream' : 'border-stone-300 bg-white'}`}>
-                  <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-                    <div className="min-w-0">
-                      <p className="m-0 max-w-none text-left text-base font-bold leading-snug text-brand-ink">{persona.nombre} {persona.apellido}</p>
+                <div key={persona.id} className="rounded-2xl border-2 p-4" style={{ borderColor: elegida ? color : '#d6d3d1', backgroundColor: elegida ? `${color}14` : '#ffffff' }}>
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+                    <PersonaAvatar nombre={persona.nombre} indice={indice} />
+                    <div className="min-w-0 flex-1">
+                      <p className="m-0 max-w-none text-left font-display text-lg font-extrabold leading-snug text-brand-ink">{persona.nombre} {persona.apellido}</p>
                       <p className="m-0 mt-1.5 flex max-w-none flex-wrap items-center gap-2 text-left text-sm text-brand-ink/65">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">
                           <CheckCircle2 size={14} aria-hidden /> Ya está inscripto/a
@@ -188,22 +191,30 @@ export function InscripcionFlow({ eventoId, eventoFecha, config, personas, grupo
             }
 
             return (
-              <label key={persona.id} className={`flex items-start gap-3 rounded-xl border p-4 transition-colors motion-reduce:transition-none ${persona.soloContacto ? 'border-stone-200 bg-stone-50' : `cursor-pointer ${elegida ? 'border-brand-brown bg-brand-cream' : 'border-stone-300 bg-white hover:border-brand-brown/60'}`}`}>
-                <input
-                  type="checkbox"
-                  checked={elegida}
-                  onChange={() => toggle(persona)}
-                  disabled={persona.soloContacto}
-                  className="mt-0.5 h-5 w-5 shrink-0 rounded border-stone-400 accent-brand-brown"
-                />
-                <span className="min-w-0">
-                  <span className="block text-base font-bold leading-snug text-brand-ink">{persona.nombre} {persona.apellido}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-brand-ink/65">
+              <label
+                key={persona.id}
+                className={`flex items-center gap-3.5 rounded-2xl border-2 p-4 transition-colors motion-reduce:transition-none ${persona.soloContacto ? 'opacity-75' : 'cursor-pointer'}`}
+                style={{ borderColor: elegida ? color : '#d6d3d1', backgroundColor: elegida ? `${color}14` : persona.soloContacto ? '#fafaf9' : '#ffffff' }}
+              >
+                <PersonaAvatar nombre={persona.nombre} indice={indice} />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-lg font-extrabold leading-snug text-brand-ink">{persona.nombre} {persona.apellido}</span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-brand-ink/70">
                     {persona.soloContacto
-                      ? 'Si vos también vas, tocá «Editar datos» más arriba y elegí «Sí, yo también voy».'
+                      ? 'Cargaste solo tu contacto. Si vos también vas, corregí tus datos arriba, en «Tu familia».'
                       : [edad !== null ? `${edad} años en el evento` : '', monto === null ? '' : monto === 0 ? 'No paga (jardín)' : `Inscripción: ${formatMonto(monto)}`].filter(Boolean).join(' · ')}
                   </span>
                 </span>
+                <input type="checkbox" checked={elegida} onChange={() => toggle(persona)} disabled={persona.soloContacto} className="peer sr-only" />
+                {!persona.soloContacto && (
+                  <span
+                    aria-hidden
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-white transition-transform duration-200 ease-out peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-brown motion-reduce:transition-none"
+                    style={{ borderColor: elegida ? color : '#a8a29e', backgroundColor: elegida ? color : '#ffffff', transform: elegida ? 'scale(1.08)' : 'none' }}
+                  >
+                    {elegida && <Check size={20} strokeWidth={3.5} />}
+                  </span>
+                )}
               </label>
             );
           })}
@@ -604,16 +615,17 @@ export function InscripcionFlow({ eventoId, eventoFecha, config, personas, grupo
   if (resultado) {
     return (
       <section className={`${CARD_CLASS} p-6 duration-300 ease-out animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none sm:p-8`}>
-        <div className="flex items-center gap-3 text-emerald-800">
-          <CheckCircle2 size={28} aria-hidden />
-          <h2 className="m-0 font-display text-2xl font-extrabold text-brand-ink">Inscripción registrada</h2>
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white"><Check size={26} strokeWidth={3} aria-hidden /></span>
+          <h2 className="m-0 text-left font-display text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl">¡Listo! Inscripción registrada</h2>
         </div>
         <ul className="m-0 mt-5 list-none space-y-2 p-0">
           {resultado.items.map((item) => {
             const persona = personas.find((p) => p.id === item.personaId);
             return (
-              <li key={item.personaId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-cream px-4 py-3">
-                <span className="font-bold text-brand-ink">{persona ? `${persona.nombre} ${persona.apellido}` : 'Persona'}</span>
+              <li key={item.personaId} className="flex flex-wrap items-center gap-3 rounded-2xl bg-brand-cream px-4 py-3">
+                {persona && <PersonaAvatar nombre={persona.nombre} indice={personas.indexOf(persona)} size="sm" />}
+                <span className="flex-1 font-bold text-brand-ink">{persona ? `${persona.nombre} ${persona.apellido}` : 'Persona'}</span>
                 <span className="text-sm font-semibold text-brand-ink/75">{ESTADO_LABEL[item.estado] ?? item.estado}</span>
               </li>
             );
@@ -634,18 +646,42 @@ export function InscripcionFlow({ eventoId, eventoFecha, config, personas, grupo
     );
   }
 
+  // Las tres etapas, para que siempre se sepa por dónde se va.
+  const faltaTitular = !personas.some((persona) => persona.esTitular);
+  const etapa = personas.length === 0 || faltaTitular ? 0 : wizard.indice === 0 ? 1 : 2;
+  const ETAPAS = ['Tu familia', 'Quiénes van', 'Datos y firma'];
+
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
+      <ol aria-label="Etapas de la inscripción" className="m-0 grid list-none grid-cols-3 gap-2 p-0">
+        {ETAPAS.map((nombre, indice) => {
+          const hecha = indice < etapa;
+          const actual = indice === etapa;
+          return (
+            <li key={nombre} aria-current={actual ? 'step' : undefined} className={`flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-center sm:flex-row sm:justify-center sm:gap-2.5 sm:py-3.5 ${actual ? 'bg-yellow-400 text-brand-deep' : hecha ? 'bg-emerald-100 text-emerald-900' : 'bg-white text-brand-ink/60 ring-1 ring-brand-brown/10'}`}>
+              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold ${actual ? 'bg-brand-deep text-white' : hecha ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-brand-ink/70'}`}>
+                {hecha ? <Check size={16} strokeWidth={3.5} aria-hidden /> : indice + 1}
+              </span>
+              <span className="text-xs font-extrabold leading-tight sm:text-sm">{nombre}{hecha && <span className="sr-only"> (listo)</span>}</span>
+            </li>
+          );
+        })}
+      </ol>
+
       <section aria-labelledby="paso-familia">
-        <h2 id="paso-familia" className="m-0 mb-1 text-left font-display text-2xl font-extrabold tracking-tight text-brand-ink">1. Tu familia</h2>
-        <p className={`${HELP_CLASS} mb-5 mt-0`}>Los cargás una sola vez y quedan guardados para los próximos eventos.</p>
-        <Familia personas={personas} grupos={grupos} tieneConsentimiento={tieneConsentimiento} />
+        <h2 id="paso-familia" className="m-0 mb-1 text-left font-display text-2xl font-extrabold tracking-tight text-brand-ink">Tu familia</h2>
+        <p className={`${HELP_CLASS} mb-4 mt-0`}>
+          {personas.length === 0
+            ? 'Empezá por cargar tus datos. Se guardan para los próximos eventos.'
+            : `${personas.length === 1 ? 'Hay 1 persona' : `Hay ${personas.length} personas`} en tu cuenta. Quedan guardadas para los próximos eventos.`}
+        </p>
+        <Familia personas={personas} grupos={grupos} tieneConsentimiento={tieneConsentimiento} compacta />
       </section>
 
       {personas.length > 0 && (
         <section aria-labelledby="paso-inscripcion">
-          <h2 id="paso-inscripcion" className="m-0 mb-5 text-left font-display text-2xl font-extrabold tracking-tight text-brand-ink">2. Inscripción</h2>
-          <div className={`${CARD_CLASS} p-6 sm:p-8`}>
+          <h2 id="paso-inscripcion" className="m-0 mb-4 text-left font-display text-2xl font-extrabold tracking-tight text-brand-ink">Inscripción</h2>
+          <div className="rounded-[24px] bg-white p-5 shadow-[0_18px_40px_-28px_rgba(58,21,8,0.6)] ring-1 ring-brand-brown/10 sm:p-8">
             <PasoAPasoVista
               wizard={wizard}
               pasos={pasos}

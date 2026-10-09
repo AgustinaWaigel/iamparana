@@ -50,11 +50,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "IAM Paraná",
     description: "Noticias, formación y recursos para la Infancia y Adolescencia Misionera de Paraná.",
-    url: "https://iamparana.com",
+    url: "https://iamparana.com.ar",
     siteName: "IAM Paraná",
     images: [
       {
-        url: "https://iamparana.com/logoiam.jpg",
+        url: "https://iamparana.com.ar/logoiam.jpg",
         width: 1200,
         height: 630,
         alt: "IAM Paraná",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     ],
     type: "website",
   },
-  metadataBase: new URL("https://iamparana.com"),
+  metadataBase: new URL("https://iamparana.com.ar"),
 };
 
 export const viewport: Viewport = {
@@ -88,8 +88,8 @@ export default function RootLayout({
               '@type': 'Organization',
               name: 'IAM Paraná',
               alternateName: 'Infancia y Adolescencia Misionera de Paraná',
-              url: 'https://iamparana.com',
-              logo: 'https://iamparana.com/assets/header/logoiam.jpg',
+              url: 'https://iamparana.com.ar',
+              logo: 'https://iamparana.com.ar/assets/header/logoiam.jpg',
             }).replace(/</g, '\\u003c'),
           }}
         />

@@ -15,10 +15,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Juegos',
     description: 'Descripcion',
-    url: 'https://iamparana.com/animacion/juegos',
+    url: 'https://iamparana.com.ar/animacion/juegos',
     images: [
       {
-        url: 'https://iamparana.com/logoiam.jpg',
+        url: 'https://iamparana.com.ar/logoiam.jpg',
         alt: 'Logo IAM Paraná',
         width: 800,
         height: 600,

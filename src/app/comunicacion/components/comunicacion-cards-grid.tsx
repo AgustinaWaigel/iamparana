@@ -5,6 +5,7 @@ import { useSession } from '@/app/hooks/use-session';
 import { ResourceCard, ResourceEmptyState, ResourceGrid, ResourceToolbar } from '@/app/components/common/area-resources';
 import { DeleteConfirmModal } from '@/app/components/common/delete-confirm-modal';
 import { anioDeRecurso, coincideBusqueda } from '@/lib/busqueda';
+import { esAlbumDeFotos } from '@/lib/fotos';
 
 // --- TYPES ---
 type UploadedDocument = { id: number; title: string; description: string | null; thumbnail_url: string | null; google_drive_url: string | null; file_type: string | null; created_at: string; };
@@ -218,8 +219,10 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
       id: `doc-${doc.id}`, kind: 'document', title: doc.title, description: doc.description || 'Documento compartido por el equipo de formación.', href: doc.google_drive_url || '#', badge: doc.file_type || 'Documento', accent: 'brown', resourceId: doc.id, googleDriveUrl: doc.google_drive_url, thumbnailUrl: doc.thumbnail_url || null, createdAt: doc.created_at,
     }));
 
-    const linkCards: CardItem[] = linksState.map((resourceLink) => ({
-      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: 'Enlace', accent: 'blue', resourceId: resourceLink.id, linkUrl: resourceLink.url, thumbnailUrl: resourceLink.thumbnail_url || null, createdAt: resourceLink.created_at,
+    // Los álbumes de fotos ya se muestran en "Fotos de los eventos". Acá los ve solo quien
+    // administra, para poder editarlos o borrarlos.
+    const linkCards: CardItem[] = linksState.filter((resourceLink) => isAdmin || !esAlbumDeFotos(resourceLink.url)).map((resourceLink) => ({
+      id: `link-${resourceLink.id}`, kind: 'link', title: resourceLink.title, description: resourceLink.description || 'Enlace compartido por el equipo de formación.', href: resourceLink.url, badge: esAlbumDeFotos(resourceLink.url) ? 'Álbum de fotos' : 'Enlace', accent: 'blue', resourceId: resourceLink.id, linkUrl: resourceLink.url, thumbnailUrl: resourceLink.thumbnail_url || null, createdAt: resourceLink.created_at,
     }));
 
     const resourcePageCards: CardItem[] = resourcePagesState.map((page) => ({
@@ -228,7 +231,7 @@ export function ComunicacionCardsGrid({ uploadedDocuments, uploadedLinks, resour
 
     // Ahora solo devolvemos lo que viene de la base de datos
     return [...resourcePageCards, ...documentCards, ...linkCards].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.resourceId - a.resourceId);
-  }, [documentsState, linksState, resourcePagesState]);
+  }, [documentsState, linksState, resourcePagesState, isAdmin]);
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) =>

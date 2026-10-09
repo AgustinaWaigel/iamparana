@@ -109,13 +109,19 @@ export function PasoAPasoVista({ wizard, pasos, busy, finalLabel, busyLabel, onF
     else wizard.ir(actual + 1, actual);
   };
 
+  // Con una sola pregunta a la vista (las demás aparecen al elegir) la barra no arranca llena.
+  const avance = pasos.length === 1 ? 12 : ((actual + 1) / pasos.length) * 100;
+
   return (
     <form onSubmit={submit}>
       <div className="mb-6">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200" role="progressbar" aria-valuemin={1} aria-valuemax={pasos.length} aria-valuenow={actual + 1} aria-label="Avance de la inscripción">
-          <div className="h-full rounded-full bg-brand-brown transition-[width] duration-300 ease-out motion-reduce:transition-none" style={{ width: `${((actual + 1) / pasos.length) * 100}%` }} />
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-200" role="progressbar" aria-valuemin={1} aria-valuemax={pasos.length} aria-valuenow={actual + 1} aria-label="Avance de la inscripción">
+          {/* La barra se va llenando con los cinco colores misioneros. */}
+          <div className="h-full overflow-hidden rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none" style={{ width: `${avance}%` }}>
+            <div className="h-full" style={{ width: `${10000 / avance}%`, background: 'linear-gradient(90deg, #2e9e4f 0 20%, #d62828 20% 40%, #e7e5e4 40% 60%, #2563eb 60% 80%, #f6c445 80% 100%)' }} />
+          </div>
         </div>
-        <p className="m-0 mt-2 max-w-none text-left text-xs font-bold uppercase tracking-wide text-brand-ink/55">Paso {actual + 1} de {pasos.length}</p>
+        <p className="m-0 mt-2 max-w-none text-left text-sm font-bold tabular-nums text-brand-ink/65">{pasos.length === 1 ? 'Empecemos' : `Pregunta ${actual + 1} de ${pasos.length}`}</p>
       </div>
 
       <div
@@ -124,7 +130,7 @@ export function PasoAPasoVista({ wizard, pasos, busy, finalLabel, busyLabel, onF
         className={`min-h-[14rem] scroll-mt-28 duration-300 ease-out animate-in fade-in-0 motion-reduce:animate-none ${wizard.sentido === 'adelante' ? 'slide-in-from-right-6' : 'slide-in-from-left-6'}`}
       >
         {paso.etiqueta && (
-          <p className="m-0 mb-3 inline-flex max-w-none rounded-full bg-brand-cream px-3 py-1 text-left text-xs font-bold text-brand-brown">{paso.etiqueta}</p>
+          <p className="m-0 mb-3 inline-flex max-w-none rounded-full bg-brand-deep px-3.5 py-1.5 text-left text-sm font-bold text-white">{paso.etiqueta}</p>
         )}
         <h3 tabIndex={-1} className="m-0 text-balance text-left font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-ink outline-none sm:text-[1.75rem]">{paso.titulo}</h3>
         {paso.ayuda && <p className={`${HELP_CLASS} mt-2`}>{paso.ayuda}</p>}

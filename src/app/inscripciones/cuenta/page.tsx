@@ -59,7 +59,7 @@ export default async function CuentaFamiliarPage() {
 
             <Familia personas={personas} grupos={grupos} tieneConsentimiento={Boolean(cuenta.consentimientoAt)} />
 
-            {(inscripciones.length > 0 || personas.some((persona) => persona.esTitular)) && <MisInscripciones inscripciones={inscripciones} eventos={eventos} />}
+            {(inscripciones.length > 0 || personas.some((persona) => persona.esTitular)) && <MisInscripciones inscripciones={inscripciones} eventos={eventos} orden={personas.map((persona) => persona.id)} />}
 
             {personas.some((persona) => persona.esTitular) && (
               <CuentaAjustes

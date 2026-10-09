@@ -10,10 +10,10 @@ const SOCIALS = [
 
 const SITE_LINKS = [
   { label: 'Inicio', href: '/' },
+  { label: 'Quiénes somos', href: '/quienes-somos' },
   { label: 'Noticias', href: '/noticias' },
   { label: 'Calendario', href: '/calendario' },
   { label: 'Inscripciones', href: '/inscripciones' },
-  { label: 'Info Institucional', href: '/institucional' },
   { label: 'Política de privacidad', href: '/privacidad' },
 ];
 

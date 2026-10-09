@@ -33,6 +33,9 @@ const TIPO: Record<string, string> = {
   event_7days: "Evento en 7 días",
   event_1day: "Evento mañana",
   event_today: "Evento hoy",
+  insc_abre: "Abrió una inscripción",
+  insc_cierra_3: "Inscripción: quedan 3 días",
+  insc_cierra_hoy: "Inscripción: último día",
 };
 
 /** Avisos armados para un evento con inscripción. */
@@ -119,7 +122,7 @@ export default function NotificacionesAdminPage() {
       <div className="mx-auto max-w-5xl px-4 pb-20 pt-20 sm:px-6 sm:pt-24">
         <h1 className="m-0 text-left font-display text-[clamp(2rem,5vw,2.75rem)] font-extrabold leading-tight tracking-tight text-brand-ink">Avisos al celular</h1>
         <p className="m-0 mt-3 max-w-2xl text-left text-base leading-relaxed text-brand-ink/75">
-          Escribí un aviso y les llega en el momento a todos los que activaron las notificaciones del sitio. Los eventos del calendario avisan solos si tienen tildado «Activar notificaciones».
+          Escribí un aviso y les llega en el momento a todos los que activaron las notificaciones del sitio. Los eventos del calendario avisan solos si tienen tildado «Activar notificaciones». Las inscripciones también avisan solas: el día que abren, tres días antes de cerrar y el último día.
         </p>
         {cargaError && <p role="alert" className="m-0 mt-4 max-w-none rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-800">{cargaError}</p>}
         {datos && (

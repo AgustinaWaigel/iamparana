@@ -8,6 +8,12 @@ import { ComunicacionCardsGrid } from "./components/comunicacion-cards-grid";
 
 // Base de Datos
 import { getAreaLandingContent } from "@/server/db/admin-repository";
+import { FotosDeEventos, InscripcionesAbiertas, MerchBanner, RedesIam } from './components/comunicacion-destacados';
+import { esAlbumDeFotos } from '@/lib/fotos';
+import { MandarNoticia } from './components/mandar-noticia';
+import { listEventosConInscripcion } from '@/server/lib/inscripciones-eventos';
+import { listCatalogo } from '@/server/lib/ventas-catalogo';
+
 export const revalidate = 60;
 
 export const viewport: Viewport = {
@@ -20,10 +26,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Comunicación",
     description: "Documentos, enlaces y recursos gráficos para la comunicación",
-    url: "https://iamparana.com/comunicacion",
+    url: "https://iamparana.com.ar/comunicacion",
     images: [
       {
-        url: "https://iamparana.com/logoiam.jpg",
+        url: "https://iamparana.com.ar/logoiam.jpg",
         alt: "Logo IAM Paraná",
         width: 800,
         height: 600,
@@ -46,7 +52,12 @@ type UploadedLink = { id: number; title: string; description: string | null; thu
 type ResourcePageCard = { id: number; slug: string; title: string; description: string | null; template: string; thumbnail_url: string | null; texture_url: string | null; created_at: string; };
 
 export default async function Comunicacion() {
-  const areaContent = await getAreaLandingContent('comunicacion', ['comunicacion', 'logos', 'dibujos', 'recursos']);
+  // El catálogo, las inscripciones y las noticias son extras: si alguno falla, la página se muestra igual.
+  const [areaContent, productos, inscripciones] = await Promise.all([
+    getAreaLandingContent('comunicacion', ['comunicacion', 'logos', 'dibujos', 'recursos']),
+    listCatalogo(),
+    listEventosConInscripcion().then((resultado) => resultado.abiertos).catch(() => []),
+  ]);
   const uploadedDocumentsRaw = areaContent.documents;
   const uploadedLinksRaw = areaContent.links;
   const resourcePagesRaw = areaContent.pages;
@@ -100,11 +111,25 @@ export default async function Comunicacion() {
         />
 
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
+          <InscripcionesAbiertas
+            eventos={inscripciones.map((evento) => ({ id: evento.id, nombre: evento.evento, fecha: evento.fecha, fechaFin: evento.fechaFin, cierraAt: evento.config.cierraAt }))}
+          />
+
+          {productos && productos.length > 0 && (
+            <MerchBanner cantidad={productos.length} categorias={[...new Set(productos.map((producto) => producto.categoria))]} />
+          )}
+
+          <FotosDeEventos albumes={uploadedLinks.filter((link) => esAlbumDeFotos(link.url)).map((link) => ({ id: link.id, titulo: link.title, descripcion: link.description, url: link.url }))} />
+
           <ComunicacionCardsGrid 
             uploadedDocuments={uploadedDocuments} 
             uploadedLinks={uploadedLinks} 
             resourcePages={resourcePages} 
           />
+
+          <MandarNoticia />
+
+          <RedesIam />
         </div>
       </div>
     </ComunicacionClient>

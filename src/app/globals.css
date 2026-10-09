@@ -1369,3 +1369,47 @@ hr.divisor {
 .nada {
   color: white
 }
+
+/* ── Imprimir solo la lista de "Qué llevar" de un evento ───────── */
+@media print {
+  body.imprimir-lista * {
+    visibility: hidden;
+  }
+
+  body.imprimir-lista .lista-para-imprimir,
+  body.imprimir-lista .lista-para-imprimir * {
+    visibility: visible;
+  }
+
+  body.imprimir-lista .lista-para-imprimir {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    box-shadow: none;
+  }
+
+  body.imprimir-lista .no-imprimir {
+    display: none;
+  }
+}
+
+/* ── Mapa de las IAM (Quiénes somos): texto del globito ───────── */
+.mapa-iam-globo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #2c1d11;
+}
+
+.mapa-iam-globo strong {
+  font-size: 15px;
+}
+
+/* Los botones del mapa heredan reglas globales de enlaces: se les devuelve su aspecto. */
+.leaflet-container a.leaflet-popup-close-button,
+.leaflet-container .leaflet-control-zoom a {
+  color: #3a1508;
+  text-decoration: none;
+}
