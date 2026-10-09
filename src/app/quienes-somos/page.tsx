@@ -10,7 +10,8 @@ import { InstitutionalDocuments } from '@/app/institucional/components/instituci
 import { InstitutionalPageManager } from '@/app/institucional/components/institutional-page-manager';
 import { InstitutionalResourceSections } from '@/app/institucional/components/institutional-resource-sections';
 import { getAreaLandingContent } from '@/server/db/admin-repository';
-import { listGrupos } from '@/server/db/inscripciones-repository';
+import { telHref, whatsappHref } from '@/lib/iam-contacto';
+import { listIam } from '@/server/db/iam-repository';
 import { getResourcePageWithContent } from '@/server/db/resource-pages-repository';
 import { Contador } from './contador';
 import { EmpezarIam } from './empezar-iam';
@@ -67,7 +68,7 @@ const BAJADA = 'm-0 mt-4 max-w-2xl text-left text-base leading-relaxed sm:text-l
 
 export default async function QuienesSomosPage() {
   const [grupos, institucional] = await Promise.all([
-    listGrupos(true).catch(() => []),
+    listIam(true).catch(() => []),
     getAreaLandingContent('institucional', ['institucional']).catch(() => null),
   ]);
   // Documentos institucionales (lo que antes era la página "Info Institucional").
@@ -86,10 +87,13 @@ export default async function QuienesSomosPage() {
   const puntos: PuntoIam[] = porCiudad.flatMap(([ciudad, lista]) => {
     let sinPuntoPropio = 0;
     return lista.flatMap((grupo) => {
-      const ubicacion = ubicacionDe(grupo.nombre, grupo.ciudad, sinPuntoPropio);
+      // Primero el lugar que marcó el admin; si no tiene, el aproximado.
+      const ubicacion = grupo.lat !== null && grupo.lng !== null
+        ? { punto: [grupo.lat, grupo.lng] as [number, number], exacta: true }
+        : ubicacionDe(grupo.nombre, grupo.ciudad, sinPuntoPropio);
       if (!ubicacion) return [];
       if (!ubicacion.exacta) sinPuntoPropio += 1;
-      return [{ id: grupo.id, nombre: grupo.nombre, ciudad, lat: ubicacion.punto[0], lng: ubicacion.punto[1], color: grupo.color ?? '#f6c445' }];
+      return [{ id: grupo.id, nombre: grupo.nombre, ciudad, lat: ubicacion.punto[0], lng: ubicacion.punto[1], color: grupo.color ?? '#f6c445', direccion: grupo.direccion, telefono: grupo.telefono, instagram: grupo.instagram, facebook: grupo.facebook }];
     });
   });
 
@@ -303,7 +307,7 @@ export default async function QuienesSomosPage() {
             {puntos.length > 0 && (
               <div className="pop-in mt-8" style={{ ['--d' as string]: '220ms' }}>
                 <MapaIam puntos={puntos} />
-                <p className="m-0 mt-2 max-w-none text-left text-sm text-brand-ink/60">Acercate con la rueda del mouse o con dos dedos, y tocá un punto para ver qué IAM es. Las ubicaciones son aproximadas.</p>
+                <p className="m-0 mt-2 max-w-none text-left text-sm text-brand-ink/60">Acercate con la rueda del mouse o con dos dedos, y tocá un punto para ver qué IAM es y cómo contactarla. Algunas ubicaciones son aproximadas.</p>
               </div>
             )}
             {/* La misma información en texto, para quien no usa el mapa. */}
@@ -316,13 +320,34 @@ export default async function QuienesSomosPage() {
                 {porCiudad.map(([ciudad, lista]) => (
                   <li key={ciudad} className="rounded-2xl bg-brand-paper p-4 ring-1 ring-brand-brown/10">
                     <h3 className="m-0 text-left font-display text-xl font-extrabold leading-tight text-brand-ink">{ciudad}</h3>
-                    <ul className="m-0 mt-3 flex list-none flex-wrap gap-1.5 p-0">
-                      {lista.map((grupo) => (
-                        <li key={grupo.id} className="inline-flex items-center gap-1.5 rounded-full bg-brand-cream py-1 pl-2 pr-3 text-sm font-semibold text-brand-ink">
-                          <span aria-hidden className="h-3 w-3 rounded-full ring-1 ring-black/10" style={{ backgroundColor: grupo.color ?? '#a8a29e' }} />
-                          {grupo.nombre}
-                        </li>
-                      ))}
+                    <ul className="m-0 mt-3 flex list-none flex-col gap-2.5 p-0">
+                      {lista.map((grupo) => {
+                        const whatsapp = grupo.telefono ? whatsappHref(grupo.telefono) : null;
+                        const enlaces = [
+                          grupo.telefono && { texto: grupo.telefono, href: telHref(grupo.telefono), externo: false },
+                          whatsapp && { texto: 'WhatsApp', href: whatsapp, externo: true },
+                          grupo.instagram && { texto: 'Instagram', href: grupo.instagram, externo: true },
+                          grupo.facebook && { texto: 'Facebook', href: grupo.facebook, externo: true },
+                        ].filter((item): item is { texto: string; href: string; externo: boolean } => Boolean(item));
+                        return (
+                          <li key={grupo.id} className="flex items-start gap-2 text-left">
+                            <span aria-hidden className="mt-1 h-3 w-3 shrink-0 rounded-full ring-1 ring-black/10" style={{ backgroundColor: grupo.color ?? '#a8a29e' }} />
+                            <div className="min-w-0">
+                              <span className="block text-sm font-bold leading-snug text-brand-ink">{grupo.nombre}</span>
+                              {grupo.direccion && <span className="block text-sm leading-snug text-brand-ink/70">{grupo.direccion}</span>}
+                              {enlaces.length > 0 && (
+                                <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
+                                  {enlaces.map((item) => (
+                                    <a key={item.texto} href={item.href} {...(item.externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="font-bold text-blue-800 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">
+                                      {item.texto}
+                                    </a>
+                                  ))}
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </li>
                 ))}

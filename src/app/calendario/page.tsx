@@ -1,5 +1,7 @@
-import Link from "next/link";
+import { CalendarPlus } from "lucide-react";
 import CalendarioEventosView from "@/app/components/common/calendario-eventos-view";
+
+// Calendario completo: el mes, lo que pasa en él y un acceso para sumar el calendario oficial al propio.
 
 const GOOGLE_CALENDAR_ID = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID?.trim();
 const GOOGLE_CALENDAR_ADD_URL = GOOGLE_CALENDAR_ID
@@ -15,8 +17,6 @@ export async function generateMetadata() {
     openGraph: {
       title: "Calendario - IAM Paraná",
       description: "Consultá las fechas de nuestras próximas actividades y encuentros.",
-      // Esta página es la vista pública del calendario completo.
-      // Además de mostrar los eventos, ofrece un acceso directo al Google Calendar oficial.
       url: "https://iamparana.com.ar/calendario",
       siteName: "IAM Paraná",
       locale: "es_AR",
@@ -27,62 +27,28 @@ export async function generateMetadata() {
 
 export default function CalendarioPage() {
   return (
-    <>
-    <main className="min-h-screen w-full bg-slate-50/50 px-4 pb-16 pt-4 sm:px-6 lg:px-8">
-      {/* Header Card */}
-      {/* Header Card */}
-      
-    <section className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-brand-gold/30 bg-gradient-to-br from-brand-brown via-brand-brown to-amber-900 p-8 text-white shadow-2xl sm:p-12">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-    
-    {/* Columna Izquierda: Descripción */}
-      <div className="space-y-4">
-        <div className="inline-block rounded-full bg-brand-gold/20 px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold border border-brand-gold/30">
-          Información Oficial
-        </div>
-        <p className="text-lg font-medium text-amber-50/90 leading-relaxed italic border-l-2 border-brand-gold/50 pl-4">
-          Mantenete al tanto de todas las actividades, reuniones de animadores y campamentos.
-        </p>
-      </div>
-
-    {/* Columna Derecha: Título y Acción */}
-      <div className="flex flex-col lg:items-end gap-6">
-        <div className="lg:text-right">
-            {/* Columna izquierda: contexto y descripción para el visitante. */}
-          <h1 className="text-2xl font-bold text-white">
-            Calendario <span className="text-brand-gold">IAM</span>
+    <div className="min-h-screen w-full bg-brand-paper px-4 pb-20 pt-16 sm:px-6 sm:pt-20 lg:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <div>
+          <h1 className="m-0 text-left font-display text-[clamp(2.5rem,9vw,5rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-brand-ink">
+            Calendario
           </h1>
-          <p className="mt-2 text-xs font-bold uppercase tracking-[0.3em] text-amber-50/40">
-          Arquidiócesis de Paraná
+          <p className="m-0 mt-4 max-w-xl text-left text-base leading-relaxed text-brand-ink/80 sm:text-lg">
+            Encuentros, reuniones de animadores, campamentos y fiestas de la IAM de Paraná. Tocá un día para ver el detalle.
           </p>
+        </div>
+        <a
+          href={GOOGLE_CALENDAR_ADD_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-brand-deep px-5 py-3 text-sm font-extrabold text-white no-underline transition-colors hover:bg-brand-brown focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown sm:self-auto"
+        >
+          <CalendarPlus size={18} aria-hidden />
+          Sumarlo a mi Google Calendar
+        </a>
       </div>
-
-
-      <Link
-        href={GOOGLE_CALENDAR_ADD_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex w-fit items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:bg-white/20 active:scale-95"
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V10h14v9zm0-11H5V5h14v3zm-6 7h3v2h-3v3h-2v-3H8v-2h3v-3h2v3z"/>
-        </svg>
-        Agregar a mi Google Calendar
-      </Link>
-    </div>
-              {/* Botón para abrir o suscribirse al calendario oficial en Google. */}
-
-    </div>
-    </section>
 
       <CalendarioEventosView />
-
-      <footer className="mt-8 text-center">
-        <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">
-          Infancia y Adolescencia Misionera • Arquidiócesis de Paraná
-        </p>
-      </footer>
-    </main>
-   </>
+    </div>
   );
 }

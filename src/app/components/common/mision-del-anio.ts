@@ -31,5 +31,5 @@ export const MISION_DEL_ANIO = {
     { src: '/assets/mision/comunidad.webp', alt: 'Familias de una comunidad sentadas en el pasto, algunas bajo paraguas de colores' },
   ] as FotoMision[],
   /** Video que se ve al tocar el país; `inicio` en segundos. */
-  video: { id: 'TGb4ljMUbXg', inicio: 490, titulo: 'Video sobre Papúa Nueva Guinea' } as { id: string; inicio: number; titulo: string } | null,
+  video: { id: 'TGb4ljMUbXg', inicio: 0, titulo: 'Video sobre Papúa Nueva Guinea' } as { id: string; inicio: number; titulo: string } | null,
 };

@@ -74,7 +74,8 @@ const ARCO: Vec[] = Array.from({ length: 90 }, (_, index) => {
   return escalar(slerp(V_ORIGEN, V_DESTINO, t), 0.8 + 0.012 + ALTURA_ARCO * Math.sin(Math.PI * t));
 });
 
-export function MisionGlobo() {
+/** `hacia`: color de la sección que viene después, para la onda del borde inferior. */
+export function MisionGlobo({ hacia = "#fbf8f3" }: { hacia?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const arcoRef = useRef<HTMLCanvasElement>(null);
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -283,7 +284,7 @@ export function MisionGlobo() {
       }}
     >
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_50%,rgba(246,196,69,0.18),transparent_55%),linear-gradient(to_bottom,rgba(31,11,4,0.85),rgba(31,11,4,0.95))]" />
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-6 px-4 pb-24 pt-12 sm:px-6 sm:pb-32 sm:pt-16 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-6 px-4 pb-24 pt-20 sm:px-6 sm:pb-32 sm:pt-28 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
         <FadeInSection>
           <div aria-hidden className="mb-5 flex items-center gap-2.5">
             {["#2e9e4f", "#d62828", "#ffffff", "#2563eb", AMARILLO].map((color, index) => (
@@ -359,7 +360,7 @@ export function MisionGlobo() {
           </div>
         </FadeInSection>
       </div>
-      <Ondas hacia="#fbf8f3" simple />
+      <Ondas hacia={hacia} simple />
     </section>
   );
 }

@@ -59,20 +59,32 @@ export async function removeVisitorPresence(visitorId: string) {
   });
 }
 
+/** "Agustina W.": el nombre y la inicial del apellido, para no publicar el nombre completo. */
+function nombreCorto(nombre: string) {
+  const [primero, ...resto] = nombre.trim().split(/\s+/);
+  const apellido = resto[resto.length - 1];
+  return apellido ? `${primero} ${apellido[0].toUpperCase()}.` : primero;
+}
+
+/**
+ * Quiénes están en el sitio. Cada pestaña abierta avisa cada 4 minutos (presence-heartbeat),
+ * así que se cuenta como conectado a quien avisó en los últimos 6.
+ */
 export async function getOnlinePresence() {
   await ensurePresenceSchema();
   const [usersResult, visitorsResult] = await clientOrThrow().batch([
-    `SELECT COALESCE(NULLIF(TRIM(u.display_name), ''), SUBSTR(u.email, 1, INSTR(u.email, '@') - 1), 'Usuario') AS name
+    `SELECT NULLIF(TRIM(u.display_name), '') AS name
      FROM user_presence p
      JOIN users u ON u.id = p.user_id
-     WHERE p.last_seen >= DATETIME('now', '-2 minutes') AND u.is_active = 1
+     WHERE p.last_seen >= DATETIME('now', '-6 minutes') AND u.is_active = 1
      ORDER BY p.last_seen DESC
      LIMIT 30`,
     `SELECT COUNT(*) AS total FROM visitor_presence
-     WHERE last_seen >= DATETIME('now', '-2 minutes')`,
+     WHERE last_seen >= DATETIME('now', '-6 minutes')`,
   ], "read");
 
-  const users = usersResult.rows.map((row) => ({ name: String(row.name || "Usuario") }));
-  const visitors = Number(visitorsResult.rows[0]?.total || 0);
+  // Quien no cargó su nombre en el perfil se cuenta sin nombre: su mail no se muestra nunca.
+  const users = usersResult.rows.flatMap((row) => (row.name ? [{ name: nombreCorto(String(row.name)) }] : []));
+  const visitors = Number(visitorsResult.rows[0]?.total || 0) + (usersResult.rows.length - users.length);
   return { users, visitors, total: users.length + visitors };
 }

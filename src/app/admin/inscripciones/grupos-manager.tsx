@@ -71,7 +71,7 @@ export function GruposManager() {
     <section aria-labelledby="grupos-iam" className="mt-12">
       <div>
         <h2 id="grupos-iam" className="text-xl font-black text-brand-brown">Grupos IAM</h2>
-        <p className="mt-1 text-stone-500">Son los que las familias eligen al cargar a cada persona. El color identifica a cada IAM en la lista de inscriptos y en los pagos.</p>
+        <p className="mt-1 text-stone-500">Son los que las familias eligen al cargar a cada persona. El color identifica a cada IAM en la lista de inscriptos y en los pagos. La dirección, el contacto, las redes y el lugar en el mapa se cargan en <a href="/admin/iam" className="font-bold text-brand-brown underline">Las IAM y el mapa</a>.</p>
 
         {animadores.some((animador) => animador.estado === "pendiente") && (
           <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">

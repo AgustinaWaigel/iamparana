@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { getAllNoticiasSlugs } from '@/server/content/noticias';
+import { INSCRIPCIONES_PUBLICAS } from '@/lib/inscripciones-publicas';
 
 const baseUrl = 'https://iamparana.com.ar';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routes = ['', '/noticias', '/inscripciones', '/calendario', '/animacion', '/animacion/juegos', '/animacion/canciones', '/formacion', '/comunicacion', '/espiritualidad', '/logistica', '/privacidad', '/quienes-somos', '/comunicacion/merch'];
+  const routes = ['', '/noticias', ...(INSCRIPCIONES_PUBLICAS ? ['/inscripciones'] : []), '/calendario', '/animacion', '/animacion/juegos', '/animacion/canciones', '/formacion', '/comunicacion', '/espiritualidad', '/logistica', '/privacidad', '/quienes-somos', '/comunicacion/merch'];
   const newsSlugs = await getAllNoticiasSlugs().catch(() => []);
 
   return [

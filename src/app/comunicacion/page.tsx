@@ -10,6 +10,7 @@ import { ComunicacionCardsGrid } from "./components/comunicacion-cards-grid";
 import { getAreaLandingContent } from "@/server/db/admin-repository";
 import { FotosDeEventos, InscripcionesAbiertas, MerchBanner, RedesIam } from './components/comunicacion-destacados';
 import { esAlbumDeFotos } from '@/lib/fotos';
+import { INSCRIPCIONES_PUBLICAS } from '@/lib/inscripciones-publicas';
 import { MandarNoticia } from './components/mandar-noticia';
 import { listEventosConInscripcion } from '@/server/lib/inscripciones-eventos';
 import { listCatalogo } from '@/server/lib/ventas-catalogo';
@@ -111,9 +112,11 @@ export default async function Comunicacion() {
         />
 
         <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
-          <InscripcionesAbiertas
-            eventos={inscripciones.map((evento) => ({ id: evento.id, nombre: evento.evento, fecha: evento.fecha, fechaFin: evento.fechaFin, cierraAt: evento.config.cierraAt }))}
-          />
+          {INSCRIPCIONES_PUBLICAS && (
+            <InscripcionesAbiertas
+              eventos={inscripciones.map((evento) => ({ id: evento.id, nombre: evento.evento, fecha: evento.fecha, fechaFin: evento.fechaFin, cierraAt: evento.config.cierraAt }))}
+            />
+          )}
 
           {productos && productos.length > 0 && (
             <MerchBanner cantidad={productos.length} categorias={[...new Set(productos.map((producto) => producto.categoria))]} />

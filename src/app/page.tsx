@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { listCarouselItems, listNoticiasPreview } from "@/server/db/content-repository";
 import { getSessionUser } from "@/server/lib/api-utils";
-import { ArrowDown, ArrowRight, CalendarDays, ChevronRight, ClipboardPen } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, CalendarDays, ChevronRight, ClipboardPen } from "lucide-react";
 import { AREA_ICONS } from "@/app/components/common/area-icons";
 import { AREA_ORDER, AREA_THEME } from "@/app/components/common/area-theme";
 import { getGoogleDriveImageUrl } from "@/lib/drive-utils";
@@ -13,6 +13,10 @@ import { NoticiasAdminButtons } from "@/app/noticias/components/noticias-admin-b
 import { OnlineUsersBoard } from "@/app/components/common/online-users-board";
 import { MisionGlobo } from "@/app/components/common/mision-globo";
 import { Ondas } from "@/app/components/common/ondas";
+import { datosDeHoy } from "@/app/components/common/hoy-datos";
+import { InstalarApp } from "@/app/components/common/instalar-app";
+import { INSCRIPCIONES_PUBLICAS } from "@/lib/inscripciones-publicas";
+import { evangelioDelDia } from "@/server/lib/evangelio-del-dia";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -43,6 +47,13 @@ export default async function HomePage() {
   ]);
   const noticias = noticiasResult as Noticia[];
   const isAdmin = user?.role === "admin";
+  // "Hoy": el santo del día y una frase de la Biblia, según la fecha de Argentina.
+  const ahora = new Date();
+  const hoyYmd = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
+  const hoyTexto = new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "long", day: "numeric", month: "long" }).format(ahora);
+  const hoy = datosDeHoy(hoyYmd);
+  // El Evangelio del día llega de Evangelizo; si no responde, se muestra una frase de la lista propia.
+  const evangelio = await evangelioDelDia(hoyYmd);
 
   return (
     <div className="min-h-screen bg-brand-paper">
@@ -90,62 +101,21 @@ export default async function HomePage() {
                 <CalendarDays size={15} aria-hidden />
                 Ver agenda
               </Link>
-              <Link href="/inscripciones" className={`${HOME_BUTTON} border border-white/30 text-white hover:bg-white hover:text-brand-deep focus-visible:outline-brand-gold`}>
-                <ClipboardPen size={15} aria-hidden />
-                Inscripciones
-              </Link>
+              {(INSCRIPCIONES_PUBLICAS || isAdmin) && (
+                <Link href="/inscripciones" className={`${HOME_BUTTON} border border-white/30 text-white hover:bg-white hover:text-brand-deep focus-visible:outline-brand-gold`}>
+                  <ClipboardPen size={15} aria-hidden />
+                  Inscripciones
+                </Link>
+              )}
             </div>
           </div>
         </div>
 
-        <Ondas hacia="#220c04" />
+        <Ondas hacia="#fbf8f3" />
       </section>
 
       {/* ══════════════════════════════════════════
-          MISIÓN DEL AÑO — el país al que ayudamos, en un globo
-      ══════════════════════════════════════════ */}
-      <div id="mision" className="scroll-mt-20">
-        <MisionGlobo />
-      </div>
-
-      {/* ══════════════════════════════════════════
-          ÁREAS — accesos a las cinco secciones de recursos
-      ══════════════════════════════════════════ */}
-      <section id="areas" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 pt-12 sm:px-6 sm:pt-16">
-        <FadeInSection>
-        <h2 className="pop-in m-0 mb-6 text-left font-display text-[32px] font-extrabold leading-none tracking-tight text-brand-ink sm:text-[40px]">
-          Recursos por área
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
-          {AREA_ORDER.map((key, index) => {
-            const area = AREA_THEME[key];
-            const Icon = AREA_ICONS[key];
-            return (
-              <Link
-                key={key}
-                href={area.href}
-                style={{ backgroundImage: 'url("/assets/textures/areasg.webp")', backgroundSize: '420px', ["--d" as string]: `${120 + index * 80}ms` }}
-                className={`pop-in group flex items-center gap-4 rounded-2xl bg-blend-multiply p-5 no-underline shadow-[0_14px_30px_-20px_rgba(58,21,8,0.55)] transition-[transform,background-color] duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transform-none sm:last:col-span-2 lg:min-h-[230px] lg:flex-col lg:items-start lg:gap-0 lg:last:col-span-1 ${area.tile}`}
-              >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black/10 transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transform-none">
-                  <Icon size={24} strokeWidth={2} aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1 lg:mt-5">
-                  <span className="block font-display text-[22px] font-extrabold leading-tight">{area.label}</span>
-                  <span className="mt-1 block text-sm leading-snug opacity-90">{area.summary}</span>
-                </span>
-                <ArrowRight size={20} aria-hidden className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none lg:mt-4" />
-              </Link>
-            );
-          })}
-        </div>
-        </FadeInSection>
-      </section>
-
-      <OnlineUsersBoard />
-
-      {/* ══════════════════════════════════════════
-          2. NOTICIAS (protagonistas, ancho completo)
+          NOTICIAS (protagonistas, ancho completo)
       ══════════════════════════════════════════ */}
       <section className="mx-auto w-full max-w-7xl px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-14">
         <FadeInSection>
@@ -223,15 +193,62 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-brand-brown/20 to-transparent" />
+      {/* ══════════════════════════════════════════
+          MISIÓN DEL AÑO — el país al que ayudamos, en un globo
+      ══════════════════════════════════════════ */}
+      <div id="mision" className="relative scroll-mt-20">
+        <MisionGlobo hacia="#220c04" />
+        <Ondas hacia="#fbf8f3" simple arriba />
       </div>
 
       {/* ══════════════════════════════════════════
-          3. AGENDA (banda oscura, abajo)
+          HOY — el santo del día y una frase de la Biblia, que cambian solos
+      ══════════════════════════════════════════ */}
+      <section aria-labelledby="hoy-titulo" className="bg-[#220c04] pb-12 pt-2 text-white sm:pb-16">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+          <FadeInSection>
+            <h2 id="hoy-titulo" className="pop-in m-0 text-left font-display text-[28px] font-extrabold leading-none tracking-tight text-white first-letter:uppercase sm:text-[34px]">
+              Hoy, {hoyTexto}
+            </h2>
+            <div className="mt-5 flex flex-col gap-3 lg:flex-row">
+              {hoy.santo && (
+                <div className="pop-in flex-1 rounded-[22px] bg-red-600 p-5 sm:p-6" style={{ ["--d" as string]: "100ms" }}>
+                  <p className="m-0 max-w-none text-left text-sm font-bold text-white/85">La Iglesia celebra a</p>
+                  <p className="m-0 mt-1.5 max-w-none text-balance text-left font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">{hoy.santo}</p>
+                </div>
+              )}
+              <figure className="pop-in m-0 flex-[1.4] rounded-[22px] bg-brand-gold p-5 text-brand-deep sm:p-6" style={{ ["--d" as string]: "190ms" }}>
+                <p className="m-0 max-w-none text-left text-sm font-bold text-brand-deep/80">{evangelio ? "El Evangelio de hoy" : "La Palabra de hoy"}</p>
+                {/* Párrafo y no <blockquote>: el estilo global de las citas le cambia el fondo. */}
+                <p className="m-0 mt-1.5 max-w-none text-balance text-left font-display text-xl font-extrabold leading-snug sm:text-2xl">«{evangelio?.frase ?? hoy.palabra.texto}»</p>
+                <figcaption className="mt-2 text-left text-sm font-bold text-brand-deep/80">
+                  {evangelio?.cita ?? hoy.palabra.cita}
+                  {evangelio?.dia && <span className="font-medium"> · {evangelio.dia}</span>}
+                </figcaption>
+                {evangelio && (
+                  <a
+                    href="https://evangeliodeldia.org/SP/gospel"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-deep px-4 py-2 text-sm font-extrabold text-white no-underline transition-colors hover:bg-brand-brown focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-deep"
+                  >
+                    Leer el Evangelio completo
+                    <ArrowUpRight size={15} aria-hidden className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+                    <span className="sr-only">(se abre evangeliodeldia.org en otra pestaña)</span>
+                  </a>
+                )}
+              </figure>
+              <InstalarApp className="pop-in flex-1 ring-1 ring-white/15" />
+            </div>
+          </FadeInSection>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          AGENDA (banda oscura, pegada a la de Hoy)
       ══════════════════════════════════════════ */}
       <section
-        className="relative w-full overflow-hidden py-16 sm:py-20 mt-6 sm:mt-8"
+        className="relative w-full overflow-hidden pb-28 pt-16 sm:pb-36 sm:pt-20"
         style={{
           backgroundColor: "#3a1508",
           backgroundImage: "url('/assets/header/headerbg.webp')",
@@ -267,7 +284,44 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+        <Ondas hacia="#fbf8f3" simple />
       </section>
+
+      {/* ══════════════════════════════════════════
+          ÁREAS — accesos a las cinco secciones de recursos
+      ══════════════════════════════════════════ */}
+      <section id="areas" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 pt-12 sm:px-6 sm:pt-16">
+        <FadeInSection>
+        <h2 className="pop-in m-0 mb-6 text-left font-display text-[32px] font-extrabold leading-none tracking-tight text-brand-ink sm:text-[40px]">
+          Recursos por área
+        </h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+          {AREA_ORDER.map((key, index) => {
+            const area = AREA_THEME[key];
+            const Icon = AREA_ICONS[key];
+            return (
+              <Link
+                key={key}
+                href={area.href}
+                style={{ backgroundImage: 'url("/assets/textures/areasg.webp")', backgroundSize: '420px', ["--d" as string]: `${120 + index * 80}ms` }}
+                className={`pop-in group flex items-center gap-4 rounded-2xl bg-blend-multiply p-5 no-underline shadow-[0_14px_30px_-20px_rgba(58,21,8,0.55)] transition-[transform,background-color] duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transform-none sm:last:col-span-2 lg:min-h-[230px] lg:flex-col lg:items-start lg:gap-0 lg:last:col-span-1 ${area.tile}`}
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black/10 transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transform-none">
+                  <Icon size={24} strokeWidth={2} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1 lg:mt-5">
+                  <span className="block font-display text-[22px] font-extrabold leading-tight">{area.label}</span>
+                  <span className="mt-1 block text-sm leading-snug opacity-90">{area.summary}</span>
+                </span>
+                <ArrowRight size={20} aria-hidden className="shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none lg:mt-4" />
+              </Link>
+            );
+          })}
+        </div>
+        </FadeInSection>
+      </section>
+
+      <OnlineUsersBoard />
 
     </div>
   );

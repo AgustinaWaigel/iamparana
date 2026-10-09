@@ -1,19 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { MISION_DEL_ANIO } from '@/app/components/common/mision-del-anio';
 import {
-  AVEMARIA, GLORIA, JACULATORIA, LETANIA, MISTERIOS, ORACION_A_MARIA, ORACION_FINAL,
-  PADRENUESTRO, SENAL_DE_LA_CRUZ, TRES_AVEMARIAS,
+  ACTO_DE_CONTRICION, AVEMARIA, CREDO, GLORIA, INTENCIONES_DEL_PAPA, LETANIA, MISTERIOS, MISTERIOS_DEL_DIA, type GrupoDeMisterios,
+  OH_JESUS_MIO, ORACION_FINAL, PADRENUESTRO, SALVE, SENAL_DE_LA_CRUZ,
 } from './rosario-datos';
 
 // El Rosario Misionero para rezarlo cuenta por cuenta: cinco misterios, uno por continente,
 // cada uno con su color. Se avanza con los botones o tocando una cuenta del dibujo.
 //
-// El recorrido sigue al rosario de verdad: la cruz, una cuenta (Gloria), tres cuentas
-// (Avemarías), una cuenta (Padrenuestro del primer misterio) y la medalla, que no lleva oración.
-// En el círculo van las diez Avemarías de cada misterio y, entre uno y otro, la cuenta del Padrenuestro.
+// El orden es el que pasó el equipo. En la cruz: la señal de la cruz, el acto de contrición y el Credo.
+// En las cuentas que cuelgan, yendo hacia la medalla: la primera grande es el Padrenuestro, las tres
+// chicas son Avemarías y la última grande es el Gloria. En la medalla empieza el primer misterio, y el
+// círculo lleva los cinco (Padrenuestro, diez Avemarías, Gloria y "Oh Jesús mío"). Al terminar, de vuelta
+// en la medalla: las intenciones del Papa, la Salve y las letanías; y en la cruz, la oración final.
 
 interface Paso {
   /** Cuenta del dibujo que corresponde a este paso; null cuando el paso abarca todo el misterio. */
@@ -24,6 +26,8 @@ interface Paso {
   /** Línea chica sobre la oración: la intención del misterio o una indicación. */
   apoyo?: string;
   oraciones: Array<{ nombre?: string; texto: string }>;
+  /** Es el anuncio de un misterio (antes de su Padrenuestro). */
+  anuncio?: boolean;
 }
 
 const CENTRO = { x: 200, y: 190 };
@@ -32,28 +36,90 @@ const RADIO = 150;
 const LUGARES = 55;
 const continenteDelAnio = MISION_DEL_ANIO.datos.find((dato) => dato.label === 'Continente')?.valor;
 
-function armarPasos(): Paso[] {
-  // Las tres Avemarías del comienzo tienen cada una su variación; la última frase acompaña a la tercera.
-  const [primera, segunda, tercera, cierre] = TRES_AVEMARIAS.split('\n\n');
+/**
+ * Reparte entre las dos voces una oración que se divide en dos mitades. Quien empieza dice la primera;
+ * se va alternando: en un misterio empieza quien guía y en el siguiente, el resto.
+ */
+function aDosVoces(texto: string, empiezaGuia: boolean) {
+  const [primera, segunda] = texto.split('\n//\n');
+  return `${empiezaGuia ? 'Guía' : 'Todos'}: ${primera}\n${empiezaGuia ? 'Todos' : 'Guía'}: ${segunda}`;
+}
+
+const VOZ = { guia: 'font-bold text-amber-300', todos: 'text-white' };
+
+/** Texto de una oración, con cada voz de su color. Si no marca voces, va todo como "todos". */
+function Oracion({ texto }: { texto: string }) {
+  let voz: keyof typeof VOZ = 'todos';
+  let anterior: keyof typeof VOZ | null = null;
+  const conVoces = /^(Guía|Todos): /m.test(texto) || texto.includes(' — ');
+  // Para quien no distingue los colores (o usa lector de pantalla), el cambio de voz también se dice.
+  const tramo = (quien: keyof typeof VOZ, contenido: string, clave: string) => {
+    const cambia = conVoces && quien !== anterior;
+    anterior = quien;
+    return (
+      <span key={clave} className={VOZ[quien]}>
+        {cambia && <span className="sr-only">{quien === 'guia' ? 'Guía: ' : 'Todos: '}</span>}
+        {contenido}
+      </span>
+    );
+  };
+  return (
+    <p className="m-0 max-w-none whitespace-pre-line text-left text-lg leading-relaxed">
+      {texto.split('\n').map((linea, indice) => {
+        const marca = linea.match(/^(Guía|Todos): /);
+        if (marca) voz = marca[1] === 'Guía' ? 'guia' : 'todos';
+        const contenido = marca ? linea.slice(marca[0].length) : linea;
+        // Letanías: la invocación la dice quien guía y la respuesta, todos.
+        const [invocacion, respuesta] = contenido.split(' — ');
+        return (
+          <span key={indice}>
+            {respuesta ? <>{tramo('guia', invocacion, 'i')} {tramo('todos', respuesta, 'r')}</> : tramo(voz, contenido, 'l')}
+            {'\n'}
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
+function armarPasos(grupo: GrupoDeMisterios | null): Paso[] {
   const pasos: Paso[] = [
-    { cuenta: 'cruz', misterio: null, titulo: 'La señal de la cruz', apoyo: 'Nos disponemos a rezar el Santo Rosario.', oraciones: [{ texto: SENAL_DE_LA_CRUZ }] },
-    { cuenta: 'gloria', misterio: null, titulo: 'Gloria', oraciones: [{ texto: GLORIA }] },
-    ...[primera, segunda, `${tercera}\n\n${cierre}`].map((texto, indice) => ({
-      cuenta: `ave-${indice + 1}`, misterio: null, titulo: `Avemaría ${indice + 1} de 3`, apoyo: 'Tres Avemarías con una pequeña variación.', oraciones: [{ texto }],
-    })),
+    { cuenta: 'cruz', misterio: null, titulo: 'La señal de la cruz', apoyo: 'Nos disponemos a rezar el Rosario Misionero.', oraciones: [{ texto: SENAL_DE_LA_CRUZ }] },
+    { cuenta: 'cruz', misterio: null, titulo: 'Acto de contrición', apoyo: 'Le pedimos perdón a Jesús, todos juntos.', oraciones: [{ texto: ACTO_DE_CONTRICION }] },
+    { cuenta: 'cruz', misterio: null, titulo: 'Credo', oraciones: [{ texto: CREDO }] },
+    { cuenta: 'padre', misterio: null, titulo: 'Padrenuestro', apoyo: 'En la primera cuenta grande.', oraciones: [{ texto: aDosVoces(PADRENUESTRO, true) }] },
+    ...[1, 2, 3].map((ave) => ({ cuenta: `ave-${ave}`, misterio: null, titulo: `Avemaría ${ave} de 3`, apoyo: 'En las tres cuentas chicas.', oraciones: [{ texto: aDosVoces(AVEMARIA, true) }] })),
+    { cuenta: 'gloria', misterio: null, titulo: 'Gloria', apoyo: 'En la última cuenta grande, antes de la medalla.', oraciones: [{ texto: aDosVoces(GLORIA, true) }] },
   ];
   MISTERIOS.forEach((misterio, indice) => {
     const nombre = `${misterio.orden} misterio: ${misterio.continente}`;
-    pasos.push({ cuenta: `m${indice}-0`, misterio: indice, titulo: nombre, apoyo: misterio.intencion, oraciones: [{ nombre: 'Padrenuestro', texto: PADRENUESTRO }] });
+    // Un misterio lo empieza quien guía y el siguiente, el resto.
+    const empiezaGuia = indice % 2 === 0;
+    // El misterio del día que toca en esta decena (se sabe recién en el navegador, por la fecha).
+    const delDia = grupo?.misterios[indice];
+    // Primero se anuncia el misterio y se piensa en el continente; después, en la misma cuenta, el Padrenuestro.
+    pasos.push({
+      cuenta: `m${indice}-0`,
+      misterio: indice,
+      anuncio: true,
+      titulo: nombre,
+      apoyo: delDia && grupo ? `Misterios ${grupo.nombre}: ${delDia.titulo}` : undefined,
+      oraciones: [
+        ...(delDia?.intencion ? [{ nombre: 'Intención de este misterio', texto: `Guía: ${delDia.intencion}` }] : []),
+        { nombre: `Por ${misterio.continente}`, texto: `Guía: ${misterio.intencion}` },
+      ],
+    });
+    pasos.push({ cuenta: `m${indice}-0`, misterio: indice, titulo: 'Padrenuestro', apoyo: delDia ? `${nombre} · ${delDia.titulo}` : nombre, oraciones: [{ texto: aDosVoces(PADRENUESTRO, empiezaGuia) }] });
     for (let ave = 1; ave <= 10; ave++) {
-      pasos.push({ cuenta: `m${indice}-${ave}`, misterio: indice, titulo: `Avemaría ${ave} de 10`, apoyo: `${nombre}. ${misterio.intencion}`, oraciones: [{ texto: AVEMARIA }] });
+      pasos.push({ cuenta: `m${indice}-${ave}`, misterio: indice, titulo: `Avemaría ${ave} de 10`, apoyo: delDia ? `${nombre} · ${delDia.titulo}` : nombre, oraciones: [{ texto: aDosVoces(AVEMARIA, empiezaGuia) }] });
     }
-    pasos.push({ cuenta: null, misterio: indice, titulo: 'Gloria y jaculatoria', apoyo: `Así termina el ${misterio.orden.toLowerCase()} misterio.`, oraciones: [{ nombre: 'Gloria', texto: GLORIA }, { nombre: 'Jaculatoria', texto: JACULATORIA }] });
+    pasos.push({ cuenta: null, misterio: indice, titulo: 'Gloria y «Oh Jesús mío»', apoyo: `Así termina el ${misterio.orden.toLowerCase()} misterio.`, oraciones: [{ nombre: 'Gloria', texto: aDosVoces(GLORIA, empiezaGuia) }, { nombre: 'Oh Jesús mío (si es la costumbre del grupo)', texto: OH_JESUS_MIO }] });
   });
-  // El final se reza volviendo a la cruz.
   pasos.push(
-    { cuenta: 'cruz', misterio: null, titulo: 'Oración a María, Reina de las Misiones', apoyo: 'Después de los cinco misterios.', oraciones: [{ texto: ORACION_A_MARIA }] },
-    { cuenta: 'cruz', misterio: null, titulo: 'Letanía del Rosario Misionero', oraciones: [{ texto: LETANIA }] },
+    { cuenta: 'm0-0', misterio: null, titulo: 'Por las intenciones del Papa', apoyo: INTENCIONES_DEL_PAPA, oraciones: [{ nombre: 'Padrenuestro', texto: aDosVoces(PADRENUESTRO, true) }, { nombre: 'Avemaría', texto: aDosVoces(AVEMARIA, true) }, { nombre: 'Gloria', texto: aDosVoces(GLORIA, true) }] },
+    { cuenta: 'm0-0', misterio: null, titulo: 'Dios te salve, Reina y Madre', oraciones: [{ texto: SALVE }] },
+    { cuenta: 'm0-0', misterio: null, titulo: 'Letanías de la Virgen María', apoyo: 'A cada invocación respondemos todos juntos.', oraciones: [{ texto: LETANIA }] },
+    // El final se reza volviendo a la cruz.
     { cuenta: 'cruz', misterio: null, titulo: 'Oración final', oraciones: [{ texto: ORACION_FINAL }] },
   );
   return pasos;
@@ -74,13 +140,19 @@ function posicion(misterio: number, cuenta: number) {
 const CUENTA = 'cursor-pointer transition-[transform,opacity] duration-300 ease-out [transform-box:fill-box] [transform-origin:center] motion-reduce:transition-none';
 
 export function RosarioMisionero() {
-  const pasos = useMemo(armarPasos, []);
+  // Los misterios que tocan hoy (gozosos, luminosos, dolorosos o gloriosos) se eligen solos por el día
+  // de la semana. Se calcula en el navegador: el día depende de dónde esté quien reza.
+  const [grupo, setGrupo] = useState<GrupoDeMisterios | null>(null);
+  useEffect(() => {
+    setGrupo(MISTERIOS_DEL_DIA[new Date().getDay()]);
+  }, []);
+  const pasos = useMemo(() => armarPasos(grupo), [grupo]);
   const [actual, setActual] = useState(0);
   const paso = pasos[actual];
   const misterio = paso.misterio === null ? null : MISTERIOS[paso.misterio];
   const acento = misterio?.hex ?? '#f6c445';
   const esUltimo = actual === pasos.length - 1;
-  const etapa = misterio ? misterio.continente : actual < 5 ? 'Comienzo' : 'Final';
+  const etapa = misterio ? misterio.continente : actual < pasos.findIndex((item) => item.misterio !== null) ? 'Comienzo' : 'Final';
 
   // Paso al que lleva cada cuenta del dibujo (el primero, si varios pasos comparten cuenta).
   const pasoDe = (cuenta: string) => pasos.findIndex((item) => item.cuenta === cuenta);
@@ -131,7 +203,7 @@ export function RosarioMisionero() {
           {MISTERIOS.map((item, indice) => (
             <g key={item.continente}>
               {Array.from({ length: 11 }, (_, cuenta) => {
-                // El Padrenuestro del primer misterio no está en el círculo: es la cuenta que cuelga junto a la medalla.
+                // El Padrenuestro del primer misterio no tiene cuenta en el círculo: se reza en la medalla.
                 if (indice === 0 && cuenta === 0) return null;
                 const id = `m${indice}-${cuenta}`;
                 const grande = cuenta === 0;
@@ -151,14 +223,14 @@ export function RosarioMisionero() {
             </g>
           ))}
 
-          {/* La medalla no lleva oración: une el círculo con las cuentas que cuelgan. */}
-          <circle cx="200" cy="340" r="11" fill="#f6c445" />
-          {/* De la medalla hacia la cruz: Padrenuestro, tres Avemarías y Gloria. */}
-          <circle cx="200" cy="366" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('m0-0')} {...anillo('m0-0')} onClick={() => setActual(pasoDe('m0-0'))} />
-          {[3, 2, 1].map((ave, lugar) => (
-            <circle key={ave} cx="200" cy={387 + lugar * 17} r="6" fill="#d6d3d1" className={CUENTA} style={estilo(`ave-${ave}`)} {...anillo(`ave-${ave}`)} onClick={() => setActual(pasoDe(`ave-${ave}`))} />
+          {/* En la medalla empieza el primer misterio y, al final, se rezan las intenciones del Papa, la Salve y las letanías. */}
+          <circle cx="200" cy="340" r="11" fill={MISTERIOS[0].hex} className={CUENTA} style={{ ...estilo('m0-0'), transform: paso.cuenta === 'm0-0' ? 'scale(1.45)' : 'none' }} {...anillo('m0-0')} onClick={() => setActual(pasoDe('m0-0'))} />
+          {/* De la cruz hacia la medalla: Padrenuestro, tres Avemarías y Gloria. */}
+          <circle cx="200" cy="443" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('padre')} {...anillo('padre')} onClick={() => setActual(pasoDe('padre'))} />
+          {[1, 2, 3].map((ave) => (
+            <circle key={ave} cx="200" cy={438 - ave * 17} r="6" fill="#d6d3d1" className={CUENTA} style={estilo(`ave-${ave}`)} {...anillo(`ave-${ave}`)} onClick={() => setActual(pasoDe(`ave-${ave}`))} />
           ))}
-          <circle cx="200" cy="443" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('gloria')} {...anillo('gloria')} onClick={() => setActual(pasoDe('gloria'))} />
+          <circle cx="200" cy="366" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('gloria')} {...anillo('gloria')} onClick={() => setActual(pasoDe('gloria'))} />
           <g className={CUENTA} style={{ ...estilo('cruz'), transform: paso.cuenta === 'cruz' ? 'scale(1.2)' : 'none' }} onClick={() => setActual(0)}>
             <path d="M200 462 v56 M184 480 h32" stroke="#f6c445" strokeWidth="7" strokeLinecap="round" />
             <rect x="176" y="456" width="48" height="68" fill="transparent" />
@@ -182,17 +254,23 @@ export function RosarioMisionero() {
               <div key={actual} className="flex min-h-0 flex-1 flex-col duration-300 ease-out animate-in fade-in-0 slide-in-from-right-2 motion-reduce:animate-none">
                 <h3 className="m-0 text-balance text-left font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">{paso.titulo}</h3>
                 {paso.apoyo && <p className="m-0 mt-2 max-w-none text-left text-base font-semibold leading-relaxed" style={{ color: acento }}>{paso.apoyo}</p>}
-                {misterio && paso.cuenta === `m${paso.misterio}-0` && (
+                {misterio && paso.anuncio && (
                   <p className="m-0 mt-2 max-w-none text-left text-sm text-white/75">
                     Este misterio es de color {misterio.color}.
                     {misterio.continente === continenteDelAnio && ` Este año rezamos especialmente por ${MISION_DEL_ANIO.pais}.`}
+                  </p>
+                )}
+                {paso.oraciones.some((oracion) => /^(Guía|Todos): /m.test(oracion.texto) || oracion.texto.includes(' — ')) && (
+                  <p aria-hidden className="m-0 mt-3 flex max-w-none flex-wrap gap-x-4 gap-y-1 text-left text-sm font-bold">
+                    <span className="flex items-center gap-1.5 text-amber-300"><span className="h-2.5 w-2.5 rounded-full bg-amber-300" />Quien guía</span>
+                    <span className="flex items-center gap-1.5 text-white"><span className="h-2.5 w-2.5 rounded-full bg-white" />Todos</span>
                   </p>
                 )}
                 <div className="mt-4 max-h-[24rem] min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:max-h-none">
                   {paso.oraciones.map((oracion) => (
                     <div key={oracion.nombre ?? paso.titulo}>
                       {oracion.nombre && <p className="m-0 mb-1 max-w-none text-left text-sm font-extrabold text-white/75">{oracion.nombre}</p>}
-                      <p className="m-0 max-w-none whitespace-pre-line text-left text-lg leading-relaxed text-white">{oracion.texto}</p>
+                      <Oracion texto={oracion.texto} />
                     </div>
                   ))}
                 </div>

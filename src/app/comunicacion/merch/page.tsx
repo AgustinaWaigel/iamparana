@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AreaHero } from '@/app/components/common/area-hero';
 import { listCatalogo } from '@/server/lib/ventas-catalogo';
-import { Catalogo } from '../components/catalogo';
+import { Catalogo, CintaMerch } from '../components/catalogo';
 
 // Merch de la IAM: lo que Comunicación vende en los eventos, con los precios al día.
 
@@ -21,6 +21,7 @@ export default async function MerchPage() {
   return (
     <div className="min-h-screen bg-brand-paper">
       <AreaHero area="comunicacion" title="Merch de la IAM" crumbs={[]} />
+      {productos && productos.length > 0 && <CintaMerch productos={productos} />}
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-12">
         {productos && productos.length > 0 ? (
           <Catalogo productos={productos} />

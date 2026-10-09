@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Maximize2 } from 'lucide-react';
+import { telHref, whatsappHref } from '@/lib/iam-contacto';
 import 'leaflet/dist/leaflet.css';
 
 // Mapa con un punto por cada IAM. Usa Leaflet con el mapa libre de OpenStreetMap,
@@ -14,6 +15,25 @@ export interface PuntoIam {
   lat: number;
   lng: number;
   color: string;
+  direccion?: string | null;
+  telefono?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+}
+
+/** Globito con el color de la IAM y borde oscuro, para que se vea sobre cualquier parte del mapa. */
+export const pinSvg = (color: string) =>
+  `<svg width="30" height="38" viewBox="0 0 30 38" aria-hidden="true"><path d="M15 1.5C7.5 1.5 1.5 7.4 1.5 14.7c0 9.6 13.5 21.8 13.5 21.8s13.500-12.2 13.500-21.8C28.500 7.400 22.500 1.500 15 1.500Z" fill="${color}" stroke="#3a1508" stroke-width="2.5"/><circle cx="15" cy="14.500" r="4.500" fill="#fff" stroke="#3a1508" stroke-width="2"/></svg>`;
+
+function enlace(texto: string, href: string, externo = true) {
+  const a = document.createElement('a');
+  a.textContent = texto;
+  a.href = href;
+  if (externo) {
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+  }
+  return a;
 }
 
 export function MapaIam({ puntos }: { puntos: PuntoIam[] }) {
@@ -46,16 +66,26 @@ export function MapaIam({ puntos }: { puntos: PuntoIam[] }) {
             iconSize: [30, 38],
             iconAnchor: [15, 36],
             popupAnchor: [0, -32],
-            // Un globito con el color de la IAM y borde oscuro, para que se vea sobre cualquier parte del mapa.
-            html: `<svg width="30" height="38" viewBox="0 0 30 38" aria-hidden="true"><path d="M15 1.5C7.5 1.5 1.5 7.4 1.5 14.7c0 9.6 13.5 21.8 13.5 21.8s13.500-12.2 13.500-21.8C28.500 7.400 22.500 1.500 15 1.500Z" fill="${punto.color}" stroke="#3a1508" stroke-width="2.5"/><circle cx="15" cy="14.500" r="4.500" fill="#fff" stroke="#3a1508" stroke-width="2"/></svg>`,
+            html: pinSvg(punto.color),
           });
           const nombre = document.createElement('strong');
           nombre.textContent = punto.nombre;
           const ciudad = document.createElement('span');
-          ciudad.textContent = punto.ciudad;
+          ciudad.textContent = punto.direccion ? `${punto.direccion}, ${punto.ciudad}` : punto.ciudad;
           const globo = document.createElement('div');
           globo.className = 'mapa-iam-globo';
           globo.append(nombre, ciudad);
+          // Contacto y redes, si la IAM los tiene cargados.
+          const contacto = document.createElement('div');
+          contacto.className = 'mapa-iam-contacto';
+          if (punto.telefono) {
+            const whatsapp = whatsappHref(punto.telefono);
+            contacto.append(enlace(punto.telefono, telHref(punto.telefono), false));
+            if (whatsapp) contacto.append(enlace('WhatsApp', whatsapp));
+          }
+          if (punto.instagram) contacto.append(enlace('Instagram', punto.instagram));
+          if (punto.facebook) contacto.append(enlace('Facebook', punto.facebook));
+          if (contacto.childElementCount > 0) globo.append(contacto);
           const marcador = L.marker([punto.lat, punto.lng], { icon: icono, title: `${punto.nombre}, ${punto.ciudad}`, alt: `${punto.nombre}, ${punto.ciudad}` }).addTo(mapa).bindPopup(globo);
           // Al tocar una IAM, el mapa se acerca a ella (si ya estaba cerca, solo la centra).
           marcador.on('click', () => mapa?.flyTo([punto.lat, punto.lng], Math.max(mapa.getZoom(), 13), { duration: quieto ? 0 : 0.8 }));

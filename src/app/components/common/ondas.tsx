@@ -19,17 +19,19 @@ interface OndasProps {
   hacia: string;
   /** Solo la onda final, sin las capas de colores. */
   simple?: boolean;
+  /** Va en el borde de arriba de la sección, dada vuelta; `hacia` es entonces el color de la sección anterior. */
+  arriba?: boolean;
   className?: string;
 }
 
-export function Ondas({ hacia, simple = false, className = "" }: OndasProps) {
+export function Ondas({ hacia, simple = false, arriba = false, className = "" }: OndasProps) {
   const capas = simple ? [] : MISIONEROS;
   return (
     <svg
       aria-hidden
       viewBox="0 0 1440 240"
       preserveAspectRatio="none"
-      className={`pointer-events-none absolute inset-x-0 bottom-[-1px] w-full ${simple ? "h-10 sm:h-16" : "h-28 sm:h-44"} ${className}`}
+      className={`pointer-events-none absolute inset-x-0 w-full ${arriba ? "top-[-1px] -scale-y-100" : "bottom-[-1px]"} ${simple ? "h-10 sm:h-16" : "h-28 sm:h-44"} ${className}`}
     >
       {capas.map((color, index) => (
         <path

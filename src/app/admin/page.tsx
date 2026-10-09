@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, BellRing, BookOpen, CalendarDays, ClipboardPen, FileClock, FolderOpen, Newspaper, PieChart, ShoppingBag, Users, UsersRound, type LucideIcon } from 'lucide-react';
+import { ArrowRight, BellRing, BookOpen, CalendarDays, DatabaseBackup, ClipboardPen, FileClock, FolderOpen, MapPinned, MessageCircle, Newspaper, PieChart, ShoppingBag, Users, UsersRound, type LucideIcon } from 'lucide-react';
 
 // Panel de administración: todas las herramientas en un solo lugar, con una línea que explica
 // para qué sirve cada una. El acceso lo controla el layout de /admin (solo administradores).
@@ -32,6 +32,7 @@ const GRUPOS: Array<{ titulo: string; bajada: string; herramientas: Herramienta[
     herramientas: [
       { titulo: 'Avisos al celular', detalle: 'Mandar un aviso a todos los que activaron las notificaciones y ver los últimos enviados.', href: '/admin/notificaciones', icono: BellRing, fondo: 'bg-amber-500' },
       { titulo: 'Noticias', detalle: 'Publicar, editar o borrar noticias. Los botones aparecen sobre cada noticia.', href: '/noticias', icono: Newspaper, fondo: 'bg-violet-600' },
+      { titulo: 'Comentarios', detalle: 'Aprobar o borrar los comentarios que dejó gente sin cuenta en las noticias.', href: '/admin/comentarios', icono: MessageCircle, fondo: 'bg-emerald-600' },
       { titulo: 'Merch de la IAM', detalle: 'Los productos y los precios se cargan en el sistema de ventas; el sitio los muestra solos.', href: 'https://ventas-comu.vercel.app/editar-productos', icono: ShoppingBag, fondo: 'bg-yellow-500', externa: true },
     ],
   },
@@ -41,6 +42,7 @@ const GRUPOS: Array<{ titulo: string; bajada: string; herramientas: Herramienta[
     herramientas: [
       { titulo: 'Temario de Formación', detalle: 'Cargar el temario del año, mes por mes. Botones «Editar» y «Otro año» sobre el temario.', href: '/formacion', icono: BookOpen, fondo: 'bg-yellow-500' },
       { titulo: 'Cuentas claras', detalle: 'Cargar lo que entró y lo que salió en cada evento. Botón «Cargar un evento» en Logística.', href: '/logistica', icono: PieChart, fondo: 'bg-red-600' },
+      { titulo: 'Las IAM y el mapa', detalle: 'Agregar una IAM y editar su dirección, contacto, redes y el lugar donde aparece en el mapa.', href: '/admin/iam', icono: MapPinned, fondo: 'bg-blue-700' },
       { titulo: 'Recursos y documentos', detalle: 'Subir documentos, enlaces y álbumes de fotos en cada área, y los documentos institucionales en Quiénes somos.', href: '/quienes-somos#documentos', icono: FolderOpen, fondo: 'bg-stone-700' },
     ],
   },
@@ -50,6 +52,7 @@ const GRUPOS: Array<{ titulo: string; bajada: string; herramientas: Herramienta[
     herramientas: [
       { titulo: 'Usuarios', detalle: 'Cuentas del sitio, roles y a qué área pertenece cada uno.', href: '/admin/usuarios', icono: Users, fondo: 'bg-brand-brown' },
       { titulo: 'Auditoría', detalle: 'El registro de los cambios hechos en el sitio: quién, qué y cuándo.', href: '/admin/auditoria', icono: FileClock, fondo: 'bg-stone-700' },
+      { titulo: 'Copias de seguridad', detalle: 'Ver cuándo fue la última copia de la base de datos y hacer una en el momento.', href: '/admin/respaldos', icono: DatabaseBackup, fondo: 'bg-emerald-600' },
     ],
   },
 ];

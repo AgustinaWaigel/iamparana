@@ -1407,6 +1407,18 @@ hr.divisor {
   font-size: 15px;
 }
 
+.mapa-iam-contacto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 6px;
+}
+
+.leaflet-container .mapa-iam-contacto a {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
 /* Los botones del mapa heredan reglas globales de enlaces: se les devuelve su aspecto. */
 .leaflet-container a.leaflet-popup-close-button,
 .leaflet-container .leaflet-control-zoom a {

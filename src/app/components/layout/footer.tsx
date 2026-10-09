@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { AREA_ORDER, AREA_THEME } from '@/app/components/common/area-theme';
+import { INSCRIPCIONES_PUBLICAS } from '@/lib/inscripciones-publicas';
 
 const SOCIALS = [
   { label: 'YouTube', href: 'https://www.youtube.com/channel/UCShR66tuvm-N-I5ZUZ6Oo6Q', icon: '/assets/socialmedia/youtube.webp' },
@@ -13,7 +14,7 @@ const SITE_LINKS = [
   { label: 'Quiénes somos', href: '/quienes-somos' },
   { label: 'Noticias', href: '/noticias' },
   { label: 'Calendario', href: '/calendario' },
-  { label: 'Inscripciones', href: '/inscripciones' },
+  ...(INSCRIPCIONES_PUBLICAS ? [{ label: 'Inscripciones', href: '/inscripciones' }] : []),
   { label: 'Política de privacidad', href: '/privacidad' },
 ];
 

@@ -220,6 +220,13 @@ export function ensureInscripcionesSchema(): Promise<void> {
       .then(() => client.execute("ALTER TABLE grupo_animadores ADD COLUMN estado TEXT NOT NULL DEFAULT 'aprobado'").catch(() => undefined))
       // Quien coordina una IAM gestiona a sus animadores. A los coordinadores los nombra el admin.
       .then(() => client.execute("ALTER TABLE grupo_animadores ADD COLUMN rol TEXT NOT NULL DEFAULT 'animador'").catch(() => undefined))
+      // Ficha pública de cada IAM (Quiénes somos): dirección, contacto, redes y su punto en el mapa.
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN direccion TEXT").catch(() => undefined))
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN telefono TEXT").catch(() => undefined))
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN instagram TEXT").catch(() => undefined))
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN facebook TEXT").catch(() => undefined))
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN lat REAL").catch(() => undefined))
+      .then(() => client.execute("ALTER TABLE grupos_iam ADD COLUMN lng REAL").catch(() => undefined))
       .then(() => undefined)
       .catch((error) => {
         schemaPromise = null;
