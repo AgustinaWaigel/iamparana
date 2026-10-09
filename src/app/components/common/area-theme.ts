@@ -13,6 +13,8 @@ export interface AreaTheme {
   incluye: string[];
   /** Mosaico de color pleno (accesos del inicio). */
   tile: string;
+  /** El color pleno del área con su texto, sin efectos: etiquetas e íconos de las tarjetas de recursos. */
+  solid: string;
   /** Capas de color que se multiplican sobre la textura de la portada. */
   heroOverlay: string;
   heroText: string;
@@ -36,6 +38,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     summary: 'Materiales, documentos y propuestas de formación para animadores.',
     incluye: ['Temas del año', 'Escuela con Jesús', 'Materiales'],
     tile: 'bg-yellow-400 text-brand-brown hover:bg-yellow-300 focus-visible:outline-brand-brown',
+    solid: 'bg-yellow-400 text-brand-deep',
     heroOverlay: 'rgba(250, 204, 21, 0.92), rgba(234, 179, 8, 0.92)',
     heroText: 'text-brand-brown',
     heroTabIdle: 'bg-brand-brown/10 text-brand-brown hover:bg-brand-brown/20',
@@ -51,6 +54,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     summary: 'Juegos, canciones, dinámicas y recursos para animar encuentros.',
     incluye: ['Canciones', 'Juegos', 'Música y videos'],
     tile: 'bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:outline-emerald-800',
+    solid: 'bg-emerald-700 text-white',
     heroOverlay: 'rgba(20, 83, 45, 0.92), rgba(21, 128, 61, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',
@@ -66,6 +70,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     summary: 'Oraciones, guiones litúrgicos y recursos para profundizar en la espiritualidad.',
     incluye: ['Rosario Misionero', 'Oraciones', 'Guiones', 'Fiestas del mes'],
     tile: 'bg-stone-700 text-white hover:bg-stone-800 focus-visible:outline-stone-800',
+    solid: 'bg-stone-700 text-white',
     heroOverlay: 'rgba(41, 37, 36, 0.92), rgba(87, 83, 78, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/20 text-white hover:bg-black/30',
@@ -81,6 +86,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     summary: 'Documentos, enlaces y recursos gráficos para la comunicación.',
     incluye: ['Recursos gráficos', 'Merch', 'Fotos de eventos', 'Mandá tu noticia'],
     tile: 'bg-blue-700 text-white hover:bg-blue-800 focus-visible:outline-blue-800',
+    solid: 'bg-blue-700 text-white',
     heroOverlay: 'rgba(30, 64, 175, 0.92), rgba(37, 99, 235, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',
@@ -96,6 +102,7 @@ export const AREA_THEME: Record<AreaKey, AreaTheme> = {
     summary: 'Resumen de gastos y transparencia en eventos realizados.',
     incluye: ['Cuentas claras', 'Documentos'],
     tile: 'bg-red-700 text-white hover:bg-red-800 focus-visible:outline-red-800',
+    solid: 'bg-red-700 text-white',
     heroOverlay: 'rgba(153, 27, 27, 0.92), rgba(220, 38, 38, 0.9)',
     heroText: 'text-white',
     heroTabIdle: 'bg-black/15 text-white hover:bg-black/25',

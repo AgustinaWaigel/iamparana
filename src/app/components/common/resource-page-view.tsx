@@ -53,6 +53,7 @@ export function ResourcePageView({ area, data, showAdminControls = false, childr
         return (
           <AreaSection
             key={section.id}
+            area={area}
             title={section.title}
             meta={`${totalResources} ${totalResources === 1 ? 'recurso' : 'recursos'}`}
             actions={showAdminControls ? (

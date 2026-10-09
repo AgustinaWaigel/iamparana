@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowRight, ArrowUpRight, Download, FileText, Link2, PlayCircle, type LucideIcon } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Download, FileText, FolderOpen, Link2, PlayCircle, type LucideIcon } from 'lucide-react';
 import { AREA_THEME, type AreaKey } from './area-theme';
 
 // Bloques de contenido de las subpáginas de área: sección con título y
@@ -13,23 +13,28 @@ interface AreaSectionProps {
   description?: string;
   /** Controles a la derecha del título (acciones de administración). */
   actions?: ReactNode;
+  /** Si se pasa, el título lleva una carpeta con el color del área. */
+  area?: AreaKey;
   children: ReactNode;
 }
 
-export function AreaSection({ title, meta, description, actions, children }: AreaSectionProps) {
+export function AreaSection({ title, meta, description, actions, area, children }: AreaSectionProps) {
   return (
     <section className="group/section mt-12 first:mt-0 sm:mt-16">
-      <div className="mb-5 flex items-end justify-between gap-4 border-b border-brand-brown/15 pb-3">
-        <div className="min-w-0">
-          <h2 className="m-0 text-left font-display text-2xl font-extrabold leading-tight tracking-tight text-brand-ink sm:text-[28px]">
+      <div className="mb-5 flex items-center gap-4 sm:mb-6">
+        {area && (
+          <span aria-hidden className={`flex h-12 w-12 shrink-0 -rotate-6 items-center justify-center rounded-xl sm:h-14 sm:w-14 ${AREA_THEME[area].solid}`}>
+            <FolderOpen className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.9} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 className="m-0 text-balance text-left font-display text-[clamp(1.6rem,3.6vw,2.25rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-brand-ink">
             {title}
           </h2>
-          {description && <p className="m-0 mt-1.5 max-w-2xl text-left text-base leading-relaxed text-brand-ink/70">{description}</p>}
+          {meta && <p className="m-0 mt-1 max-w-none text-left text-sm font-bold tabular-nums text-brand-ink/65">{meta}</p>}
+          {description && <p className="m-0 mt-1.5 max-w-2xl text-left text-base leading-relaxed text-brand-ink/75">{description}</p>}
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          {meta && <span className="text-sm font-semibold tabular-nums text-brand-ink/60">{meta}</span>}
-          {actions}
-        </div>
+        {actions && <div className="flex shrink-0 items-center gap-3">{actions}</div>}
       </div>
       {children}
     </section>
@@ -83,15 +88,16 @@ export function LinkCard({ area, title, href, kind = 'doc', label, description, 
 
   // El ::after del enlace cubre toda la tarjeta.
   const linkClass = `no-underline text-brand-ink after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset ${theme.focusRing}`;
+  const abrir = kind === 'download' ? 'Descargar' : kind === 'video' ? 'Ver el video' : kind === 'link' ? 'Abrir el enlace' : kind === 'page' ? 'Entrar' : 'Abrir el documento';
 
   return (
-    <article className={`group relative flex h-full gap-4 rounded-2xl bg-white p-4 ${description || label ? "items-start" : "items-center"} shadow-[0_10px_28px_-20px_rgba(58,21,8,0.4)] ring-1 ring-brand-brown/10 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-20px_rgba(58,21,8,0.5)] motion-reduce:transform-none sm:p-5`}>
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${theme.tint} ${theme.accentText}`}>
-        <Icon size={20} strokeWidth={2} aria-hidden />
+    <article className="group relative flex h-full items-start gap-4 rounded-2xl bg-white p-4 shadow-[0_14px_28px_-22px_rgba(58,21,8,0.7)] transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transform-none sm:p-5">
+      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 ease-out group-hover:-rotate-6 motion-reduce:transform-none ${theme.solid}`}>
+        <Icon size={22} strokeWidth={2} aria-hidden />
       </span>
 
       <div className="min-w-0 flex-1">
-        <h3 className="m-0 text-left text-base font-bold leading-snug [overflow-wrap:anywhere]">
+        <h3 className="m-0 text-left font-display text-lg font-extrabold leading-snug [overflow-wrap:anywhere]">
           {isInternal ? (
             <Link href={href} className={linkClass}>{title}</Link>
           ) : kind === 'download' ? (
@@ -103,19 +109,16 @@ export function LinkCard({ area, title, href, kind = 'doc', label, description, 
             </a>
           )}
         </h3>
-        {label && (
-          <p className={`m-0 mt-1 max-w-none text-left text-[11px] font-bold uppercase tracking-[0.12em] ${theme.accentText}`}>{label}</p>
-        )}
         {description && (
-          <p className="m-0 mt-2 line-clamp-3 max-w-none text-left text-sm leading-relaxed text-brand-ink/65">{description}</p>
+          <p className="m-0 mt-1 line-clamp-3 max-w-none text-left text-sm leading-relaxed text-brand-ink/75">{description}</p>
         )}
+        {/* Qué es y qué pasa al tocarlo, en una sola línea. */}
+        <p className={`m-0 mt-2 flex max-w-none flex-wrap items-center gap-x-1.5 text-left text-sm font-bold ${theme.accentText}`}>
+          {label && label !== 'Documento' && label !== 'Enlace' && <span className="text-brand-ink/65">{label} ·</span>}
+          {abrir}
+          <Arrow size={16} aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+        </p>
       </div>
-
-      <Arrow
-        size={18}
-        aria-hidden
-        className={`shrink-0 transition-transform duration-300 ease-out group-hover:translate-x-0.5 motion-reduce:transform-none ${theme.accentText}`}
-      />
 
       {overlay && <div className="absolute right-2 top-2 z-10">{overlay}</div>}
     </article>

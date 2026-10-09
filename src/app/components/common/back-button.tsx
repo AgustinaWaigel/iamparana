@@ -18,6 +18,13 @@ export function BackButton() {
       return;
     }
 
+    // "/auth" no tiene página propia: subir un nivel daba 404. Desde registrarse, recuperar o cambiar
+    // la contraseña se vuelve al ingreso; desde el resto, al inicio.
+    if (segments[0] === 'auth') {
+      router.push(['registro', 'recuperar', 'nueva-contrasena'].includes(segments[1]) ? '/auth/login' : '/');
+      return;
+    }
+
     let parentSegments = segments.slice(0, -1);
 
     // Skip the "recursos" directory if it doesn't have an index page in these sections

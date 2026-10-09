@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Children, useRef, useState, type ReactNode } from 'react';
 import { Paginacion } from '@/app/components/common/paginacion';
-import { ArrowRight, ArrowUpRight, BookOpen, FileText, Heart, Link2, Pencil, SearchX, Trash2, FolderOpen, type LucideIcon } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, FileText, Heart, Link2, Pencil, SearchX, Trash2, FolderOpen, type LucideIcon } from 'lucide-react';
 import { SearchBar } from '@/app/components/common/search-bar';
 import { getGoogleDriveProxyImageUrl } from '@/lib/drive-utils';
 import { AREA_THEME, type AreaKey } from './area-theme';
@@ -36,7 +36,7 @@ function isOptimizableSource(src: string): boolean {
 
 function getCardIcon(card: ResourceCardData): LucideIcon {
   if (card.kind === 'text-prayer' || card.badge === 'Oración') return Heart;
-  if (card.kind === 'resource-page') return BookOpen;
+  if (card.kind === 'resource-page') return FolderOpen;
   if (card.kind === 'link') return Link2;
   return FileText;
 }
@@ -202,16 +202,19 @@ export function ResourceCard({ card, area, isAdmin, onEdit, onDelete, onOpen, fa
   const thumbnailUrl = isValidImageSource(normalizedThumbnailUrl) ? normalizedThumbnailUrl : fallbackThumbnail || null;
 
   const isInternal = card.href.startsWith('/');
-  // El ::after del enlace cubre toda la tarjeta, así el recurso se abre desde cualquier punto.
-  const actionClass = `mt-4 inline-flex items-center gap-1.5 self-start text-sm font-bold no-underline after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset ${theme.accentText} ${theme.focusRing}`;
+  // Las páginas de recursos son carpetas con más cosas adentro: se dice distinto que un archivo suelto.
+  const esPagina = card.kind === 'resource-page';
+  const accion = card.kind === 'text-prayer' ? 'Leer la oración' : esPagina ? 'Entrar' : card.kind === 'link' ? 'Abrir el enlace' : 'Ver el recurso';
+  // El ::after del botón cubre toda la tarjeta, así el recurso se abre desde cualquier punto.
+  const actionClass = `mt-5 inline-flex items-center gap-2 self-start rounded-full bg-brand-deep px-4 py-2.5 text-sm font-extrabold text-white no-underline after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset ${theme.focusRing}`;
   const arrowClass = 'transition-transform duration-300 ease-out group-hover:translate-x-1 motion-reduce:transform-none';
 
   return (
     <article
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white text-left shadow-[0_10px_28px_-18px_rgba(58,21,8,0.4)] ring-1 ring-brand-brown/10 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_22px_40px_-20px_rgba(58,21,8,0.5)] animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards motion-reduce:animate-none motion-reduce:transform-none"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white text-left shadow-[0_14px_28px_-22px_rgba(58,21,8,0.7)] transition-transform duration-300 ease-out hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards motion-reduce:animate-none motion-reduce:transform-none"
     >
-      <div className={`relative aspect-[16/9] overflow-hidden ${theme.tint}`}>
+      <div className={`relative aspect-[16/10] overflow-hidden ${theme.tint}`}>
         {thumbnailUrl ? (
           isOptimizableSource(thumbnailUrl) ? (
             <Image
@@ -232,42 +235,42 @@ export function ResourceCard({ card, area, isAdmin, onEdit, onDelete, onOpen, fa
             />
           )
         ) : (
-          <div
-            className={`flex h-full w-full items-center justify-center bg-blend-multiply ${theme.tint}`}
-            style={{ backgroundImage: 'url("/assets/textures/areasg.webp")', backgroundSize: '460px' }}
-          >
-            <span className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm transition-transform duration-300 ease-out group-hover:scale-105 motion-reduce:transform-none ${theme.accentText}`}>
-              <Icon size={30} strokeWidth={1.75} aria-hidden />
-            </span>
+          // Sin miniatura: el color del área con el ícono del tipo de recurso, grande y apenas torcido.
+          <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${theme.solid}`}>
+            <Icon aria-hidden strokeWidth={1.4} className="absolute -bottom-6 -right-5 h-[70%] w-[70%] -rotate-12 opacity-20 transition-transform duration-500 ease-out group-hover:rotate-0 group-hover:scale-110 motion-reduce:transform-none" />
+            <Icon aria-hidden strokeWidth={1.5} className="relative h-[34%] w-[34%] transition-transform duration-500 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transform-none" />
           </div>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] ${theme.accentText}`}>
-          <Icon size={13} strokeWidth={2.25} aria-hidden />
+        <span className={`inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 text-xs font-extrabold ${theme.solid}`}>
+          <Icon size={13} strokeWidth={2.5} aria-hidden />
           {card.badge}
         </span>
-        <h3 className="m-0 mt-2 line-clamp-2 w-full text-left font-display text-[19px] font-bold leading-snug text-brand-ink">
+        <h3 className="m-0 mt-3 line-clamp-3 w-full text-left font-display text-xl font-extrabold leading-snug text-brand-ink">
           {card.title}
         </h3>
-        <p className="m-0 mt-2 line-clamp-3 w-full max-w-none flex-1 text-left text-sm leading-relaxed text-brand-ink/65">
-          {card.description}
-        </p>
+        {card.description && (
+          <p className="m-0 mt-2 line-clamp-3 w-full max-w-none text-left text-sm leading-relaxed text-brand-ink/75">
+            {card.description}
+          </p>
+        )}
+        <span aria-hidden className="flex-1" />
 
         {card.kind === 'text-prayer' ? (
           <button type="button" onClick={onOpen} className={actionClass}>
-            Leer oración
+            {accion}
             <ArrowRight size={16} className={arrowClass} aria-hidden />
           </button>
         ) : isInternal ? (
           <Link href={card.href} className={actionClass}>
-            {card.kind === 'link' ? 'Abrir enlace' : 'Ver recurso'}
+            {accion}
             <ArrowRight size={16} className={arrowClass} aria-hidden />
           </Link>
         ) : (
           <a href={card.href} target="_blank" rel="noopener noreferrer" className={actionClass}>
-            {card.kind === 'link' ? 'Abrir enlace' : 'Ver recurso'}
+            {accion}
             <ArrowUpRight size={16} className={arrowClass} aria-hidden />
             <span className="sr-only">(se abre en una pestaña nueva)</span>
           </a>
