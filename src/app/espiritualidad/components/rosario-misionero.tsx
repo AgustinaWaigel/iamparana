@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { MISION_DEL_ANIO } from '@/app/components/common/mision-del-anio';
+import { MusicaDeFondo } from './musica-de-fondo';
 import {
   ACTO_DE_CONTRICION, AVEMARIA, CREDO, GLORIA, INTENCIONES_DEL_PAPA, LETANIA, MISTERIOS, MISTERIOS_DEL_DIA, type GrupoDeMisterios,
   OH_JESUS_MIO, ORACION_FINAL, PADRENUESTRO, SALVE, SENAL_DE_LA_CRUZ,
@@ -45,7 +46,7 @@ function aDosVoces(texto: string, empiezaGuia: boolean) {
   return `${empiezaGuia ? 'Guía' : 'Todos'}: ${primera}\n${empiezaGuia ? 'Todos' : 'Guía'}: ${segunda}`;
 }
 
-const VOZ = { guia: 'font-bold text-amber-300', todos: 'text-white' };
+const VOZ = { guia: 'font-bold text-blue-800', todos: 'text-brand-ink' };
 
 /** Texto de una oración, con cada voz de su color. Si no marca voces, va todo como "todos". */
 function Oracion({ texto }: { texto: string }) {
@@ -137,6 +138,12 @@ function posicion(misterio: number, cuenta: number) {
   return { cx: Math.round((CENTRO.x + RADIO * Math.cos(angulo)) * 100) / 100, cy: Math.round((CENTRO.y + RADIO * Math.sin(angulo)) * 100) / 100 };
 }
 
+/** Tinta de cada misterio, en el orden de MISTERIOS: verde, rojo, gris (Europa es blanco), azul y ocre. */
+const TINTAS = ['#15803d', '#b91c1c', '#57534e', '#1d4ed8', '#a16207'];
+const TINTA_BASE = '#7a3a13';
+/** Borde de las cuentas: sin él, la blanca y la amarilla no se ven sobre el fondo claro. */
+const BORDE = { stroke: '#3a1508', strokeOpacity: 0.45, strokeWidth: 1 };
+
 const CUENTA = 'cursor-pointer transition-[transform,opacity] duration-300 ease-out [transform-box:fill-box] [transform-origin:center] motion-reduce:transition-none';
 
 export function RosarioMisionero() {
@@ -151,6 +158,7 @@ export function RosarioMisionero() {
   const paso = pasos[actual];
   const misterio = paso.misterio === null ? null : MISTERIOS[paso.misterio];
   const acento = misterio?.hex ?? '#f6c445';
+  const tinta = paso.misterio === null ? TINTA_BASE : TINTAS[paso.misterio];
   const esUltimo = actual === pasos.length - 1;
   const etapa = misterio ? misterio.continente : actual < pasos.findIndex((item) => item.misterio !== null) ? 'Comienzo' : 'Final';
 
@@ -160,21 +168,31 @@ export function RosarioMisionero() {
   const estilo = (cuenta: string) => {
     const indice = pasoDe(cuenta);
     const esActual = paso.cuenta === cuenta;
-    return { opacity: indice <= actual ? 1 : 0.35, transform: esActual ? 'scale(1.75)' : 'none' };
+    return { opacity: indice <= actual ? 1 : 0.5, transform: esActual ? 'scale(1.75)' : 'none' };
   };
-  const anillo = (cuenta: string) => (paso.cuenta === cuenta ? { stroke: '#ffffff', strokeWidth: 1.6 } : {});
+  const anillo = (cuenta: string) => (paso.cuenta === cuenta ? { stroke: '#3a1508', strokeWidth: 2 } : BORDE);
 
   return (
-    <section id="rosario" aria-labelledby="rosario-titulo" className="relative mt-14 scroll-mt-24 overflow-clip rounded-[28px] bg-stone-800 px-4 py-8 text-white shadow-[0_26px_50px_-28px_rgba(28,25,23,0.9)] sm:mt-20 sm:px-10 sm:py-12">
-      <div aria-hidden className="absolute inset-0 opacity-25 transition-[background] duration-700 motion-reduce:transition-none" style={{ background: `radial-gradient(circle at 22% 40%, ${acento}, transparent 55%)` }} />
+    // Ocupa toda la página: es la pantalla para rezar, sin nada alrededor que distraiga.
+    <section aria-labelledby="rosario-titulo" className="relative min-h-screen overflow-clip bg-brand-paper px-[max(1rem,calc((100vw-72rem)/2))] pb-16 pt-16 text-brand-ink sm:pb-20 sm:pt-20">
+      <div aria-hidden className="absolute inset-0 opacity-20 transition-[background] duration-700 motion-reduce:transition-none" style={{ background: `radial-gradient(circle at 22% 40%, ${acento}, transparent 55%)` }} />
 
       <div className="relative">
-        <h2 id="rosario-titulo" className="m-0 text-left font-display text-[clamp(1.9rem,4.6vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-white">
+        <h1 id="rosario-titulo" className="m-0 text-left font-display text-[clamp(2.4rem,7vw,4.5rem)] font-extrabold leading-[0.98] tracking-[-0.03em] text-brand-ink">
           El Rosario Misionero
-        </h2>
-        <p className="m-0 mt-3 max-w-2xl text-left text-base leading-relaxed text-white/80 sm:text-lg">
+        </h1>
+        <p className="m-0 mt-4 max-w-2xl text-left text-base leading-relaxed text-brand-ink/80 sm:text-lg">
           Cinco misterios, cinco colores, cinco continentes. Rezalo cuenta por cuenta: avanzá con los botones o tocá una cuenta del rosario.
         </p>
+        {/* Los misterios cambian según el día de la semana; acá se avisa cuáles tocan hoy. */}
+        {grupo && (
+          <p className="m-0 mt-5 inline-flex max-w-none flex-wrap items-baseline gap-x-2 rounded-2xl bg-yellow-400 px-4 py-2.5 text-left text-base font-medium text-brand-deep duration-300 animate-in fade-in motion-reduce:animate-none">
+            <span className="first-letter:uppercase">Hoy, {new Date().toLocaleDateString('es-AR', { weekday: 'long' })}, rezamos los</span>
+            <strong className="font-display text-xl font-extrabold text-brand-deep">misterios {grupo.nombre}</strong>
+          </p>
+        )}
+
+        <MusicaDeFondo />
 
         <div role="group" aria-label="Ir a un misterio" className="mt-6 flex flex-wrap gap-2">
           {MISTERIOS.map((item, indice) => {
@@ -185,7 +203,7 @@ export function RosarioMisionero() {
                 type="button"
                 aria-pressed={activo}
                 onClick={() => setActual(pasoDe(`m${indice}-0`))}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${activo ? 'bg-white text-stone-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-extrabold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown ${activo ? 'bg-brand-deep text-white' : 'bg-white text-brand-ink shadow-[0_8px_16px_-12px_rgba(58,21,8,0.8)] hover:bg-brand-cream'}`}
               >
                 <span aria-hidden className="h-3.5 w-3.5 rounded-full ring-1 ring-black/20" style={{ backgroundColor: item.hex }} />
                 {indice + 1}.º {item.continente}
@@ -197,8 +215,8 @@ export function RosarioMisionero() {
 
       <div className="relative mt-6 grid items-center gap-6 lg:mt-8 lg:grid-cols-[minmax(0,19rem)_1fr] lg:gap-12">
         <svg viewBox="30 22 340 506" aria-hidden className="mx-auto w-full max-w-[15rem] sm:max-w-[19rem] lg:max-w-none">
-          <circle cx={CENTRO.x} cy={CENTRO.y} r={RADIO} fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" />
-          <path d="M200 340 V462" stroke="rgba(255,255,255,0.22)" strokeWidth="2" />
+          <circle cx={CENTRO.x} cy={CENTRO.y} r={RADIO} fill="none" stroke="rgba(58,21,8,0.25)" strokeWidth="2" />
+          <path d="M200 340 V462" stroke="rgba(58,21,8,0.25)" strokeWidth="2" />
 
           {MISTERIOS.map((item, indice) => (
             <g key={item.continente}>
@@ -212,7 +230,7 @@ export function RosarioMisionero() {
                     key={id}
                     {...posicion(indice, cuenta)}
                     r={grande ? 8.5 : 6}
-                    fill={grande ? '#d6d3d1' : item.hex}
+                    fill={grande ? '#a8a29e' : item.hex}
                     className={CUENTA}
                     style={estilo(id)}
                     {...anillo(id)}
@@ -226,50 +244,50 @@ export function RosarioMisionero() {
           {/* En la medalla empieza el primer misterio y, al final, se rezan las intenciones del Papa, la Salve y las letanías. */}
           <circle cx="200" cy="340" r="11" fill={MISTERIOS[0].hex} className={CUENTA} style={{ ...estilo('m0-0'), transform: paso.cuenta === 'm0-0' ? 'scale(1.45)' : 'none' }} {...anillo('m0-0')} onClick={() => setActual(pasoDe('m0-0'))} />
           {/* De la cruz hacia la medalla: Padrenuestro, tres Avemarías y Gloria. */}
-          <circle cx="200" cy="443" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('padre')} {...anillo('padre')} onClick={() => setActual(pasoDe('padre'))} />
+          <circle cx="200" cy="443" r="8.5" fill="#a8a29e" className={CUENTA} style={estilo('padre')} {...anillo('padre')} onClick={() => setActual(pasoDe('padre'))} />
           {[1, 2, 3].map((ave) => (
-            <circle key={ave} cx="200" cy={438 - ave * 17} r="6" fill="#d6d3d1" className={CUENTA} style={estilo(`ave-${ave}`)} {...anillo(`ave-${ave}`)} onClick={() => setActual(pasoDe(`ave-${ave}`))} />
+            <circle key={ave} cx="200" cy={438 - ave * 17} r="6" fill="#a8a29e" className={CUENTA} style={estilo(`ave-${ave}`)} {...anillo(`ave-${ave}`)} onClick={() => setActual(pasoDe(`ave-${ave}`))} />
           ))}
-          <circle cx="200" cy="366" r="8.5" fill="#d6d3d1" className={CUENTA} style={estilo('gloria')} {...anillo('gloria')} onClick={() => setActual(pasoDe('gloria'))} />
+          <circle cx="200" cy="366" r="8.5" fill="#a8a29e" className={CUENTA} style={estilo('gloria')} {...anillo('gloria')} onClick={() => setActual(pasoDe('gloria'))} />
           <g className={CUENTA} style={{ ...estilo('cruz'), transform: paso.cuenta === 'cruz' ? 'scale(1.2)' : 'none' }} onClick={() => setActual(0)}>
-            <path d="M200 462 v56 M184 480 h32" stroke="#f6c445" strokeWidth="7" strokeLinecap="round" />
+            <path d="M200 462 v56 M184 480 h32" stroke="#a16207" strokeWidth="7" strokeLinecap="round" />
             <rect x="176" y="456" width="48" height="68" fill="transparent" />
           </g>
 
-          <text x={CENTRO.x} y={CENTRO.y - 4} textAnchor="middle" fill="#fff" className="font-display text-[34px] font-extrabold">{etapa}</text>
-          {misterio && <text x={CENTRO.x} y={CENTRO.y + 26} textAnchor="middle" fill={misterio.hex} className="text-[17px] font-bold">{misterio.orden} misterio</text>}
+          <text x={CENTRO.x} y={CENTRO.y - 4} textAnchor="middle" fill="#2c1d11" className="font-display text-[34px] font-extrabold">{etapa}</text>
+          {misterio && <text x={CENTRO.x} y={CENTRO.y + 26} textAnchor="middle" fill={tinta} className="text-[17px] font-bold">{misterio.orden} misterio</text>}
         </svg>
 
         <div>
-          <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15 sm:p-7">
+          <div className="rounded-2xl bg-white p-5 shadow-[0_22px_40px_-28px_rgba(58,21,8,0.7)] sm:p-7">
             <div className="flex items-center gap-3">
-              <span aria-hidden className="h-2 flex-1 overflow-hidden rounded-full bg-white/15">
-                <span className="block h-full rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none" style={{ width: `${((actual + 1) / pasos.length) * 100}%`, backgroundColor: acento }} />
+              <span aria-hidden className="h-2 flex-1 overflow-hidden rounded-full bg-brand-brown/15">
+                <span className="block h-full rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none" style={{ width: `${((actual + 1) / pasos.length) * 100}%`, backgroundColor: tinta }} />
               </span>
-              <span className="shrink-0 text-sm font-bold tabular-nums text-white/75">{actual + 1} de {pasos.length}</span>
+              <span className="shrink-0 text-sm font-bold tabular-nums text-brand-ink/70">{actual + 1} de {pasos.length}</span>
             </div>
 
             {/* Alto fijo en pantallas grandes: así los botones no se mueven al pasar de una oración corta a una larga. */}
             <div aria-live="polite" className="mt-5 flex min-h-[13rem] flex-col lg:h-[20rem]">
               <div key={actual} className="flex min-h-0 flex-1 flex-col duration-300 ease-out animate-in fade-in-0 slide-in-from-right-2 motion-reduce:animate-none">
-                <h3 className="m-0 text-balance text-left font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">{paso.titulo}</h3>
-                {paso.apoyo && <p className="m-0 mt-2 max-w-none text-left text-base font-semibold leading-relaxed" style={{ color: acento }}>{paso.apoyo}</p>}
+                <h3 className="m-0 text-balance text-left font-display text-2xl font-extrabold leading-tight text-brand-ink sm:text-3xl">{paso.titulo}</h3>
+                {paso.apoyo && <p className="m-0 mt-2 max-w-none text-left text-base font-semibold leading-relaxed" style={{ color: tinta }}>{paso.apoyo}</p>}
                 {misterio && paso.anuncio && (
-                  <p className="m-0 mt-2 max-w-none text-left text-sm text-white/75">
+                  <p className="m-0 mt-2 max-w-none text-left text-sm text-brand-ink/75">
                     Este misterio es de color {misterio.color}.
                     {misterio.continente === continenteDelAnio && ` Este año rezamos especialmente por ${MISION_DEL_ANIO.pais}.`}
                   </p>
                 )}
                 {paso.oraciones.some((oracion) => /^(Guía|Todos): /m.test(oracion.texto) || oracion.texto.includes(' — ')) && (
                   <p aria-hidden className="m-0 mt-3 flex max-w-none flex-wrap gap-x-4 gap-y-1 text-left text-sm font-bold">
-                    <span className="flex items-center gap-1.5 text-amber-300"><span className="h-2.5 w-2.5 rounded-full bg-amber-300" />Quien guía</span>
-                    <span className="flex items-center gap-1.5 text-white"><span className="h-2.5 w-2.5 rounded-full bg-white" />Todos</span>
+                    <span className="flex items-center gap-1.5 text-blue-800"><span className="h-2.5 w-2.5 rounded-full bg-blue-800" />Quien guía</span>
+                    <span className="flex items-center gap-1.5 text-brand-ink"><span className="h-2.5 w-2.5 rounded-full bg-brand-ink" />Todos</span>
                   </p>
                 )}
                 <div className="mt-4 max-h-[24rem] min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 lg:max-h-none">
                   {paso.oraciones.map((oracion) => (
                     <div key={oracion.nombre ?? paso.titulo}>
-                      {oracion.nombre && <p className="m-0 mb-1 max-w-none text-left text-sm font-extrabold text-white/75">{oracion.nombre}</p>}
+                      {oracion.nombre && <p className="m-0 mb-1 max-w-none text-left text-sm font-extrabold text-brand-ink/70">{oracion.nombre}</p>}
                       <Oracion texto={oracion.texto} />
                     </div>
                   ))}
@@ -279,19 +297,19 @@ export function RosarioMisionero() {
           </div>
 
           {/* En el celular quedan fijos abajo mientras se lee la oración. */}
-          <div className="sticky bottom-3 z-10 mt-4 flex items-center justify-between gap-3 rounded-full bg-stone-900/90 p-2 shadow-lg backdrop-blur lg:static lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
+          <div className="sticky bottom-3 z-10 mt-4 flex items-center justify-between gap-3 rounded-full bg-white/95 p-2 shadow-[0_12px_28px_-10px_rgba(58,21,8,0.6)] backdrop-blur lg:static lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
             <button
               type="button"
               onClick={() => setActual((valor) => Math.max(0, valor - 1))}
               disabled={actual === 0}
-              className="inline-flex items-center gap-2 rounded-full border border-white/35 px-4 py-3 text-sm font-extrabold sm:px-5 text-white transition-colors hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-full border border-brand-brown/30 px-4 py-3 text-sm font-extrabold sm:px-5 text-brand-brown transition-colors hover:bg-brand-brown/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown disabled:opacity-40"
             >
               <ArrowLeft size={17} aria-hidden /> Anterior
             </button>
             <button
               type="button"
               onClick={() => setActual((valor) => (esUltimo ? 0 : valor + 1))}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-base font-extrabold sm:px-7 text-stone-900 transition-colors hover:bg-stone-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-deep px-5 py-3 text-base font-extrabold sm:px-7 text-white transition-colors hover:bg-brand-brown focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-brown"
             >
               {esUltimo ? <>Volver a empezar <RotateCcw size={17} aria-hidden /></> : <>Siguiente <ArrowRight size={17} aria-hidden /></>}
             </button>

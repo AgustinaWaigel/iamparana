@@ -245,7 +245,7 @@ export default async function HomePage() {
               </figure>
               {/* Invitación a rezar el Rosario Misionero: lleva directo al rosario de Espiritualidad. */}
               <Link
-                href="/espiritualidad#rosario"
+                href="/espiritualidad/rosario"
                 className="pop-in group flex flex-1 flex-col rounded-[22px] bg-stone-800 p-5 text-white no-underline transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold motion-reduce:transform-none sm:p-6"
                 style={{ ["--d" as string]: "280ms" }}
               >

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Archivos originales pesados (por ejemplo, la melodía del rosario sin comprimir): no se suben.
+/originales/

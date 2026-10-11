@@ -11,7 +11,8 @@ import { getAreaLandingContent } from "@/server/db/admin-repository";
 import { listSpiritualPrayers } from "@/server/db/spiritual-prayers-repository";
 import { listFechasDelMes } from "@/server/lib/agenda-mes";
 import { FiestasDelMes } from "./components/fiestas-del-mes";
-import { RosarioMisionero } from "./components/rosario-misionero";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -122,7 +123,30 @@ export default async function Espiritualidad() {
             textPrayers={JSON.parse(JSON.stringify(textPrayers)) as TextPrayer[]}
           />
 
-          <RosarioMisionero />
+          {/* El rosario tiene su propia página, para rezarlo sin distracciones. */}
+          <Link
+            href="/espiritualidad/rosario"
+            className="group relative mt-14 flex flex-col gap-6 overflow-hidden rounded-[28px] bg-stone-800 px-6 py-8 text-white no-underline shadow-[0_26px_50px_-28px_rgba(28,25,23,0.9)] transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-800 motion-reduce:transform-none sm:mt-20 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-10"
+          >
+            <span aria-hidden className="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-white/5" />
+            <span className="relative min-w-0">
+              <span aria-hidden className="mb-4 flex items-center gap-2.5">
+                {['#34b560', '#e2453c', '#ffffff', '#4f8df7', '#f6c445'].map((color) => (
+                  <span key={color} className="h-4 w-4 rounded-full transition-transform duration-300 ease-out group-hover:scale-125 motion-reduce:transform-none" style={{ backgroundColor: color }} />
+                ))}
+              </span>
+              <span role="heading" aria-level={2} className="block font-display text-[clamp(1.9rem,4.6vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
+                El Rosario Misionero
+              </span>
+              <span className="mt-3 block max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
+                Cinco misterios, uno por cada continente. Rezalo cuenta por cuenta, con los misterios que tocan cada día.
+              </span>
+            </span>
+            <span className="relative inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-base font-extrabold text-stone-900 sm:self-center">
+              Rezar el Rosario
+              <ArrowRight size={18} aria-hidden className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
+            </span>
+          </Link>
         </div>
       </div>
     </EspiritualidadClient>
