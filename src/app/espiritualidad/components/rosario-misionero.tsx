@@ -43,13 +43,15 @@ const continenteDelAnio = MISION_DEL_ANIO.datos.find((dato) => dato.label === 'C
  */
 function aDosVoces(texto: string, empiezaGuia: boolean) {
   const [primera, segunda] = texto.split('\n//\n');
+  if (segunda === undefined) return texto;
   return `${empiezaGuia ? 'Guía' : 'Todos'}: ${primera}\n${empiezaGuia ? 'Todos' : 'Guía'}: ${segunda}`;
 }
 
-const VOZ = { guia: 'font-bold text-blue-800', todos: 'text-brand-ink' };
+// Quien guía va en negrita y con el color del misterio (lo pasa quien usa <Oracion>); el resto, en el color del texto.
+const VOZ = { guia: 'font-bold', todos: 'text-brand-ink' };
 
 /** Texto de una oración, con cada voz de su color. Si no marca voces, va todo como "todos". */
-function Oracion({ texto }: { texto: string }) {
+function Oracion({ texto, tinta }: { texto: string; tinta: string }) {
   let voz: keyof typeof VOZ = 'todos';
   let anterior: keyof typeof VOZ | null = null;
   const conVoces = /^(Guía|Todos): /m.test(texto) || texto.includes(' — ');
@@ -58,7 +60,7 @@ function Oracion({ texto }: { texto: string }) {
     const cambia = conVoces && quien !== anterior;
     anterior = quien;
     return (
-      <span key={clave} className={VOZ[quien]}>
+      <span key={clave} className={VOZ[quien]} style={quien === 'guia' ? { color: tinta } : undefined}>
         {cambia && <span className="sr-only">{quien === 'guia' ? 'Guía: ' : 'Todos: '}</span>}
         {contenido}
       </span>
@@ -106,7 +108,10 @@ function armarPasos(grupo: GrupoDeMisterios | null): Paso[] {
       titulo: nombre,
       apoyo: delDia && grupo ? `Misterios ${grupo.nombre}: ${delDia.titulo}` : undefined,
       oraciones: [
-        ...(delDia?.intencion ? [{ nombre: 'Intención de este misterio', texto: `Guía: ${delDia.intencion}` }] : []),
+        // De qué trata el misterio, y después por qué se reza.
+        ...(delDia?.relato ? [{ nombre: delDia.cita ? `${delDia.titulo} (${delDia.cita})` : delDia.titulo, texto: `Guía: ${delDia.relato}` }] : []),
+        ...(delDia?.reflexion ? [{ nombre: 'Reflexión', texto: `Guía: ${delDia.reflexion}` }] : []),
+        ...(delDia?.intencion ? [{ nombre: 'Intención misionera de este misterio', texto: `Guía: ${delDia.intencion}` }] : []),
         { nombre: `Por ${misterio.continente}`, texto: `Guía: ${misterio.intencion}` },
       ],
     });
@@ -280,7 +285,7 @@ export function RosarioMisionero() {
                 )}
                 {paso.oraciones.some((oracion) => /^(Guía|Todos): /m.test(oracion.texto) || oracion.texto.includes(' — ')) && (
                   <p aria-hidden className="m-0 mt-3 flex max-w-none flex-wrap gap-x-4 gap-y-1 text-left text-sm font-bold">
-                    <span className="flex items-center gap-1.5 text-blue-800"><span className="h-2.5 w-2.5 rounded-full bg-blue-800" />Quien guía</span>
+                    <span className="flex items-center gap-1.5" style={{ color: tinta }}><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: tinta }} />Quien guía</span>
                     <span className="flex items-center gap-1.5 text-brand-ink"><span className="h-2.5 w-2.5 rounded-full bg-brand-ink" />Todos</span>
                   </p>
                 )}
@@ -288,7 +293,7 @@ export function RosarioMisionero() {
                   {paso.oraciones.map((oracion) => (
                     <div key={oracion.nombre ?? paso.titulo}>
                       {oracion.nombre && <p className="m-0 mb-1 max-w-none text-left text-sm font-extrabold text-brand-ink/70">{oracion.nombre}</p>}
-                      <Oracion texto={oracion.texto} />
+                      <Oracion texto={oracion.texto} tinta={tinta} />
                     </div>
                   ))}
                 </div>
