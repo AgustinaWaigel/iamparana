@@ -24,6 +24,8 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|uploads).*)',
+    // Los archivos estáticos (imágenes, audio) no pasan por acá: Safari pide el audio por partes
+    // y el proxy en el medio puede hacer que falle.
+    '/((?!api|_next/static|_next/image|favicon.ico|uploads|assets).*)',
   ],
 };

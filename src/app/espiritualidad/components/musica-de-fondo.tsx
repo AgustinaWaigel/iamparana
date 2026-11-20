@@ -7,6 +7,8 @@ import { Music, Pause, Volume1, Volume2 } from 'lucide-react';
 // El archivo va en public/assets/audio/rosario.mp3; mientras no esté, el botón no aparece.
 
 const ARCHIVO = '/assets/audio/rosario.mp3';
+// Safari (sobre todo en iPhone) reproduce mejor AAC; el resto usa el MP3.
+const ARCHIVO_AAC = '/assets/audio/rosario.m4a';
 const VOLUMEN_GUARDADO = 'iam-rosario-volumen';
 
 export function MusicaDeFondo() {
@@ -59,7 +61,10 @@ export function MusicaDeFondo() {
 
   return (
     <div className="mt-5 flex flex-wrap items-center gap-3">
-      <audio ref={audio} src={ARCHIVO} loop preload="none" onPlay={() => setSonando(true)} onPause={() => setSonando(false)} onError={() => { setSonando(false); setError(true); }} />
+      <audio ref={audio} loop preload="none" playsInline onPlay={() => setSonando(true)} onPause={() => setSonando(false)}>
+        <source src={ARCHIVO_AAC} type="audio/mp4" />
+        <source src={ARCHIVO} type="audio/mpeg" onError={() => { setSonando(false); setError(true); }} />
+      </audio>
       <button
         type="button"
         onClick={alternar}
