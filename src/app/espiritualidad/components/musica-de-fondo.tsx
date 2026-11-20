@@ -17,6 +17,10 @@ export function MusicaDeFondo() {
   const [sonando, setSonando] = useState(false);
   const [volumen, setVolumen] = useState(0.4);
   const [error, setError] = useState(false);
+  // En iPhone/iPad, Safari ignora audio.volume (siempre suena al 100 %). Ahí el volumen
+  // se controla con Web Audio: el audio pasa por un nodo de ganancia.
+  const ganancia = useRef<GainNode | null>(null);
+  const contexto = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     // Se pregunta si el archivo existe sin descargarlo.
@@ -30,8 +34,38 @@ export function MusicaDeFondo() {
   }, []);
 
   useEffect(() => {
-    if (audio.current) audio.current.volume = volumen;
+    if (ganancia.current) ganancia.current.gain.value = volumen;
+    else if (audio.current) audio.current.volume = volumen;
   }, [volumen, hay]);
+
+  useEffect(() => () => { contexto.current?.close().catch(() => {}); }, []);
+
+  /** Se arma en el primer toque (Safari solo deja crear el audio dentro de un gesto). */
+  const prepararVolumen = (elemento: HTMLAudioElement) => {
+    if (ganancia.current) {
+      contexto.current?.resume().catch(() => {});
+      return;
+    }
+    // Si el navegador respeta audio.volume, no hace falta nada más.
+    const antes = elemento.volume;
+    elemento.volume = 0.5;
+    const respeta = Math.abs(elemento.volume - 0.5) < 0.01;
+    elemento.volume = antes;
+    if (respeta) return;
+    try {
+      const Contexto = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Contexto) return;
+      const ctx = new Contexto();
+      const nodo = ctx.createGain();
+      nodo.gain.value = volumen;
+      ctx.createMediaElementSource(elemento).connect(nodo).connect(ctx.destination);
+      contexto.current = ctx;
+      ganancia.current = nodo;
+      ctx.resume().catch(() => {});
+    } catch {
+      // Sin Web Audio: se queda con el volumen del teléfono.
+    }
+  };
 
   if (!hay) return null;
 
@@ -43,6 +77,7 @@ export function MusicaDeFondo() {
       elemento.pause();
       return;
     }
+    prepararVolumen(elemento);
     try {
       await elemento.play();
     } catch {
